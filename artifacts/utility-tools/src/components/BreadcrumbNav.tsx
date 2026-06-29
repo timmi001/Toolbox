@@ -1,0 +1,50 @@
+import { Link } from 'wouter';
+import { ChevronRight, Home } from 'lucide-react';
+import { ToolCategory } from '@/lib/tools-data';
+
+interface BreadcrumbNavProps {
+  category?: ToolCategory;
+  toolName?: string;
+}
+
+const CATEGORY_NAMES: Record<ToolCategory, string> = {
+  text: 'Text Tools',
+  developer: 'Developer Tools',
+  image: 'Image Tools',
+  pdf: 'PDF Tools',
+  calculators: 'Calculators & Converters',
+};
+
+const CATEGORY_LINKS: Record<ToolCategory, string> = {
+  text: '/text-tools',
+  developer: '/developer-tools',
+  image: '/image-tools',
+  pdf: '/pdf-tools',
+  calculators: '/calculators',
+};
+
+export function BreadcrumbNav({ category, toolName }: BreadcrumbNavProps) {
+  return (
+    <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6 overflow-x-auto whitespace-nowrap pb-2">
+      <Link href="/" className="hover:text-primary transition-colors flex items-center">
+        <Home className="w-4 h-4" />
+      </Link>
+      
+      {category && (
+        <>
+          <ChevronRight className="w-4 h-4 flex-shrink-0" />
+          <Link href={CATEGORY_LINKS[category]} className="hover:text-primary transition-colors">
+            {CATEGORY_NAMES[category]}
+          </Link>
+        </>
+      )}
+
+      {toolName && (
+        <>
+          <ChevronRight className="w-4 h-4 flex-shrink-0" />
+          <span className="text-foreground font-medium">{toolName}</span>
+        </>
+      )}
+    </nav>
+  );
+}
