@@ -1,10 +1,6 @@
 import { useState } from 'react';
-import { useLocation } from 'wouter';
-import { toolsData } from '@/lib/tools-data';
-import { ToolCard } from '@/components/ToolCard';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryGrid } from '@/components/CategoryGrid';
-import { useRecentTools } from '@/hooks/useRecentTools';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -18,13 +14,8 @@ const HOME_FAQS = [
 ];
 
 export default function Home() {
-  const { recentTools } = useRecentTools();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
-
-  const trendingTools = toolsData.filter(t => t.trending).slice(0, 6);
-  const popularTools = toolsData.filter(t => t.popular).slice(0, 8);
-  const newTools = toolsData.filter(t => t.new).slice(0, 4);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,57 +43,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trending Tools (Horizontal Scroll) */}
-      <section>
-        <h2 className="text-2xl font-bold mb-6 tracking-tight">Trending Right Now</h2>
-        <div className="flex overflow-x-auto pb-6 -mx-4 px-4 gap-4 snap-x no-scrollbar">
-          {trendingTools.map(tool => (
-            <div key={tool.slug} className="min-w-[280px] sm:min-w-[320px] snap-start">
-              <ToolCard tool={tool} />
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Categories Grid */}
       <section>
         <h2 className="text-2xl font-bold mb-6 tracking-tight">Explore Categories</h2>
         <CategoryGrid />
       </section>
-
-      {/* Popular Tools */}
-      <section>
-        <h2 className="text-2xl font-bold mb-6 tracking-tight">Most Popular</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {popularTools.map(tool => (
-            <ToolCard key={tool.slug} tool={tool} />
-          ))}
-        </div>
-      </section>
-
-      {/* Recently Used Tools */}
-      {recentTools.length > 0 && (
-        <section>
-          <h2 className="text-2xl font-bold mb-6 tracking-tight">Recently Used</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            {recentTools.map(tool => (
-              <ToolCard key={tool.slug} tool={tool} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Newly Added */}
-      {newTools.length > 0 && (
-        <section>
-          <h2 className="text-2xl font-bold mb-6 tracking-tight">Newly Added</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {newTools.map(tool => (
-              <ToolCard key={tool.slug} tool={tool} />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* FAQ */}
       <section className="max-w-3xl mx-auto">
