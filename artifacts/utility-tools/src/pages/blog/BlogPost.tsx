@@ -6,11 +6,16 @@ import { Button } from '@/components/ui/button';
 export default function BlogPost() {
   const [match, params] = useRoute('/blog/:slug');
 
-  if (!match || !params.slug) return null;
+  const title = params?.slug
+    ? params.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    : '';
 
-  const title = params.slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  useSEO(
+    title ? `${title} | ToolKit Blog` : 'ToolKit Blog',
+    title ? `Read our article about ${title.toLowerCase()}` : ''
+  );
 
-  useSEO(`${title} | ToolKit Blog`, `Read our article about ${title.toLowerCase()}`);
+  if (!match || !params?.slug) return null;
 
   return (
     <div className="py-8 max-w-3xl mx-auto animate-in fade-in duration-500">

@@ -19,40 +19,41 @@ export default function CategoryPage() {
   const [match, params] = useRoute('/:category');
   const [search, setSearch] = useState('');
 
-  if (!match || !params.category) return null;
-  
-  const categoryPath = params.category;
+  const categoryPath = params?.category ?? '';
   const details = CATEGORY_DETAILS[categoryPath];
-  
-  if (!details) {
-    return <div>Category not found</div>;
-  }
 
-  useSEO(`${details.title} | ToolKit`, details.desc);
+  const mappedCategory: ToolCategory =
+    categoryPath === 'text-tools' ? 'text' :
+    categoryPath === 'developer-tools' ? 'developer' :
+    categoryPath === 'image-tools' ? 'image' :
+    categoryPath === 'pdf-tools' ? 'pdf' : 'calculators';
 
-  const mappedCategory = categoryPath === 'text-tools' ? 'text' :
-                         categoryPath === 'developer-tools' ? 'developer' :
-                         categoryPath === 'image-tools' ? 'image' :
-                         categoryPath === 'pdf-tools' ? 'pdf' : 'calculators';
+  useSEO(
+    details ? `${details.title} | ToolKit` : 'ToolKit',
+    details?.desc ?? ''
+  );
+
+  if (!match || !categoryPath) return null;
+  if (!details) return <div>Category not found</div>;
 
   const categoryTools = toolsData.filter(t => t.category === mappedCategory);
-  
-  const filteredTools = categoryTools.filter(t => 
-    t.name.toLowerCase().includes(search.toLowerCase()) || 
+
+  const filteredTools = categoryTools.filter(t =>
+    t.name.toLowerCase().includes(search.toLowerCase()) ||
     t.description.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="py-8 animate-in fade-in duration-500">
-      <BreadcrumbNav category={mappedCategory as ToolCategory} />
-      
+      <BreadcrumbNav category={mappedCategory} />
+
       <header className="mb-12">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-4">{details.title}</h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-3xl">{details.desc}</p>
-        
+
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input 
+          <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={`Search ${categoryTools.length} ${details.title.toLowerCase()}...`}
