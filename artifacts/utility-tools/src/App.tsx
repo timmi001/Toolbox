@@ -64,9 +64,6 @@ const QrCode = L(() => import("@/pages/tools/developer/qr-code"));
 // Image Tools
 const ImageCompressor = L(() => import("@/pages/tools/image/image-compressor"));
 const ImageResizer = L(() => import("@/pages/tools/image/image-resizer"));
-const CropImage = L(() => import("@/pages/tools/image/crop-image"));
-const RotateImage = L(() => import("@/pages/tools/image/rotate-image"));
-const FlipImage = L(() => import("@/pages/tools/image/flip-image"));
 const JpgToPng = L(() => import("@/pages/tools/image/jpg-to-png"));
 const PngToJpg = L(() => import("@/pages/tools/image/png-to-jpg"));
 const PngToWebp = L(() => import("@/pages/tools/image/png-to-webp"));
@@ -193,9 +190,6 @@ function Router() {
         {/* Image Tools */}
         <Route path="/tools/image/image-compressor" component={ImageCompressor} />
         <Route path="/tools/image/image-resizer" component={ImageResizer} />
-        <Route path="/tools/image/crop-image" component={CropImage} />
-        <Route path="/tools/image/rotate-image" component={RotateImage} />
-        <Route path="/tools/image/flip-image" component={FlipImage} />
         <Route path="/tools/image/jpg-to-png" component={JpgToPng} />
         <Route path="/tools/image/png-to-jpg" component={PngToJpg} />
         <Route path="/tools/image/png-to-webp" component={PngToWebp} />

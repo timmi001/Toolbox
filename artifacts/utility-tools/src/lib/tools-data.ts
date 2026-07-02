@@ -60,9 +60,6 @@ export const toolsData: Tool[] = [
   // Image Tools
   { slug: 'image-compressor', name: 'Image Compressor', description: 'Compress JPEG/PNG images to reduce file size.', category: 'image', keywords: ['image', 'compress', 'size'], popular: true, icon: 'Minimize2' },
   { slug: 'image-resizer', name: 'Image Resizer', description: 'Resize images to custom dimensions.', category: 'image', keywords: ['image', 'resize', 'dimensions'], icon: 'Scaling' },
-  { slug: 'crop-image', name: 'Crop Image', description: 'Interactive image cropping tool.', category: 'image', keywords: ['image', 'crop', 'cut'], icon: 'Crop' },
-  { slug: 'rotate-image', name: 'Rotate Image', description: 'Rotate images by 90°, 180°, or custom angles.', category: 'image', keywords: ['image', 'rotate', 'turn'], icon: 'RotateCw' },
-  { slug: 'flip-image', name: 'Flip Image', description: 'Flip images horizontally or vertically.', category: 'image', keywords: ['image', 'flip', 'mirror'], icon: 'FlipHorizontal' },
   { slug: 'jpg-to-png', name: 'JPG to PNG', description: 'Convert JPG images to PNG format.', category: 'image', keywords: ['convert', 'jpg', 'png'], popular: true, icon: 'Image' },
   { slug: 'png-to-jpg', name: 'PNG to JPG', description: 'Convert PNG images to JPG format.', category: 'image', keywords: ['convert', 'png', 'jpg'], icon: 'Image' },
   { slug: 'png-to-webp', name: 'PNG to WebP', description: 'Convert PNG images to WebP format.', category: 'image', keywords: ['convert', 'png', 'webp'], trending: true, icon: 'Image' },
