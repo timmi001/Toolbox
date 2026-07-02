@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm --filter @workspace/utility-tools run build",
+  "outputDirectory": "artifacts/utility-tools/dist/public",
+  "installCommand": "pnpm install"
+}
