@@ -1,4 +1,4 @@
-export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators';
+export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'seo' | 'file-conversion';
 
 export type Tool = {
   slug: string;
@@ -26,6 +26,12 @@ export const toolsData: Tool[] = [
   { slug: 'random-text-generator', name: 'Random Text Generator', description: 'Generate random words, sentences, or paragraphs.', category: 'text', keywords: ['random', 'generator', 'words'], icon: 'Shuffle' },
   { slug: 'lorem-ipsum', name: 'Lorem Ipsum Generator', description: 'Generate Lorem Ipsum dummy text.', category: 'text', keywords: ['lorem ipsum', 'dummy text', 'placeholder'], popular: true, icon: 'FileType' },
   { slug: 'slug-generator', name: 'Slug Generator', description: 'Convert text to a URL-friendly slug.', category: 'text', keywords: ['slug', 'url', 'seo'], icon: 'Link2' },
+  { slug: 'meta-tag-generator', name: 'Meta Tag Generator', description: 'Generate title, description, keyword, and robots meta tags for any page.', category: 'seo', keywords: ['meta tags', 'seo', 'html'], icon: 'Tag' },
+  { slug: 'robots-generator', name: 'Robots.txt Generator', description: 'Create a simple robots.txt file with allow and disallow rules.', category: 'seo', keywords: ['robots', 'seo', 'crawl'], icon: 'Bot' },
+  { slug: 'sitemap-generator', name: 'Sitemap Generator', description: 'Generate a basic XML sitemap from your page list.', category: 'seo', keywords: ['sitemap', 'xml', 'seo'], icon: 'Map' },
+  { slug: 'serp-preview', name: 'SERP Preview', description: 'Preview how your page title and description may look in search results.', category: 'seo', keywords: ['serp', 'seo', 'preview'], icon: 'Search' },
+  { slug: 'schema-markup-generator', name: 'Schema Markup Generator', description: 'Create JSON-LD schema markup for your website or business.', category: 'seo', keywords: ['schema', 'json-ld', 'seo'], icon: 'Code2' },
+  { slug: 'open-graph-generator', name: 'Open Graph Generator', description: 'Generate Open Graph tags for elegant social previews.', category: 'seo', keywords: ['open graph', 'social preview', 'seo'], icon: 'Share2' },
   { slug: 'url-encoder', name: 'URL Encoder', description: 'Encode URL or URL components.', category: 'text', keywords: ['encode', 'url', 'percent encoding'], icon: 'Lock' },
   { slug: 'url-decoder', name: 'URL Decoder', description: 'Decode URL-encoded strings.', category: 'text', keywords: ['decode', 'url', 'percent decoding'], icon: 'Unlock' },
   { slug: 'text-cleaner', name: 'Text Cleaner', description: 'Remove extra spaces and special characters.', category: 'text', keywords: ['clean', 'format', 'spaces'], icon: 'Eraser' },
@@ -54,6 +60,10 @@ export const toolsData: Tool[] = [
   { slug: 'hex-to-rgb', name: 'HEX to RGB', description: 'Convert HEX color to RGB/HSL.', category: 'developer', keywords: ['hex', 'rgb', 'color'], icon: 'Droplet' },
   { slug: 'rgb-to-hex', name: 'RGB to HEX', description: 'Convert RGB color to HEX.', category: 'developer', keywords: ['rgb', 'hex', 'color'], icon: 'Paintbucket' },
   { slug: 'color-picker', name: 'Color Picker', description: 'Pick colors and get HEX, RGB, and HSL values.', category: 'developer', keywords: ['color', 'picker', 'swatch'], icon: 'Pipette' },
+  { slug: 'css-box-shadow-generator', name: 'CSS Box Shadow Generator', description: 'Create custom box shadow styles and copy the CSS instantly.', category: 'developer', keywords: ['css', 'box shadow', 'design'], icon: 'Layers' },
+  { slug: 'css-button-generator', name: 'CSS Button Generator', description: 'Generate polished button styles with ready-to-use CSS.', category: 'developer', keywords: ['css', 'button', 'ui'], icon: 'MousePointerSquare' },
+  { slug: 'palette-generator', name: 'Palette Generator', description: 'Generate harmonious color palettes for your next design.', category: 'developer', keywords: ['palette', 'color', 'design'], icon: 'Palette' },
+  { slug: 'hex-rgb-converter', name: 'HEX ↔ RGB Converter', description: 'Switch seamlessly between HEX and RGB color formats.', category: 'developer', keywords: ['hex', 'rgb', 'color converter'], icon: 'Droplets' },
   { slug: 'jwt-decoder', name: 'JWT Decoder', description: 'Decode JWT header and payload.', category: 'developer', keywords: ['jwt', 'token', 'decode'], trending: true, icon: 'Key' },
   { slug: 'qr-code', name: 'QR Code Generator', description: 'Generate QR codes from text or URLs.', category: 'developer', keywords: ['qr code', 'generate', 'barcode'], new: true, icon: 'QrCode' },
 
@@ -77,6 +87,14 @@ export const toolsData: Tool[] = [
   { slug: 'screenshot-frame', name: 'Screenshot Frame Adder', description: 'Add browser or device frames to screenshots.', category: 'image', keywords: ['screenshot', 'frame', 'device'], new: true, icon: 'Monitor' },
   { slug: 'bg-remover', name: 'Background Remover & Object Eraser', description: 'Remove backgrounds or erase objects from images by clicking on the color to erase. Exports transparent PNG.', category: 'image', keywords: ['background removal', 'transparent', 'object eraser', 'png'], new: true, icon: 'Eraser' },
   { slug: 'hi-res-export', name: 'High Resolution PNG Export', description: 'Upscale and export images at 2×, 3×, 4×, 6× or 8× resolution as high-quality PNG files.', category: 'image', keywords: ['upscale', 'high resolution', 'png export', 'enlarge'], new: true, icon: 'Maximize2' },
+
+  // File Conversion Tools
+  { slug: 'mp4-to-mp3', name: 'MP4 to MP3', description: 'Convert video files to audio-only MP3 format for podcasts, voice notes, and music extraction.', category: 'file-conversion', keywords: ['video', 'audio', 'mp3', 'convert'], new: true, icon: 'Music' },
+  { slug: 'zip-extractor', name: 'ZIP Extractor', description: 'Extract ZIP archives and browse the file contents directly in your browser.', category: 'file-conversion', keywords: ['zip', 'archive', 'extract'], new: true, icon: 'Archive' },
+  { slug: 'file-compressor', name: 'File Compressor', description: 'Compress files into smaller archives with a simple drag-and-drop workflow.', category: 'file-conversion', keywords: ['compress', 'archive', 'zip'], new: true, icon: 'FileArchive' },
+  { slug: 'epub-to-pdf', name: 'EPUB to PDF', description: 'Convert EPUB documents into a polished PDF layout for easy reading and sharing.', category: 'file-conversion', keywords: ['epub', 'pdf', 'convert'], new: true, icon: 'BookOpen' },
+  { slug: 'excel-to-csv', name: 'Excel to CSV', description: 'Convert spreadsheet data to CSV format for easier import and analysis.', category: 'file-conversion', keywords: ['excel', 'csv', 'spreadsheet'], new: true, icon: 'FileSpreadsheet' },
+  { slug: 'csv-to-json', name: 'CSV to JSON', description: 'Transform CSV data into JSON objects for APIs, apps, and scripts.', category: 'file-conversion', keywords: ['csv', 'json', 'convert'], new: true, icon: 'Braces' },
 
   // PDF Tools
   { slug: 'merge-pdf', name: 'Merge PDF', description: 'Merge multiple PDF files into one.', category: 'pdf', keywords: ['pdf', 'merge', 'combine'], popular: true, icon: 'Files' },

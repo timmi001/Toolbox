@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
+import { CurrencyPreferenceProvider } from "@/contexts/CurrencyPreferenceContext";
 import React, { Suspense } from "react";
 
 import Home from "@/pages/Home";
@@ -38,6 +39,12 @@ const RandomTextGenerator = L(() => import("@/pages/tools/text/random-text-gener
 const KeywordDensity = L(() => import("@/pages/tools/text/keyword-density"));
 const HtmlStripper = L(() => import("@/pages/tools/text/html-stripper"));
 const MarkdownPreview = L(() => import("@/pages/tools/text/markdown-preview"));
+const MetaTagGenerator = L(() => import("@/pages/tools/text/meta-tag-generator"));
+const RobotsGenerator = L(() => import("@/pages/tools/text/robots-generator"));
+const SitemapGenerator = L(() => import("@/pages/tools/text/sitemap-generator"));
+const SerpPreview = L(() => import("@/pages/tools/text/serp-preview"));
+const SchemaMarkupGenerator = L(() => import("@/pages/tools/text/schema-markup-generator"));
+const OpenGraphGenerator = L(() => import("@/pages/tools/text/open-graph-generator"));
 
 // Developer Tools
 const JsonFormatter = L(() => import("@/pages/tools/developer/json-formatter"));
@@ -58,6 +65,10 @@ const CssGradient = L(() => import("@/pages/tools/developer/css-gradient"));
 const HexToRgb = L(() => import("@/pages/tools/developer/hex-to-rgb"));
 const RgbToHex = L(() => import("@/pages/tools/developer/rgb-to-hex"));
 const ColorPicker = L(() => import("@/pages/tools/developer/color-picker"));
+const CssBoxShadowGenerator = L(() => import("@/pages/tools/developer/css-box-shadow-generator"));
+const CssButtonGenerator = L(() => import("@/pages/tools/developer/css-button-generator"));
+const PaletteGenerator = L(() => import("@/pages/tools/developer/palette-generator"));
+const HexRgbConverter = L(() => import("@/pages/tools/developer/hex-rgb-converter"));
 const JwtDecoder = L(() => import("@/pages/tools/developer/jwt-decoder"));
 const QrCode = L(() => import("@/pages/tools/developer/qr-code"));
 
@@ -81,6 +92,14 @@ const ImageDimensions = L(() => import("@/pages/tools/image/image-dimensions"));
 const ScreenshotFrame = L(() => import("@/pages/tools/image/screenshot-frame"));
 const BgRemover = L(() => import("@/pages/tools/image/bg-remover"));
 const HiResExport = L(() => import("@/pages/tools/image/hi-res-export"));
+
+// File Conversion Tools
+const Mp4ToMp3 = L(() => import("@/pages/tools/file-conversion/mp4-to-mp3"));
+const ZipExtractor = L(() => import("@/pages/tools/file-conversion/zip-extractor"));
+const FileCompressor = L(() => import("@/pages/tools/file-conversion/file-compressor"));
+const EpubToPdf = L(() => import("@/pages/tools/file-conversion/epub-to-pdf"));
+const ExcelToCsv = L(() => import("@/pages/tools/file-conversion/excel-to-csv"));
+const CsvToJson = L(() => import("@/pages/tools/file-conversion/csv-to-json"));
 
 // PDF Tools
 const MergePdf = L(() => import("@/pages/tools/pdf/merge-pdf"));
@@ -131,14 +150,17 @@ const queryClient = new QueryClient();
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
+    <CurrencyPreferenceProvider>
+      <Layout>
+        <Switch>
         <Route path="/" component={Home} />
 
         {/* Categories */}
         <Route path="/text-tools" component={CategoryPage} />
         <Route path="/developer-tools" component={CategoryPage} />
+        <Route path="/seo-tools" component={CategoryPage} />
         <Route path="/image-tools" component={CategoryPage} />
+        <Route path="/file-conversion-tools" component={CategoryPage} />
         <Route path="/pdf-tools" component={CategoryPage} />
         <Route path="/calculators" component={CategoryPage} />
 
@@ -167,6 +189,12 @@ function Router() {
         <Route path="/tools/text/keyword-density" component={KeywordDensity} />
         <Route path="/tools/text/html-stripper" component={HtmlStripper} />
         <Route path="/tools/text/markdown-preview" component={MarkdownPreview} />
+        <Route path="/tools/seo/meta-tag-generator" component={MetaTagGenerator} />
+        <Route path="/tools/seo/robots-generator" component={RobotsGenerator} />
+        <Route path="/tools/seo/sitemap-generator" component={SitemapGenerator} />
+        <Route path="/tools/seo/serp-preview" component={SerpPreview} />
+        <Route path="/tools/seo/schema-markup-generator" component={SchemaMarkupGenerator} />
+        <Route path="/tools/seo/open-graph-generator" component={OpenGraphGenerator} />
 
         {/* Developer Tools */}
         <Route path="/tools/developer/json-formatter" component={JsonFormatter} />
@@ -187,6 +215,10 @@ function Router() {
         <Route path="/tools/developer/hex-to-rgb" component={HexToRgb} />
         <Route path="/tools/developer/rgb-to-hex" component={RgbToHex} />
         <Route path="/tools/developer/color-picker" component={ColorPicker} />
+        <Route path="/tools/developer/css-box-shadow-generator" component={CssBoxShadowGenerator} />
+        <Route path="/tools/developer/css-button-generator" component={CssButtonGenerator} />
+        <Route path="/tools/developer/palette-generator" component={PaletteGenerator} />
+        <Route path="/tools/developer/hex-rgb-converter" component={HexRgbConverter} />
         <Route path="/tools/developer/jwt-decoder" component={JwtDecoder} />
         <Route path="/tools/developer/qr-code" component={QrCode} />
 
@@ -208,6 +240,16 @@ function Router() {
         <Route path="/tools/image/convert-ico" component={ConvertIco} />
         <Route path="/tools/image/image-dimensions" component={ImageDimensions} />
         <Route path="/tools/image/screenshot-frame" component={ScreenshotFrame} />
+        <Route path="/tools/image/bg-remover" component={BgRemover} />
+        <Route path="/tools/image/hi-res-export" component={HiResExport} />
+
+        {/* File Conversion Tools */}
+        <Route path="/tools/file-conversion/mp4-to-mp3" component={Mp4ToMp3} />
+        <Route path="/tools/file-conversion/zip-extractor" component={ZipExtractor} />
+        <Route path="/tools/file-conversion/file-compressor" component={FileCompressor} />
+        <Route path="/tools/file-conversion/epub-to-pdf" component={EpubToPdf} />
+        <Route path="/tools/file-conversion/excel-to-csv" component={ExcelToCsv} />
+        <Route path="/tools/file-conversion/csv-to-json" component={CsvToJson} />
 
         {/* PDF Tools */}
         <Route path="/tools/pdf/merge-pdf" component={MergePdf} />
@@ -230,6 +272,7 @@ function Router() {
         <Route path="/tools/pdf/pdf-preview" component={PdfPreview} />
         <Route path="/tools/pdf/pdf-orientation" component={PdfOrientation} />
         <Route path="/tools/pdf/pdf-thumbnail" component={PdfThumbnail} />
+        <Route path="/tools/pdf/pdf-editor" component={PdfEditor} />
 
         {/* Calculator Tools */}
         <Route path="/tools/calculators/percentage-calculator" component={PercentageCalculator} />
@@ -255,7 +298,8 @@ function Router() {
 
         <Route component={NotFound} />
       </Switch>
-    </Layout>
+      </Layout>
+    </CurrencyPreferenceProvider>
   );
 }
 

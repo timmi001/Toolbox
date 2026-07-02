@@ -10,7 +10,9 @@ import { useState } from 'react';
 const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'text-tools': { title: 'Text Tools', desc: 'Format, count, clean, and manipulate text with our comprehensive suite of text utilities.' },
   'developer-tools': { title: 'Developer Tools', desc: 'JSON formatters, encoders, hashes, and essential utilities for developers.' },
+  'seo-tools': { title: 'SEO Tools', desc: 'Create meta tags, sitemaps, schema markup, and social preview snippets for better search visibility.' },
   'image-tools': { title: 'Image Tools', desc: 'Compress, crop, resize, and convert images entirely in your browser.' },
+  'file-conversion-tools': { title: 'File Conversion Tools', desc: 'Convert documents, archives, spreadsheets, and media formats in a few clicks.' },
   'pdf-tools': { title: 'PDF Tools', desc: 'Merge, split, and manipulate PDF documents securely.' },
   'calculators': { title: 'Calculators & Converters', desc: 'Solve math problems, convert units, and calculate dates.' },
 };
@@ -25,7 +27,9 @@ export default function CategoryPage() {
   const mappedCategory: ToolCategory =
     categoryPath === 'text-tools' ? 'text' :
     categoryPath === 'developer-tools' ? 'developer' :
+    categoryPath === 'seo-tools' ? 'seo' :
     categoryPath === 'image-tools' ? 'image' :
+    categoryPath === 'file-conversion-tools' ? 'file-conversion' :
     categoryPath === 'pdf-tools' ? 'pdf' : 'calculators';
 
   useSEO(

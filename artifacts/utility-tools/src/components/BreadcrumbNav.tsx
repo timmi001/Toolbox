@@ -10,7 +10,9 @@ interface BreadcrumbNavProps {
 const CATEGORY_NAMES: Record<ToolCategory, string> = {
   text: 'Text Tools',
   developer: 'Developer Tools',
+  seo: 'SEO Tools',
   image: 'Image Tools',
+  'file-conversion': 'File Conversion Tools',
   pdf: 'PDF Tools',
   calculators: 'Calculators & Converters',
 };
@@ -18,7 +20,9 @@ const CATEGORY_NAMES: Record<ToolCategory, string> = {
 const CATEGORY_LINKS: Record<ToolCategory, string> = {
   text: '/text-tools',
   developer: '/developer-tools',
+  seo: '/seo-tools',
   image: '/image-tools',
+  'file-conversion': '/file-conversion-tools',
   pdf: '/pdf-tools',
   calculators: '/calculators',
 };

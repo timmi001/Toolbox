@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ToolLayout } from '@/components/ToolLayout';
 import { getToolBySlug } from '@/lib/tools-data';
 import { Input } from '@/components/ui/input';
+import { CurrencySelector } from '@/components/CurrencySelector';
+import { useCurrencyPreference } from '@/contexts/CurrencyPreferenceContext';
 
 const RATES: Record<string, number> = {
   USD: 1, EUR: 0.92, GBP: 0.79, JPY: 149.5, CAD: 1.36, AUD: 1.53,
@@ -12,15 +14,26 @@ const RATES: Record<string, number> = {
 
 export default function CurrencyConverter() {
   const tool = getToolBySlug('currency-converter')!;
+  const { currencyCode, setCurrencyCode } = useCurrencyPreference();
   const [from, setFrom] = useState('USD');
-  const [to, setTo] = useState('EUR');
+  const [to, setTo] = useState(currencyCode);
   const [amount, setAmount] = useState('100');
+
+  useEffect(() => {
+    setTo(currencyCode);
+  }, [currencyCode]);
 
   const result = parseFloat(amount) * (RATES[to] / RATES[from]);
   const currencies = Object.keys(RATES);
 
+  const handleToChange = (value: string) => {
+    setTo(value);
+    setCurrencyCode(value);
+  };
+
   return (
     <ToolLayout tool={tool} instructions="Enter amount and select currencies to convert. Rates are static approximations for reference only.">
+      <CurrencySelector className="mb-6" />
       <div className="grid md:grid-cols-3 gap-4 mb-6 items-end">
         <div>
           <label className="text-sm text-muted-foreground mb-1 block">From</label>
@@ -34,7 +47,7 @@ export default function CurrencyConverter() {
         </div>
         <div>
           <label className="text-sm text-muted-foreground mb-1 block">To</label>
-          <select value={to} onChange={(e) => setTo(e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
+          <select value={to} onChange={(e) => handleToChange(e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm">
             {currencies.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>

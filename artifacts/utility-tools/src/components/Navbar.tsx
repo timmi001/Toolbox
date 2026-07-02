@@ -8,7 +8,9 @@ const NAV_LINKS = [
   { name: 'Calculators', href: '/calculators' },
   { name: 'PDF Tools', href: '/pdf-tools' },
   { name: 'Image Tools', href: '/image-tools' },
+  { name: 'File Conversion', href: '/file-conversion-tools' },
   { name: 'Developer Tools', href: '/developer-tools' },
+  { name: 'SEO Tools', href: '/seo-tools' },
   { name: 'Text Tools', href: '/text-tools' },
   { name: 'Blog', href: '/blog' },
 ];

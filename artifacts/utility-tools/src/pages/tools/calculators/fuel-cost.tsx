@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { ToolLayout } from '@/components/ToolLayout';
 import { getToolBySlug } from '@/lib/tools-data';
 import { Input } from '@/components/ui/input';
+import { CurrencySelector } from '@/components/CurrencySelector';
+import { useCurrencyPreference } from '@/contexts/CurrencyPreferenceContext';
 
 export default function FuelCost() {
   const tool = getToolBySlug('fuel-cost')!;
+  const { currencyCode, formatCurrency } = useCurrencyPreference();
   const [distance, setDistance] = useState('500');
   const [efficiency, setEfficiency] = useState('30');
   const [price, setPrice] = useState('3.50');
@@ -16,6 +19,7 @@ export default function FuelCost() {
 
   return (
     <ToolLayout tool={tool} instructions="Enter trip distance, vehicle fuel efficiency, and fuel price to estimate total fuel cost.">
+      <CurrencySelector className="mb-6" />
       <div className="grid md:grid-cols-3 gap-4 mb-6">
         <div>
           <label className="text-sm text-muted-foreground mb-1 block">Distance (miles)</label>
@@ -34,8 +38,8 @@ export default function FuelCost() {
         <div className="grid md:grid-cols-3 gap-4">
           {[
             { label: 'Fuel Needed', value: `${gallons.toFixed(2)} gallons` },
-            { label: 'Total Cost', value: `$${total.toFixed(2)}` },
-            { label: 'Cost per Mile', value: `$${(total / d).toFixed(3)}` },
+            { label: 'Total Cost', value: formatCurrency(total) },
+            { label: 'Cost per Mile', value: formatCurrency(total / d) },
           ].map(({ label, value }) => (
             <div key={label} className="text-center p-4 bg-primary/10 border border-primary/30 rounded-xl">
               <div className="text-sm text-muted-foreground mb-1">{label}</div>

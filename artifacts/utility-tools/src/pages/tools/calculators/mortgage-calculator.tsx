@@ -3,9 +3,12 @@ import { ToolLayout } from '@/components/ToolLayout';
 import { getToolBySlug } from '@/lib/tools-data';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { CurrencySelector } from '@/components/CurrencySelector';
+import { useCurrencyPreference } from '@/contexts/CurrencyPreferenceContext';
 
 export default function MortgageCalculator() {
   const tool = getToolBySlug('mortgage-calculator')!;
+  const { currencyCode, formatCurrency } = useCurrencyPreference();
   const [home, setHome] = useState('350000');
   const [down, setDown] = useState('70000');
   const [rate, setRate] = useState('7');
@@ -20,6 +23,7 @@ export default function MortgageCalculator() {
 
   return (
     <ToolLayout tool={tool} instructions="Enter home price, down payment, interest rate, and loan term.">
+      <CurrencySelector className="mb-4" />
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="text-sm text-muted-foreground mb-1 block">Home Price ($)</label>
@@ -46,13 +50,13 @@ export default function MortgageCalculator() {
         <div>
           <div className="text-center p-6 bg-primary/10 border border-primary/30 rounded-xl mb-4">
             <div className="text-sm text-muted-foreground mb-1">Monthly Payment</div>
-            <div className="text-5xl font-extrabold text-primary">${monthly.toFixed(2)}</div>
-            <div className="text-sm text-muted-foreground mt-2">Loan: ${principal.toLocaleString()}</div>
+            <div className="text-5xl font-extrabold text-primary">{formatCurrency(monthly)}</div>
+            <div className="text-sm text-muted-foreground mt-2">Loan: {formatCurrency(principal)}</div>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
             {[
-              { label: 'Total Paid', value: `$${total.toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
-              { label: 'Total Interest', value: `$${(total - principal).toLocaleString('en-US', { maximumFractionDigits: 0 })}` },
+              { label: 'Total Paid', value: formatCurrency(total) },
+              { label: 'Total Interest', value: formatCurrency(total - principal) },
               { label: 'Down %', value: `${((parseFloat(down) / parseFloat(home)) * 100).toFixed(1)}%` },
             ].map(({ label, value }) => (
               <div key={label} className="text-center p-4 bg-muted/20 rounded-xl border border-border/30">

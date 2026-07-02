@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { ToolLayout } from '@/components/ToolLayout';
 import { getToolBySlug } from '@/lib/tools-data';
 import { Input } from '@/components/ui/input';
+import { CurrencySelector } from '@/components/CurrencySelector';
+import { useCurrencyPreference } from '@/contexts/CurrencyPreferenceContext';
 
 export default function LoanCalculator() {
   const tool = getToolBySlug('loan-calculator')!;
+  const { currencyCode, formatCurrency } = useCurrencyPreference();
   const [amount, setAmount] = useState('20000');
   const [rate, setRate] = useState('6');
   const [term, setTerm] = useState('60');
@@ -17,6 +20,7 @@ export default function LoanCalculator() {
 
   return (
     <ToolLayout tool={tool} instructions="Enter loan amount, annual interest rate, and term in months to calculate monthly payment.">
+      <CurrencySelector className="mb-6" />
       <div className="grid md:grid-cols-3 gap-4 mb-6">
         <div>
           <label className="text-sm text-muted-foreground mb-1 block">Loan Amount ($)</label>
@@ -35,12 +39,12 @@ export default function LoanCalculator() {
         <div>
           <div className="text-center p-6 bg-primary/10 border border-primary/30 rounded-xl mb-4">
             <div className="text-sm text-muted-foreground mb-1">Monthly Payment</div>
-            <div className="text-5xl font-extrabold text-primary">${monthly.toFixed(2)}</div>
+            <div className="text-5xl font-extrabold text-primary">{formatCurrency(monthly)}</div>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
             {[
-              { label: 'Total Amount Paid', value: `$${totalPaid.toLocaleString('en-US', { maximumFractionDigits: 2 })}` },
-              { label: 'Total Interest', value: `$${totalInterest.toLocaleString('en-US', { maximumFractionDigits: 2 })}` },
+              { label: 'Total Amount Paid', value: formatCurrency(totalPaid) },
+              { label: 'Total Interest', value: formatCurrency(totalInterest) },
               { label: 'Interest Ratio', value: `${((totalInterest / totalPaid) * 100).toFixed(1)}%` },
             ].map(({ label, value }) => (
               <div key={label} className="text-center p-4 bg-muted/20 rounded-xl border border-border/30">
