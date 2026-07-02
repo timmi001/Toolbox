@@ -21,7 +21,7 @@ export default function ProtectPdf() {
       const doc = await PDFDocument.load(bytes);
       // pdf-lib doesn't support encryption natively; we re-save as-is with a note
       const pdfBytes = await doc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes as unknown as Uint8Array<ArrayBuffer>], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = 'protected_' + file.name; a.click();

@@ -114,7 +114,7 @@ export default function PdfEditor() {
       }
 
       const savedBytes = await pdfDoc.save();
-      const blob = new Blob([savedBytes], { type: 'application/pdf' });
+      const blob = new Blob([savedBytes as unknown as Uint8Array<ArrayBuffer>], { type: 'application/pdf' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `${fileName}_edited.pdf`;

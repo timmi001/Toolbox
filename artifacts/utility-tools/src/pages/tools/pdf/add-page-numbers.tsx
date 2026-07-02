@@ -29,7 +29,7 @@ export default function AddPageNumbers() {
         });
       });
       const pdfBytes = await doc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes as unknown as Uint8Array<ArrayBuffer>], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = 'numbered_' + file.name; a.click();

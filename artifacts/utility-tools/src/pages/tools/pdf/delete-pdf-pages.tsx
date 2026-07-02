@@ -41,7 +41,7 @@ export default function DeletePdfPages() {
       const toDelete = parsePages(pagesToDelete, doc.getPageCount());
       toDelete.forEach(i => doc.removePage(i));
       const pdfBytes = await doc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes as unknown as Uint8Array<ArrayBuffer>], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = 'pages_deleted_' + file.name; a.click();

@@ -16,7 +16,7 @@ export default function CurrencyConverter() {
   const tool = getToolBySlug('currency-converter')!;
   const { currencyCode, setCurrencyCode } = useCurrencyPreference();
   const [from, setFrom] = useState('USD');
-  const [to, setTo] = useState(currencyCode);
+  const [to, setTo] = useState<string>(currencyCode);
   const [amount, setAmount] = useState('100');
 
   useEffect(() => {
