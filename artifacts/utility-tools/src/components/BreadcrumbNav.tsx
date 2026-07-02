@@ -13,6 +13,7 @@ const CATEGORY_NAMES: Record<ToolCategory, string> = {
   seo: 'SEO Tools',
   image: 'Image Tools',
   'file-conversion': 'File Conversion Tools',
+  business: 'Business Tools',
   pdf: 'PDF Tools',
   calculators: 'Calculators & Converters',
 };
@@ -23,6 +24,7 @@ const CATEGORY_LINKS: Record<ToolCategory, string> = {
   seo: '/seo-tools',
   image: '/image-tools',
   'file-conversion': '/file-conversion-tools',
+  business: '/business-tools',
   pdf: '/pdf-tools',
   calculators: '/calculators',
 };

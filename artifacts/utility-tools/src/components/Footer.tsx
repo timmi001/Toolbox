@@ -27,6 +27,7 @@ export function Footer() {
               <li><Link href="/seo-tools" className="hover:text-primary transition-colors">SEO Tools</Link></li>
               <li><Link href="/image-tools" className="hover:text-primary transition-colors">Image Tools</Link></li>
               <li><Link href="/file-conversion-tools" className="hover:text-primary transition-colors">File Conversion</Link></li>
+              <li><Link href="/business-tools" className="hover:text-primary transition-colors">Business Tools</Link></li>
               <li><Link href="/pdf-tools" className="hover:text-primary transition-colors">PDF Tools</Link></li>
               <li><Link href="/calculators" className="hover:text-primary transition-colors">Calculators</Link></li>
             </ul>

@@ -13,6 +13,7 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'seo-tools': { title: 'SEO Tools', desc: 'Create meta tags, sitemaps, schema markup, and social preview snippets for better search visibility.' },
   'image-tools': { title: 'Image Tools', desc: 'Compress, crop, resize, and convert images entirely in your browser.' },
   'file-conversion-tools': { title: 'File Conversion Tools', desc: 'Convert documents, archives, spreadsheets, and media formats in a few clicks.' },
+  'business-tools': { title: 'Business Tools', desc: 'Create invoices, receipts, labels, business names, and simple financial insights.' },
   'pdf-tools': { title: 'PDF Tools', desc: 'Merge, split, and manipulate PDF documents securely.' },
   'calculators': { title: 'Calculators & Converters', desc: 'Solve math problems, convert units, and calculate dates.' },
 };
@@ -30,6 +31,7 @@ export default function CategoryPage() {
     categoryPath === 'seo-tools' ? 'seo' :
     categoryPath === 'image-tools' ? 'image' :
     categoryPath === 'file-conversion-tools' ? 'file-conversion' :
+    categoryPath === 'business-tools' ? 'business' :
     categoryPath === 'pdf-tools' ? 'pdf' : 'calculators';
 
   useSEO(

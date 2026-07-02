@@ -1,4 +1,4 @@
-export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'seo' | 'file-conversion';
+export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'seo' | 'file-conversion' | 'business';
 
 export type Tool = {
   slug: string;
@@ -95,6 +95,14 @@ export const toolsData: Tool[] = [
   { slug: 'epub-to-pdf', name: 'EPUB to PDF', description: 'Convert EPUB documents into a polished PDF layout for easy reading and sharing.', category: 'file-conversion', keywords: ['epub', 'pdf', 'convert'], new: true, icon: 'BookOpen' },
   { slug: 'excel-to-csv', name: 'Excel to CSV', description: 'Convert spreadsheet data to CSV format for easier import and analysis.', category: 'file-conversion', keywords: ['excel', 'csv', 'spreadsheet'], new: true, icon: 'FileSpreadsheet' },
   { slug: 'csv-to-json', name: 'CSV to JSON', description: 'Transform CSV data into JSON objects for APIs, apps, and scripts.', category: 'file-conversion', keywords: ['csv', 'json', 'convert'], new: true, icon: 'Braces' },
+
+  // Business Tools
+  { slug: 'invoice-generator', name: 'Invoice Generator', description: 'Create polished invoices with client details, totals, and payment notes.', category: 'business', keywords: ['invoice', 'billing', 'business'], new: true, icon: 'Receipt' },
+  { slug: 'receipt-generator', name: 'Receipt Generator', description: 'Generate clean receipt templates for sales, services, or transactions.', category: 'business', keywords: ['receipt', 'sales', 'payment'], new: true, icon: 'FileText' },
+  { slug: 'barcode-generator', name: 'Barcode Generator', description: 'Generate simple barcodes for product IDs, SKUs, or inventory labels.', category: 'business', keywords: ['barcode', 'product', 'inventory'], new: true, icon: 'ScanLine' },
+  { slug: 'qr-generator', name: 'QR Generator', description: 'Create QR codes for websites, contact cards, and payment links.', category: 'business', keywords: ['qr', 'barcode', 'url'], new: true, icon: 'QrCode' },
+  { slug: 'business-name-generator', name: 'Business Name Generator', description: 'Spark fresh company name ideas with a quick creative generator.', category: 'business', keywords: ['business name', 'branding', 'company'], new: true, icon: 'Building2' },
+  { slug: 'profit-margin-calculator', name: 'Profit Margin Calculator', description: 'Calculate gross profit and margin percentage for products or services.', category: 'business', keywords: ['profit', 'margin', 'business'], new: true, icon: 'TrendingUp' },
 
   // PDF Tools
   { slug: 'merge-pdf', name: 'Merge PDF', description: 'Merge multiple PDF files into one.', category: 'pdf', keywords: ['pdf', 'merge', 'combine'], popular: true, icon: 'Files' },

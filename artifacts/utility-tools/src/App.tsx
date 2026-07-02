@@ -101,6 +101,14 @@ const EpubToPdf = L(() => import("@/pages/tools/file-conversion/epub-to-pdf"));
 const ExcelToCsv = L(() => import("@/pages/tools/file-conversion/excel-to-csv"));
 const CsvToJson = L(() => import("@/pages/tools/file-conversion/csv-to-json"));
 
+// Business Tools
+const InvoiceGenerator = L(() => import("@/pages/tools/business/invoice-generator"));
+const ReceiptGenerator = L(() => import("@/pages/tools/business/receipt-generator"));
+const BarcodeGenerator = L(() => import("@/pages/tools/business/barcode-generator"));
+const QrGenerator = L(() => import("@/pages/tools/business/qr-generator"));
+const BusinessNameGenerator = L(() => import("@/pages/tools/business/business-name-generator"));
+const BusinessProfitMarginCalculator = L(() => import("@/pages/tools/business/profit-margin-calculator"));
+
 // PDF Tools
 const MergePdf = L(() => import("@/pages/tools/pdf/merge-pdf"));
 const SplitPdf = L(() => import("@/pages/tools/pdf/split-pdf"));
@@ -161,6 +169,7 @@ function Router() {
         <Route path="/seo-tools" component={CategoryPage} />
         <Route path="/image-tools" component={CategoryPage} />
         <Route path="/file-conversion-tools" component={CategoryPage} />
+        <Route path="/business-tools" component={CategoryPage} />
         <Route path="/pdf-tools" component={CategoryPage} />
         <Route path="/calculators" component={CategoryPage} />
 
@@ -250,6 +259,14 @@ function Router() {
         <Route path="/tools/file-conversion/epub-to-pdf" component={EpubToPdf} />
         <Route path="/tools/file-conversion/excel-to-csv" component={ExcelToCsv} />
         <Route path="/tools/file-conversion/csv-to-json" component={CsvToJson} />
+
+        {/* Business Tools */}
+        <Route path="/tools/business/invoice-generator" component={InvoiceGenerator} />
+        <Route path="/tools/business/receipt-generator" component={ReceiptGenerator} />
+        <Route path="/tools/business/barcode-generator" component={BarcodeGenerator} />
+        <Route path="/tools/business/qr-generator" component={QrGenerator} />
+        <Route path="/tools/business/business-name-generator" component={BusinessNameGenerator} />
+        <Route path="/tools/business/profit-margin-calculator" component={BusinessProfitMarginCalculator} />
 
         {/* PDF Tools */}
         <Route path="/tools/pdf/merge-pdf" component={MergePdf} />
