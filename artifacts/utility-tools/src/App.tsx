@@ -79,6 +79,8 @@ const SharpenImage = L(() => import("@/pages/tools/image/sharpen-image"));
 const ConvertIco = L(() => import("@/pages/tools/image/convert-ico"));
 const ImageDimensions = L(() => import("@/pages/tools/image/image-dimensions"));
 const ScreenshotFrame = L(() => import("@/pages/tools/image/screenshot-frame"));
+const BgRemover = L(() => import("@/pages/tools/image/bg-remover"));
+const HiResExport = L(() => import("@/pages/tools/image/hi-res-export"));
 
 // PDF Tools
 const MergePdf = L(() => import("@/pages/tools/pdf/merge-pdf"));
@@ -101,6 +103,7 @@ const PdfPageCounter = L(() => import("@/pages/tools/pdf/pdf-page-counter"));
 const PdfPreview = L(() => import("@/pages/tools/pdf/pdf-preview"));
 const PdfOrientation = L(() => import("@/pages/tools/pdf/pdf-orientation"));
 const PdfThumbnail = L(() => import("@/pages/tools/pdf/pdf-thumbnail"));
+const PdfEditor = L(() => import("@/pages/tools/pdf/pdf-editor"));
 
 // Calculator Tools
 const PercentageCalculator = L(() => import("@/pages/tools/calculators/percentage-calculator"));

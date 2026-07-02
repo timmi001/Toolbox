@@ -75,6 +75,8 @@ export const toolsData: Tool[] = [
   { slug: 'convert-ico', name: 'Convert to ICO', description: 'Convert PNG/JPG to ICO format.', category: 'image', keywords: ['ico', 'icon', 'convert'], icon: 'Image' },
   { slug: 'image-dimensions', name: 'Image Dimensions Checker', description: 'Check width, height, and aspect ratio of images.', category: 'image', keywords: ['dimensions', 'size', 'aspect ratio'], icon: 'Maximize' },
   { slug: 'screenshot-frame', name: 'Screenshot Frame Adder', description: 'Add browser or device frames to screenshots.', category: 'image', keywords: ['screenshot', 'frame', 'device'], new: true, icon: 'Monitor' },
+  { slug: 'bg-remover', name: 'Background Remover & Object Eraser', description: 'Remove backgrounds or erase objects from images by clicking on the color to erase. Exports transparent PNG.', category: 'image', keywords: ['background removal', 'transparent', 'object eraser', 'png'], new: true, icon: 'Eraser' },
+  { slug: 'hi-res-export', name: 'High Resolution PNG Export', description: 'Upscale and export images at 2×, 3×, 4×, 6× or 8× resolution as high-quality PNG files.', category: 'image', keywords: ['upscale', 'high resolution', 'png export', 'enlarge'], new: true, icon: 'Maximize2' },
 
   // PDF Tools
   { slug: 'merge-pdf', name: 'Merge PDF', description: 'Merge multiple PDF files into one.', category: 'pdf', keywords: ['pdf', 'merge', 'combine'], popular: true, icon: 'Files' },
@@ -97,6 +99,7 @@ export const toolsData: Tool[] = [
   { slug: 'pdf-preview', name: 'PDF Preview', description: 'Preview PDF pages directly in the browser.', category: 'pdf', keywords: ['pdf', 'preview', 'view'], icon: 'Eye' },
   { slug: 'pdf-orientation', name: 'PDF Orientation Fixer', description: 'Detect and fix incorrect PDF page orientation.', category: 'pdf', keywords: ['pdf', 'orientation', 'rotate'], icon: 'LayoutTemplate' },
   { slug: 'pdf-thumbnail', name: 'PDF Thumbnail Generator', description: 'Generate image thumbnails from PDF files.', category: 'pdf', keywords: ['pdf', 'thumbnail', 'image'], new: true, icon: 'Image' },
+  { slug: 'pdf-editor', name: 'PDF Editor', description: 'Add text annotations to any PDF page and download the edited document.', category: 'pdf', keywords: ['pdf', 'editor', 'annotate', 'text'], new: true, icon: 'PenLine' },
 
   // Calculators & Converters
   { slug: 'percentage-calculator', name: 'Percentage Calculator', description: 'Calculate percentages easily.', category: 'calculators', keywords: ['percentage', 'math', 'calculator'], popular: true, icon: 'Percent' },
