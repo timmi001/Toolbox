@@ -16,6 +16,7 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'business-tools': { title: 'Business Tools', desc: 'Create invoices, receipts, labels, business names, and simple financial insights.' },
   'pdf-tools': { title: 'PDF Tools', desc: 'Merge, split, and manipulate PDF documents securely.' },
   'calculators': { title: 'Calculators & Converters', desc: 'Solve math problems, convert units, and calculate dates.' },
+  'ai-tools': { title: 'AI Tools', desc: 'Powered by Google Gemini — write, summarize, generate code, build resumes, create content, and more with AI.' },
 };
 
 export default function CategoryPage() {
@@ -32,7 +33,8 @@ export default function CategoryPage() {
     categoryPath === 'image-tools' ? 'image' :
     categoryPath === 'file-conversion-tools' ? 'file-conversion' :
     categoryPath === 'business-tools' ? 'business' :
-    categoryPath === 'pdf-tools' ? 'pdf' : 'calculators';
+    categoryPath === 'pdf-tools' ? 'pdf' :
+    categoryPath === 'ai-tools' ? 'ai' : 'calculators';
 
   useSEO(
     details ? `${details.title} | ToolKit` : 'ToolKit',

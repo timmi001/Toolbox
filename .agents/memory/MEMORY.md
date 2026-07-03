@@ -1,0 +1,2 @@
+- [AI tools architecture](ai-tools-architecture.md) — config-driven pattern: one backend route + one shell component + thin page files for all AI tools
+- [CategoryPage extension pattern](category-page-pattern.md) — adding a new category requires updates in 4 places: ToolCategory type, CategoryPage CATEGORY_DETAILS+mapper, BreadcrumbNav maps, ToolCard categoryColors

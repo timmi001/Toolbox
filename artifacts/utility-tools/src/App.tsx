@@ -154,6 +154,36 @@ const GpaCalculator = L(() => import("@/pages/tools/calculators/gpa-calculator")
 const TimezoneConverter = L(() => import("@/pages/tools/calculators/timezone-converter"));
 const BinaryCalculator = L(() => import("@/pages/tools/calculators/binary-calculator"));
 
+// AI Tools
+const AiWriter = L(() => import("@/pages/tools/ai/ai-writer"));
+const AiSummarizer = L(() => import("@/pages/tools/ai/ai-summarizer"));
+const AiParaphraser = L(() => import("@/pages/tools/ai/ai-paraphraser"));
+const AiGrammarChecker = L(() => import("@/pages/tools/ai/ai-grammar-checker"));
+const AiHumanizer = L(() => import("@/pages/tools/ai/ai-humanizer"));
+const AiEmailWriter = L(() => import("@/pages/tools/ai/ai-email-writer"));
+const AiResumeBuilder = L(() => import("@/pages/tools/ai/ai-resume-builder"));
+const AiCoverLetter = L(() => import("@/pages/tools/ai/ai-cover-letter"));
+const AiBusinessName = L(() => import("@/pages/tools/ai/ai-business-name"));
+const AiSloganGenerator = L(() => import("@/pages/tools/ai/ai-slogan-generator"));
+const AiProductDescription = L(() => import("@/pages/tools/ai/ai-product-description"));
+const AiSeoTitle = L(() => import("@/pages/tools/ai/ai-seo-title"));
+const AiMetaDescription = L(() => import("@/pages/tools/ai/ai-meta-description"));
+const AiKeywordGenerator = L(() => import("@/pages/tools/ai/ai-keyword-generator"));
+const AiSqlGenerator = L(() => import("@/pages/tools/ai/ai-sql-generator"));
+const AiRegexGenerator = L(() => import("@/pages/tools/ai/ai-regex-generator"));
+const AiCodeExplainer = L(() => import("@/pages/tools/ai/ai-code-explainer"));
+const AiCodeReviewer = L(() => import("@/pages/tools/ai/ai-code-reviewer"));
+const AiBugFinder = L(() => import("@/pages/tools/ai/ai-bug-finder"));
+const AiJsonFormatter = L(() => import("@/pages/tools/ai/ai-json-formatter"));
+const AiStudyNotes = L(() => import("@/pages/tools/ai/ai-study-notes"));
+const AiQuizGenerator = L(() => import("@/pages/tools/ai/ai-quiz-generator"));
+const AiFlashcardGenerator = L(() => import("@/pages/tools/ai/ai-flashcard-generator"));
+const AiInterviewQuestions = L(() => import("@/pages/tools/ai/ai-interview-questions"));
+const AiMeetingNotes = L(() => import("@/pages/tools/ai/ai-meeting-notes"));
+const AiHashtagGenerator = L(() => import("@/pages/tools/ai/ai-hashtag-generator"));
+const AiYoutubeTitle = L(() => import("@/pages/tools/ai/ai-youtube-title"));
+const AiInstagramCaption = L(() => import("@/pages/tools/ai/ai-instagram-caption"));
+
 const queryClient = new QueryClient();
 
 function Router() {
@@ -172,6 +202,7 @@ function Router() {
         <Route path="/business-tools" component={CategoryPage} />
         <Route path="/pdf-tools" component={CategoryPage} />
         <Route path="/calculators" component={CategoryPage} />
+        <Route path="/ai-tools" component={CategoryPage} />
 
         {/* Blog */}
         <Route path="/blog" component={BlogIndex} />
@@ -312,6 +343,36 @@ function Router() {
         <Route path="/tools/calculators/gpa-calculator" component={GpaCalculator} />
         <Route path="/tools/calculators/timezone-converter" component={TimezoneConverter} />
         <Route path="/tools/calculators/binary-calculator" component={BinaryCalculator} />
+
+        {/* AI Tools */}
+        <Route path="/tools/ai/ai-writer" component={AiWriter} />
+        <Route path="/tools/ai/ai-summarizer" component={AiSummarizer} />
+        <Route path="/tools/ai/ai-paraphraser" component={AiParaphraser} />
+        <Route path="/tools/ai/ai-grammar-checker" component={AiGrammarChecker} />
+        <Route path="/tools/ai/ai-humanizer" component={AiHumanizer} />
+        <Route path="/tools/ai/ai-email-writer" component={AiEmailWriter} />
+        <Route path="/tools/ai/ai-resume-builder" component={AiResumeBuilder} />
+        <Route path="/tools/ai/ai-cover-letter" component={AiCoverLetter} />
+        <Route path="/tools/ai/ai-business-name" component={AiBusinessName} />
+        <Route path="/tools/ai/ai-slogan-generator" component={AiSloganGenerator} />
+        <Route path="/tools/ai/ai-product-description" component={AiProductDescription} />
+        <Route path="/tools/ai/ai-seo-title" component={AiSeoTitle} />
+        <Route path="/tools/ai/ai-meta-description" component={AiMetaDescription} />
+        <Route path="/tools/ai/ai-keyword-generator" component={AiKeywordGenerator} />
+        <Route path="/tools/ai/ai-sql-generator" component={AiSqlGenerator} />
+        <Route path="/tools/ai/ai-regex-generator" component={AiRegexGenerator} />
+        <Route path="/tools/ai/ai-code-explainer" component={AiCodeExplainer} />
+        <Route path="/tools/ai/ai-code-reviewer" component={AiCodeReviewer} />
+        <Route path="/tools/ai/ai-bug-finder" component={AiBugFinder} />
+        <Route path="/tools/ai/ai-json-formatter" component={AiJsonFormatter} />
+        <Route path="/tools/ai/ai-study-notes" component={AiStudyNotes} />
+        <Route path="/tools/ai/ai-quiz-generator" component={AiQuizGenerator} />
+        <Route path="/tools/ai/ai-flashcard-generator" component={AiFlashcardGenerator} />
+        <Route path="/tools/ai/ai-interview-questions" component={AiInterviewQuestions} />
+        <Route path="/tools/ai/ai-meeting-notes" component={AiMeetingNotes} />
+        <Route path="/tools/ai/ai-hashtag-generator" component={AiHashtagGenerator} />
+        <Route path="/tools/ai/ai-youtube-title" component={AiYoutubeTitle} />
+        <Route path="/tools/ai/ai-instagram-caption" component={AiInstagramCaption} />
 
         <Route component={NotFound} />
       </Switch>
