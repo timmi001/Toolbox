@@ -1,9 +1,10 @@
 import { Link } from 'wouter';
-import { Type, Code, Image as ImageIcon, FileText, Calculator, Search, FileStack, Briefcase } from 'lucide-react';
+import { Type, Code, Image as ImageIcon, FileText, Calculator, Search, FileStack, Briefcase, Sparkles } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { getToolsByCategory } from '@/lib/tools-data';
 
 const CATEGORIES = [
+  { id: 'ai', name: 'AI Tools', icon: Sparkles, path: '/ai-tools', desc: 'Write, summarize, generate code, and more — powered by Gemini.', highlight: true },
   { id: 'text', name: 'Text Tools', icon: Type, path: '/text-tools', desc: 'Format, count, and clean text effortlessly.' },
   { id: 'developer', name: 'Developer Tools', icon: Code, path: '/developer-tools', desc: 'JSON, Base64, Hash, and more dev utilities.' },
   { id: 'seo', name: 'SEO Tools', icon: Search, path: '/seo-tools', desc: 'Generate meta tags, sitemaps, schema, and social previews.' },
@@ -23,16 +24,16 @@ export function CategoryGrid() {
 
         return (
           <Link key={cat.id} href={cat.path}>
-            <Card className="h-full hover:border-primary/50 transition-colors bg-card/40 backdrop-blur-sm group cursor-pointer border-border/50">
+            <Card className={`h-full transition-colors backdrop-blur-sm group cursor-pointer ${(cat as any).highlight ? 'border-purple-500/40 bg-purple-500/5 hover:border-purple-500/70 hover:bg-purple-500/10' : 'hover:border-primary/50 bg-card/40 border-border/50'}`}>
               <CardHeader className="p-6">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300 ${(cat as any).highlight ? 'bg-purple-500/15 text-purple-500 group-hover:bg-purple-500 group-hover:text-white' : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground'}`}>
                   <Icon className="w-6 h-6" />
                 </div>
-                <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">{cat.name}</CardTitle>
+                <CardTitle className={`text-xl mb-2 transition-colors ${(cat as any).highlight ? 'group-hover:text-purple-500' : 'group-hover:text-primary'}`}>{cat.name}</CardTitle>
                 <CardDescription className="text-sm mb-4">
                   {cat.desc}
                 </CardDescription>
-                <div className="text-xs font-semibold text-primary/80 bg-primary/10 inline-block px-2 py-1 rounded">
+                <div className={`text-xs font-semibold inline-block px-2 py-1 rounded ${(cat as any).highlight ? 'text-purple-500/90 bg-purple-500/10' : 'text-primary/80 bg-primary/10'}`}>
                   {count} Tools
                 </div>
               </CardHeader>

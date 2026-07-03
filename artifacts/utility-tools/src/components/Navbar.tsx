@@ -1,10 +1,11 @@
 import { Link } from 'wouter';
-import { Menu } from 'lucide-react';
+import { Menu, Sparkles } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const NAV_LINKS = [
+  { name: 'AI Tools', href: '/ai-tools', highlight: true },
   { name: 'Calculators', href: '/calculators' },
   { name: 'PDF Tools', href: '/pdf-tools' },
   { name: 'Image Tools', href: '/image-tools' },
@@ -35,9 +36,14 @@ export function Navbar() {
 
         <nav className="hidden lg:flex items-center gap-6">
           {NAV_LINKS.map(link => (
-            <Link key={link.href} href={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              {link.name}
-            </Link>
+            link.highlight
+              ? <Link key={link.href} href={link.href} className="flex items-center gap-1.5 text-sm font-semibold text-purple-500 hover:text-purple-600 transition-colors">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {link.name}
+                </Link>
+              : <Link key={link.href} href={link.href} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  {link.name}
+                </Link>
           ))}
         </nav>
 
