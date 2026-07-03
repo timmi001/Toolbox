@@ -90,7 +90,6 @@ export const toolsData: Tool[] = [
 
   // File Conversion Tools
   { slug: 'mp4-to-mp3', name: 'MP4 to MP3', description: 'Convert video files to audio-only MP3 format for podcasts, voice notes, and music extraction.', category: 'file-conversion', keywords: ['video', 'audio', 'mp3', 'convert'], new: true, icon: 'Music' },
-  { slug: 'zip-extractor', name: 'ZIP Extractor', description: 'Extract ZIP archives and browse the file contents directly in your browser.', category: 'file-conversion', keywords: ['zip', 'archive', 'extract'], new: true, icon: 'Archive' },
   { slug: 'file-compressor', name: 'File Compressor', description: 'Compress files into smaller archives with a simple drag-and-drop workflow.', category: 'file-conversion', keywords: ['compress', 'archive', 'zip'], new: true, icon: 'FileArchive' },
   { slug: 'epub-to-pdf', name: 'EPUB to PDF', description: 'Convert EPUB documents into a polished PDF layout for easy reading and sharing.', category: 'file-conversion', keywords: ['epub', 'pdf', 'convert'], new: true, icon: 'BookOpen' },
   { slug: 'excel-to-csv', name: 'Excel to CSV', description: 'Convert spreadsheet data to CSV format for easier import and analysis.', category: 'file-conversion', keywords: ['excel', 'csv', 'spreadsheet'], new: true, icon: 'FileSpreadsheet' },
@@ -100,8 +99,6 @@ export const toolsData: Tool[] = [
   { slug: 'invoice-generator', name: 'Invoice Generator', description: 'Create polished invoices with client details, totals, and payment notes.', category: 'business', keywords: ['invoice', 'billing', 'business'], new: true, icon: 'Receipt' },
   { slug: 'receipt-generator', name: 'Receipt Generator', description: 'Generate clean receipt templates for sales, services, or transactions.', category: 'business', keywords: ['receipt', 'sales', 'payment'], new: true, icon: 'FileText' },
   { slug: 'barcode-generator', name: 'Barcode Generator', description: 'Generate simple barcodes for product IDs, SKUs, or inventory labels.', category: 'business', keywords: ['barcode', 'product', 'inventory'], new: true, icon: 'ScanLine' },
-  { slug: 'qr-generator', name: 'QR Generator', description: 'Create QR codes for websites, contact cards, and payment links.', category: 'business', keywords: ['qr', 'barcode', 'url'], new: true, icon: 'QrCode' },
-  { slug: 'business-name-generator', name: 'Business Name Generator', description: 'Spark fresh company name ideas with a quick creative generator.', category: 'business', keywords: ['business name', 'branding', 'company'], new: true, icon: 'Building2' },
   { slug: 'profit-margin-calculator', name: 'Profit Margin Calculator', description: 'Calculate gross profit and margin percentage for products or services.', category: 'business', keywords: ['profit', 'margin', 'business'], new: true, icon: 'TrendingUp' },
 
   // PDF Tools
@@ -125,7 +122,6 @@ export const toolsData: Tool[] = [
   { slug: 'pdf-preview', name: 'PDF Preview', description: 'Preview PDF pages directly in the browser.', category: 'pdf', keywords: ['pdf', 'preview', 'view'], icon: 'Eye' },
   { slug: 'pdf-orientation', name: 'PDF Orientation Fixer', description: 'Detect and fix incorrect PDF page orientation.', category: 'pdf', keywords: ['pdf', 'orientation', 'rotate'], icon: 'LayoutTemplate' },
   { slug: 'pdf-thumbnail', name: 'PDF Thumbnail Generator', description: 'Generate image thumbnails from PDF files.', category: 'pdf', keywords: ['pdf', 'thumbnail', 'image'], new: true, icon: 'Image' },
-  { slug: 'pdf-editor', name: 'PDF Editor', description: 'Add text annotations to any PDF page and download the edited document.', category: 'pdf', keywords: ['pdf', 'editor', 'annotate', 'text'], new: true, icon: 'PenLine' },
 
   // AI Tools
   { slug: 'ai-writer', name: 'AI Writer', description: 'Generate high-quality articles, blog posts, and content on any topic using AI.', category: 'ai', keywords: ['ai', 'writer', 'content', 'article', 'generator'], new: true, icon: 'PenSquare' },

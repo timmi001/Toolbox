@@ -95,7 +95,6 @@ const HiResExport = L(() => import("@/pages/tools/image/hi-res-export"));
 
 // File Conversion Tools
 const Mp4ToMp3 = L(() => import("@/pages/tools/file-conversion/mp4-to-mp3"));
-const ZipExtractor = L(() => import("@/pages/tools/file-conversion/zip-extractor"));
 const FileCompressor = L(() => import("@/pages/tools/file-conversion/file-compressor"));
 const EpubToPdf = L(() => import("@/pages/tools/file-conversion/epub-to-pdf"));
 const ExcelToCsv = L(() => import("@/pages/tools/file-conversion/excel-to-csv"));
@@ -105,8 +104,6 @@ const CsvToJson = L(() => import("@/pages/tools/file-conversion/csv-to-json"));
 const InvoiceGenerator = L(() => import("@/pages/tools/business/invoice-generator"));
 const ReceiptGenerator = L(() => import("@/pages/tools/business/receipt-generator"));
 const BarcodeGenerator = L(() => import("@/pages/tools/business/barcode-generator"));
-const QrGenerator = L(() => import("@/pages/tools/business/qr-generator"));
-const BusinessNameGenerator = L(() => import("@/pages/tools/business/business-name-generator"));
 const BusinessProfitMarginCalculator = L(() => import("@/pages/tools/business/profit-margin-calculator"));
 
 // PDF Tools
@@ -130,7 +127,6 @@ const PdfPageCounter = L(() => import("@/pages/tools/pdf/pdf-page-counter"));
 const PdfPreview = L(() => import("@/pages/tools/pdf/pdf-preview"));
 const PdfOrientation = L(() => import("@/pages/tools/pdf/pdf-orientation"));
 const PdfThumbnail = L(() => import("@/pages/tools/pdf/pdf-thumbnail"));
-const PdfEditor = L(() => import("@/pages/tools/pdf/pdf-editor"));
 
 // Calculator Tools
 const PercentageCalculator = L(() => import("@/pages/tools/calculators/percentage-calculator"));
@@ -285,7 +281,6 @@ function Router() {
 
         {/* File Conversion Tools */}
         <Route path="/tools/file-conversion/mp4-to-mp3" component={Mp4ToMp3} />
-        <Route path="/tools/file-conversion/zip-extractor" component={ZipExtractor} />
         <Route path="/tools/file-conversion/file-compressor" component={FileCompressor} />
         <Route path="/tools/file-conversion/epub-to-pdf" component={EpubToPdf} />
         <Route path="/tools/file-conversion/excel-to-csv" component={ExcelToCsv} />
@@ -295,8 +290,6 @@ function Router() {
         <Route path="/tools/business/invoice-generator" component={InvoiceGenerator} />
         <Route path="/tools/business/receipt-generator" component={ReceiptGenerator} />
         <Route path="/tools/business/barcode-generator" component={BarcodeGenerator} />
-        <Route path="/tools/business/qr-generator" component={QrGenerator} />
-        <Route path="/tools/business/business-name-generator" component={BusinessNameGenerator} />
         <Route path="/tools/business/profit-margin-calculator" component={BusinessProfitMarginCalculator} />
 
         {/* PDF Tools */}
@@ -320,7 +313,6 @@ function Router() {
         <Route path="/tools/pdf/pdf-preview" component={PdfPreview} />
         <Route path="/tools/pdf/pdf-orientation" component={PdfOrientation} />
         <Route path="/tools/pdf/pdf-thumbnail" component={PdfThumbnail} />
-        <Route path="/tools/pdf/pdf-editor" component={PdfEditor} />
 
         {/* Calculator Tools */}
         <Route path="/tools/calculators/percentage-calculator" component={PercentageCalculator} />
