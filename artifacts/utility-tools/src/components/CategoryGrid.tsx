@@ -24,16 +24,16 @@ export function CategoryGrid() {
 
         return (
           <Link key={cat.id} href={cat.path}>
-            <Card className={`h-full transition-colors backdrop-blur-sm group cursor-pointer ${(cat as any).highlight ? 'border-purple-500/40 bg-purple-500/5 hover:border-purple-500/70 hover:bg-purple-500/10' : 'hover:border-primary/50 bg-card/40 border-border/50'}`}>
+            <Card className="h-full transition-colors backdrop-blur-sm group cursor-pointer hover:border-primary/50 bg-card/40 border-border/50">
               <CardHeader className="p-6">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300 ${(cat as any).highlight ? 'bg-purple-500/15 text-purple-500 group-hover:bg-purple-500 group-hover:text-white' : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground'}`}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300 bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon className="w-6 h-6" />
                 </div>
-                <CardTitle className={`text-xl mb-2 transition-colors ${(cat as any).highlight ? 'group-hover:text-purple-500' : 'group-hover:text-primary'}`}>{cat.name}</CardTitle>
+                <CardTitle className="text-xl mb-2 transition-colors group-hover:text-primary">{cat.name}</CardTitle>
                 <CardDescription className="text-sm mb-4">
                   {cat.desc}
                 </CardDescription>
-                <div className={`text-xs font-semibold inline-block px-2 py-1 rounded ${(cat as any).highlight ? 'text-purple-500/90 bg-purple-500/10' : 'text-primary/80 bg-primary/10'}`}>
+                <div className="text-xs font-semibold inline-block px-2 py-1 rounded text-primary/80 bg-primary/10">
                   {count} Tools
                 </div>
               </CardHeader>
