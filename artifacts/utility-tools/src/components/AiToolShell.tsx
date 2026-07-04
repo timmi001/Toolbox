@@ -13,7 +13,24 @@ interface AiToolShellProps {
 
 export function AiToolShell({ tool }: AiToolShellProps) {
   const config = getAiToolConfig(tool.slug);
-  const [inputs, setInputs] = useState<Record<string, string>>({});
+
+  // Initialise select fields to their first option so they are never undefined.
+  // Without this, a required select field keeps `inputs[key]` as undefined even
+  // though the UI already shows the first option — which permanently disables
+  // the generate button.
+  const defaultInputs = (): Record<string, string> => {
+    const defaults: Record<string, string> = {};
+    if (config) {
+      for (const field of config.fields) {
+        if (field.type === 'select' && field.options?.[0]) {
+          defaults[field.key] = field.options[0];
+        }
+      }
+    }
+    return defaults;
+  };
+
+  const [inputs, setInputs] = useState<Record<string, string>>(defaultInputs);
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -79,7 +96,7 @@ export function AiToolShell({ tool }: AiToolShellProps) {
   }
 
   function reset() {
-    setInputs({});
+    setInputs(defaultInputs());
     setResult('');
     setError('');
   }
