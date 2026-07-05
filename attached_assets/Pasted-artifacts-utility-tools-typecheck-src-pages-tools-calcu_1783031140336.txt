@@ -1,0 +1,24 @@
+artifacts/utility-tools typecheck: src/pages/tools/calculators/currency-converter.tsx(30,11): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"USD" | "EUR" | "GBP" | "JPY" | "CAD" | "AUD" | "CHF" | "CNY" | "INR" | "BRL" | "MXN" | "KRW" | "SGD" | "HKD" | "NOK" | "SEK" | "DKK" | "NZD" | "ZAR" | "RUB" | "TRY" | "SAR" | "AED" | "PLN">'.
+artifacts/utility-tools typecheck: src/pages/tools/pdf/add-page-numbers.tsx(32,30): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+
+artifacts/utility-tools typecheck: src/pages/tools/pdf/compress-pdf.tsx(24,30): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+
+artifacts/utility-tools typecheck: src/pages/tools/pdf/delete-pdf-pages.tsx(44,30): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+
+artifacts/utility-tools typecheck: src/pages/tools/pdf/jpg-to-pdf.tsx(25,30): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+
+artifacts/utility-tools typecheck: src/pages/tools/pdf/merge-pdf.tsx(33,30): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+
+artifacts/utility-tools typecheck: src/pages/tools/pdf/pdf-editor.tsx(117,30): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+
+artifacts/utility-tools typecheck: src/pages/tools/pdf/rotate-pdf.tsx(22,30): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+
+artifacts/utility-tools typecheck: src/pages/tools/pdf/unlock-pdf.tsx(21,51): error TS2353: Object literal may only specify known properties, and 'password' does not exist in type 'LoadOptions'.
+artifacts/utility-tools typecheck: src/pages/tools/pdf/unlock-pdf.tsx(23,30): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/utility-tools@0.0.0 typecheck: `tsc -p tsconfig.json --noEmit`
+
+
+ ELIFECYCLE  Command failed with exit code 2.
+ ELIFECYCLE  Command failed with exit code 2.
+Error: Command "pnpm run build" exited with 2

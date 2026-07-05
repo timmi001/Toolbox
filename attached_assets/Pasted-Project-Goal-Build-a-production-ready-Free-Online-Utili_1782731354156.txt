@@ -1,0 +1,306 @@
+Project Goal
+
+Build a production-ready Free Online Utility Tools website similar in quality to TinyWow, RapidTables, and iLovePDF.
+
+The website must contain 100 fully functional utility tools that require NO AI API.
+
+Every tool must be fully operational using JavaScript, browser APIs, or standard backend logic where needed.
+
+The website should be designed for SEO, speed, scalability, and Google AdSense monetization.
+
+Theme:
+
+Black background
+Jovial Jade (#00A86B) accent color
+Modern premium UI
+Mobile-first
+Extremely fast
+
+⸻
+
+Homepage
+
+Create:
+
+Hero section
+Large search bar
+Trending tools
+Popular tools
+Newly added tools
+Categories grid
+Recently used tools
+Blog section
+FAQ
+Newsletter section
+Footer
+
+⸻
+
+Navigation
+
+Home
+
+Calculators
+
+PDF Tools
+
+Image Tools
+
+Developer Tools
+
+Text Tools
+
+Generators
+
+Converters
+
+Blog
+
+⸻
+
+CATEGORY 1 — TEXT TOOLS (20)
+
+Build:
+
+Word Counter
+Character Counter
+Line Counter
+Paragraph Counter
+Reading Time Calculator
+Case Converter
+Remove Duplicate Lines
+Alphabetical Sorter
+Reverse Text
+Random Text Generator
+Lorem Ipsum Generator
+Slug Generator
+URL Encoder
+URL Decoder
+Text Cleaner
+Whitespace Remover
+Duplicate Word Finder
+Keyword Density Checker
+HTML Stripper
+Markdown Preview
+
+⸻
+
+CATEGORY 2 — DEVELOPER TOOLS (20)
+
+Build:
+
+JSON Formatter
+JSON Validator
+JSON Minifier
+JSON Beautifier
+Base64 Encode
+Base64 Decode
+UUID Generator
+MD5 Generator
+SHA256 Generator
+Unix Timestamp Converter
+Regex Tester
+HTML Encoder
+HTML Decoder
+URL Parser
+CSS Gradient Generator
+HEX to RGB
+RGB to HEX
+Color Picker
+JWT Decoder
+QR Code Generator
+
+⸻
+
+CATEGORY 3 — IMAGE TOOLS (20)
+
+Build:
+
+Image Compressor
+Image Resizer
+Crop Image
+Rotate Image
+Flip Image
+JPG to PNG
+PNG to JPG
+PNG to WebP
+WebP to PNG
+Image to Base64
+Base64 to Image
+SVG Viewer
+Favicon Generator
+Image Metadata Viewer
+Dominant Color Extractor
+Blur Image
+Sharpen Image
+Convert ICO
+Image Dimensions Checker
+Screenshot Frame Generator
+
+⸻
+
+CATEGORY 4 — PDF TOOLS (20)
+
+Build:
+
+Merge PDF
+Split PDF
+Compress PDF
+Rotate PDF
+Delete PDF Pages
+Rearrange PDF Pages
+PDF to JPG
+JPG to PDF
+PNG to PDF
+PDF Page Extractor
+Watermark PDF
+Unlock PDF
+Protect PDF
+Add Page Numbers
+PDF Metadata Viewer
+PDF Size Checker
+PDF Page Counter
+PDF Preview
+PDF Orientation Fixer
+PDF Thumbnail Generator
+
+⸻
+
+CATEGORY 5 — CALCULATORS & CONVERTERS (20)
+
+Build:
+
+Percentage Calculator
+Age Calculator
+BMI Calculator
+Date Difference Calculator
+Time Duration Calculator
+Unit Converter
+Currency Converter
+Discount Calculator
+Profit Margin Calculator
+Compound Interest Calculator
+Loan Calculator
+Mortgage Calculator
+Fuel Cost Calculator
+VAT Calculator
+Tip Calculator
+Average Calculator
+Scientific Calculator
+GPA Calculator
+Time Zone Converter
+Binary Calculator
+
+⸻
+
+Every Tool Page Must Include
+
+SEO-friendly URL
+Tool title
+Tool description
+Instructions
+Input fields
+Output fields
+Copy button
+Download button (where applicable)
+Reset button
+Share button
+Related tools
+FAQ
+Breadcrumb navigation
+Structured data
+
+⸻
+
+Global Search
+
+Search by:
+
+Tool name
+Category
+Keywords
+Aliases
+
+Include instant autocomplete.
+
+⸻
+
+SEO
+
+Automatically generate:
+
+Meta title
+Meta description
+Canonical URL
+Sitemap
+robots.txt
+Open Graph
+Twitter Cards
+Breadcrumb Schema
+FAQ Schema
+Tool Schema
+
+⸻
+
+Performance
+
+Lazy loading
+Dynamic imports
+Image optimization
+Code splitting
+Core Web Vitals optimized
+Fast page loading
+Mobile-first responsive design
+
+⸻
+
+Advertisement Ready
+
+Prepare advertisement locations for:
+
+Header banner
+Sidebar
+In-content ads
+Sticky mobile footer
+Bottom banner
+
+Ads should be lazy-loaded and prevent layout shifts.
+
+Compatible with:
+
+Google AdSense
+Journey by Mediavine
+Raptive
+
+⸻
+
+Analytics
+
+Prepare integration support for:
+
+Google Analytics 4
+Google Search Console verification
+Microsoft Clarity
+
+Store IDs in environment variables.
+
+⸻
+
+Technical Stack
+
+Use:
+
+Next.js
+React
+TypeScript
+Tailwind CSS
+Node.js
+Modular architecture
+Reusable components
+Accessibility (WCAG AA)
+
+⸻
+
+Code Quality
+
+Generate production-ready, well-documented, reusable code. Use shared components so new tools can be added quickly without duplicating code.

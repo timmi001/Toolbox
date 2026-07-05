@@ -1,36 +1,40 @@
-# [Project name]
+# Free Online Utility Tools
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A hub of 100+ free browser-based utility tools — text, developer, image, PDF, calculator, business, SEO, and AI-powered tools — built on Replit.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- Workflows start automatically: `artifacts/utility-tools: web` (frontend) and `artifacts/api-server: API Server` (backend)
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/utility-tools run typecheck` — typecheck frontend only
+- Required env: `GEMINI_API_KEY` — Google Gemini API key (for AI tools at `/tools/ai/*`)
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Frontend: React + Vite, Tailwind CSS v4, Wouter (routing), TanStack Query
+- Backend: Express 5, `@google/genai` (Gemini 2.5 Flash), `express-rate-limit`
+- UI: Radix UI primitives, Lucide React icons, shadcn/ui components
+- PDF tools: `pdf-lib`, `pdfjs-dist`; QR tools: `qrcode`; ZIP: `jszip`
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/utility-tools/src/App.tsx` — all routes (100+ tool pages via Wouter)
+- `artifacts/utility-tools/src/pages/` — page components by category (`tools/`, `blog/`)
+- `artifacts/utility-tools/src/components/` — shared layout, tool shell, UI primitives
+- `artifacts/api-server/src/routes/ai.ts` — AI generation endpoint (`POST /api/ai/generate`)
+- `artifacts/api-server/src/routes/health.ts` — health check (`GET /api/healthz`)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- All tools run client-side in the browser; no user data hits the server except AI prompts.
+- AI tools share a single Express endpoint (`/api/ai/generate`) with per-tool prompt builders and input validation, rate-limited to 20 req/min per IP.
+- Routing is flat Wouter routes in `App.tsx` — no Next.js file-based routing.
+- Tailwind CSS v4 with custom theme tokens in `src/index.css` (Inter font, HSL color system).
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+100+ free tools across 8 categories: AI Tools, Text Tools, Developer Tools, Image Tools, PDF Tools, Business Tools, Calculator Tools, and SEO Tools. Also includes a Blog section.
 
 ## User preferences
 
@@ -38,8 +42,12 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- AI tools require `GEMINI_API_KEY` secret. Without it, the backend returns 503.
+- `pdfjs-dist` version was bumped to v6 during install — test PDF tools if issues arise.
+- Do not run `pnpm dev` at the workspace root — use the managed workflows instead.
 
 ## Pointers
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+- Frontend routes are in `artifacts/utility-tools/src/App.tsx`.
+- AI prompts are in `artifacts/api-server/src/routes/ai.ts` (`buildPrompt` function).
