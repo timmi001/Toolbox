@@ -150,6 +150,27 @@ const GpaCalculator = L(() => import("@/pages/tools/calculators/gpa-calculator")
 const TimezoneConverter = L(() => import("@/pages/tools/calculators/timezone-converter"));
 const BinaryCalculator = L(() => import("@/pages/tools/calculators/binary-calculator"));
 
+// Audio Tools
+const Mp3Converter = L(() => import("@/pages/tools/audio/mp3-converter"));
+const AudioTrimmer = L(() => import("@/pages/tools/audio/audio-trimmer"));
+const VolumeBooster = L(() => import("@/pages/tools/audio/volume-booster"));
+const VoiceRecorder = L(() => import("@/pages/tools/audio/voice-recorder"));
+const AudioMerger = L(() => import("@/pages/tools/audio/audio-merger"));
+const NoiseRemover = L(() => import("@/pages/tools/audio/noise-remover"));
+const TextToSpeech = L(() => import("@/pages/tools/audio/text-to-speech"));
+const SpeechToText = L(() => import("@/pages/tools/audio/speech-to-text"));
+
+// Video Tools
+const VideoConverter = L(() => import("@/pages/tools/video/video-converter"));
+const VideoCompressor = L(() => import("@/pages/tools/video/video-compressor"));
+const VideoTrimmer = L(() => import("@/pages/tools/video/video-trimmer"));
+const MergeVideos = L(() => import("@/pages/tools/video/merge-videos"));
+const ExtractAudio = L(() => import("@/pages/tools/video/extract-audio"));
+const RotateCropVideo = L(() => import("@/pages/tools/video/rotate-crop-video"));
+const AddSubtitles = L(() => import("@/pages/tools/video/add-subtitles"));
+const ChangeVideoSpeed = L(() => import("@/pages/tools/video/change-video-speed"));
+const GifMaker = L(() => import("@/pages/tools/video/gif-maker"));
+
 // AI Tools
 const AiWriter = L(() => import("@/pages/tools/ai/ai-writer"));
 const AiSummarizer = L(() => import("@/pages/tools/ai/ai-summarizer"));
@@ -199,6 +220,8 @@ function Router() {
         <Route path="/pdf-tools" component={CategoryPage} />
         <Route path="/calculators" component={CategoryPage} />
         <Route path="/ai-tools" component={CategoryPage} />
+        <Route path="/audio-tools" component={CategoryPage} />
+        <Route path="/video-tools" component={CategoryPage} />
 
         {/* Blog */}
         <Route path="/blog" component={BlogIndex} />
@@ -365,6 +388,27 @@ function Router() {
         <Route path="/tools/ai/ai-hashtag-generator" component={AiHashtagGenerator} />
         <Route path="/tools/ai/ai-youtube-title" component={AiYoutubeTitle} />
         <Route path="/tools/ai/ai-instagram-caption" component={AiInstagramCaption} />
+
+        {/* Audio Tools */}
+        <Route path="/tools/audio/mp3-converter" component={Mp3Converter} />
+        <Route path="/tools/audio/audio-trimmer" component={AudioTrimmer} />
+        <Route path="/tools/audio/volume-booster" component={VolumeBooster} />
+        <Route path="/tools/audio/voice-recorder" component={VoiceRecorder} />
+        <Route path="/tools/audio/audio-merger" component={AudioMerger} />
+        <Route path="/tools/audio/noise-remover" component={NoiseRemover} />
+        <Route path="/tools/audio/text-to-speech" component={TextToSpeech} />
+        <Route path="/tools/audio/speech-to-text" component={SpeechToText} />
+
+        {/* Video Tools */}
+        <Route path="/tools/video/video-converter" component={VideoConverter} />
+        <Route path="/tools/video/video-compressor" component={VideoCompressor} />
+        <Route path="/tools/video/video-trimmer" component={VideoTrimmer} />
+        <Route path="/tools/video/merge-videos" component={MergeVideos} />
+        <Route path="/tools/video/extract-audio" component={ExtractAudio} />
+        <Route path="/tools/video/rotate-crop-video" component={RotateCropVideo} />
+        <Route path="/tools/video/add-subtitles" component={AddSubtitles} />
+        <Route path="/tools/video/change-video-speed" component={ChangeVideoSpeed} />
+        <Route path="/tools/video/gif-maker" component={GifMaker} />
 
         <Route component={NotFound} />
       </Switch>

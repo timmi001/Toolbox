@@ -18,6 +18,8 @@ const categoryColors: Record<ToolCategory, { bubble: string; hover: string; titl
   'file-conversion': { bubble: 'bg-indigo-500/10 text-indigo-500', hover: 'group-hover:bg-indigo-500 group-hover:text-white', title: 'group-hover:text-indigo-500' },
   business:        { bubble: 'bg-emerald-500/10 text-emerald-500', hover: 'group-hover:bg-emerald-500 group-hover:text-white', title: 'group-hover:text-emerald-500' },
   ai:              { bubble: 'bg-purple-500/10 text-purple-500',  hover: 'group-hover:bg-purple-500 group-hover:text-white',  title: 'group-hover:text-purple-500' },
+  audio:           { bubble: 'bg-orange-500/10 text-orange-500', hover: 'group-hover:bg-orange-500 group-hover:text-white',  title: 'group-hover:text-orange-500' },
+  video:           { bubble: 'bg-cyan-500/10 text-cyan-500',     hover: 'group-hover:bg-cyan-500 group-hover:text-white',    title: 'group-hover:text-cyan-500' },
 };
 
 export function ToolCard({ tool }: ToolCardProps) {

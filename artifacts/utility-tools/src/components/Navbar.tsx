@@ -6,13 +6,12 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const NAV_LINKS = [
   { name: 'AI Tools', href: '/ai-tools', highlight: true },
-  { name: 'Calculators', href: '/calculators' },
+  { name: 'Audio Tools', href: '/audio-tools' },
+  { name: 'Video Tools', href: '/video-tools' },
   { name: 'PDF Tools', href: '/pdf-tools' },
   { name: 'Image Tools', href: '/image-tools' },
-  { name: 'File Conversion', href: '/file-conversion-tools' },
-  { name: 'Business Tools', href: '/business-tools' },
+  { name: 'Calculators', href: '/calculators' },
   { name: 'Developer Tools', href: '/developer-tools' },
-  { name: 'SEO Tools', href: '/seo-tools' },
   { name: 'Text Tools', href: '/text-tools' },
   { name: 'Blog', href: '/blog' },
 ];

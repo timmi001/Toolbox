@@ -1,4 +1,4 @@
-export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'seo' | 'file-conversion' | 'business' | 'ai';
+export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'seo' | 'file-conversion' | 'business' | 'ai' | 'audio' | 'video';
 
 export type Tool = {
   slug: string;
@@ -173,7 +173,28 @@ export const toolsData: Tool[] = [
   { slug: 'scientific-calculator', name: 'Scientific Calculator', description: 'Advanced scientific calculator.', category: 'calculators', keywords: ['calculator', 'math', 'scientific'], icon: 'Calculator' },
   { slug: 'gpa-calculator', name: 'GPA Calculator', description: 'Calculate weighted GPA from courses.', category: 'calculators', keywords: ['gpa', 'grades', 'school'], icon: 'GraduationCap' },
   { slug: 'timezone-converter', name: 'Timezone Converter', description: 'Convert time between different timezones.', category: 'calculators', keywords: ['timezone', 'time', 'world'], icon: 'Globe' },
-  { slug: 'binary-calculator', name: 'Binary Calculator', description: 'Perform arithmetic on binary numbers.', category: 'calculators', keywords: ['binary', 'math', 'developer'], new: true, icon: 'Binary' }
+  { slug: 'binary-calculator', name: 'Binary Calculator', description: 'Perform arithmetic on binary numbers.', category: 'calculators', keywords: ['binary', 'math', 'developer'], new: true, icon: 'Binary' },
+
+  // Audio Tools
+  { slug: 'mp3-converter', name: 'Audio Converter', description: 'Convert audio files to WAV format directly in your browser — no upload required.', category: 'audio', keywords: ['audio', 'mp3', 'wav', 'convert', 'format'], new: true, icon: 'Music' },
+  { slug: 'audio-trimmer', name: 'Audio Trimmer', description: 'Trim and cut audio files to the exact length you need using precise start and end controls.', category: 'audio', keywords: ['audio', 'trim', 'cut', 'crop', 'clip'], new: true, icon: 'Scissors' },
+  { slug: 'volume-booster', name: 'Volume Booster', description: 'Boost or reduce the volume of any audio file with a simple gain control.', category: 'audio', keywords: ['audio', 'volume', 'boost', 'amplify', 'gain'], new: true, icon: 'Volume2' },
+  { slug: 'voice-recorder', name: 'Voice Recorder', description: 'Record your voice or any audio from your microphone with live waveform visualization.', category: 'audio', keywords: ['voice', 'record', 'microphone', 'audio', 'capture'], new: true, icon: 'Mic' },
+  { slug: 'audio-merger', name: 'Audio Merger', description: 'Combine multiple audio files into a single track by merging them one after another.', category: 'audio', keywords: ['audio', 'merge', 'combine', 'join', 'concatenate'], new: true, icon: 'Combine' },
+  { slug: 'noise-remover', name: 'Noise Remover', description: 'Reduce background noise from audio recordings using frequency filters in your browser.', category: 'audio', keywords: ['noise', 'remove', 'filter', 'audio', 'clean', 'reduce'], new: true, icon: 'AudioWaveform' },
+  { slug: 'text-to-speech', name: 'Text to Speech', description: 'Convert any text to natural-sounding speech using your browser\'s built-in voice engine.', category: 'audio', keywords: ['text', 'speech', 'tts', 'voice', 'read aloud'], new: true, icon: 'MessageSquare' },
+  { slug: 'speech-to-text', name: 'Speech to Text', description: 'Transcribe your speech to text in real-time using your microphone and voice recognition.', category: 'audio', keywords: ['speech', 'transcribe', 'voice', 'recognize', 'dictate'], new: true, icon: 'FileAudio' },
+
+  // Video Tools
+  { slug: 'video-converter', name: 'Video Converter', description: 'Convert video files to WebM format with adjustable quality settings, entirely in your browser.', category: 'video', keywords: ['video', 'convert', 'webm', 'format', 'transcode'], new: true, icon: 'Video' },
+  { slug: 'video-compressor', name: 'Video Compressor', description: 'Compress video files by reducing resolution and bitrate to shrink file size.', category: 'video', keywords: ['video', 'compress', 'reduce', 'size', 'smaller'], new: true, icon: 'Minimize2' },
+  { slug: 'video-trimmer', name: 'Video Trimmer', description: 'Trim videos to keep only the segment you need with precise start and end time controls.', category: 'video', keywords: ['video', 'trim', 'cut', 'clip', 'segment'], new: true, icon: 'Clapperboard' },
+  { slug: 'merge-videos', name: 'Merge Videos', description: 'Join multiple video files together into one seamless video, played in the order you choose.', category: 'video', keywords: ['video', 'merge', 'combine', 'join', 'concatenate'], new: true, icon: 'Film' },
+  { slug: 'extract-audio', name: 'Extract Audio from Video', description: 'Pull the audio track out of any video file and download it as a WAV audio file.', category: 'video', keywords: ['video', 'audio', 'extract', 'rip', 'strip'], new: true, icon: 'Music2' },
+  { slug: 'rotate-crop-video', name: 'Rotate or Crop Video', description: 'Rotate your video 90°, 180°, or 270° and optionally crop to custom dimensions.', category: 'video', keywords: ['video', 'rotate', 'crop', 'flip', 'orient'], new: true, icon: 'RotateCw' },
+  { slug: 'add-subtitles', name: 'Add Subtitles', description: 'Burn SRT subtitles into your video as a visible text overlay and export the result.', category: 'video', keywords: ['video', 'subtitles', 'captions', 'srt', 'text overlay'], new: true, icon: 'Subtitles' },
+  { slug: 'change-video-speed', name: 'Change Video Speed', description: 'Speed up or slow down a video and export the resped result as a new WebM file.', category: 'video', keywords: ['video', 'speed', 'slow motion', 'fast forward', 'playback'], new: true, icon: 'Gauge' },
+  { slug: 'gif-maker', name: 'GIF Maker', description: 'Convert a short video clip into an animated GIF with control over frame rate and size.', category: 'video', keywords: ['gif', 'video', 'animate', 'convert', 'frames'], new: true, icon: 'Clapperboard' },
 ];
 
 export const getToolsByCategory = (category: ToolCategory) => toolsData.filter(t => t.category === category);

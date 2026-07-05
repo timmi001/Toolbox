@@ -17,6 +17,8 @@ const CATEGORY_NAMES: Record<ToolCategory, string> = {
   pdf: 'PDF Tools',
   calculators: 'Calculators & Converters',
   ai: 'AI Tools',
+  audio: 'Audio Tools',
+  video: 'Video Tools',
 };
 
 const CATEGORY_LINKS: Record<ToolCategory, string> = {
@@ -29,6 +31,8 @@ const CATEGORY_LINKS: Record<ToolCategory, string> = {
   pdf: '/pdf-tools',
   calculators: '/calculators',
   ai: '/ai-tools',
+  audio: '/audio-tools',
+  video: '/video-tools',
 };
 
 export function BreadcrumbNav({ category, toolName }: BreadcrumbNavProps) {

@@ -17,6 +17,8 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'pdf-tools': { title: 'PDF Tools', desc: 'Merge, split, and manipulate PDF documents securely.' },
   'calculators': { title: 'Calculators & Converters', desc: 'Solve math problems, convert units, and calculate dates.' },
   'ai-tools': { title: 'AI Tools', desc: 'Powered by Google Gemini — write, summarize, generate code, build resumes, create content, and more with AI.' },
+  'audio-tools': { title: 'Audio Tools', desc: 'Record, trim, merge, convert, and enhance audio files entirely in your browser — no installs needed.' },
+  'video-tools': { title: 'Video Tools', desc: 'Trim, merge, compress, rotate, subtitle, and convert videos with simple browser-based tools.' },
 };
 
 export default function CategoryPage() {
@@ -34,7 +36,9 @@ export default function CategoryPage() {
     categoryPath === 'file-conversion-tools' ? 'file-conversion' :
     categoryPath === 'business-tools' ? 'business' :
     categoryPath === 'pdf-tools' ? 'pdf' :
-    categoryPath === 'ai-tools' ? 'ai' : 'calculators';
+    categoryPath === 'ai-tools' ? 'ai' :
+    categoryPath === 'audio-tools' ? 'audio' :
+    categoryPath === 'video-tools' ? 'video' : 'calculators';
 
   useSEO(
     details ? `${details.title} | ToolKit` : 'ToolKit',
