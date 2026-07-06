@@ -2,6 +2,9 @@
   "buildCommand": "pnpm --filter @workspace/utility-tools run build",
   "outputDirectory": "artifacts/utility-tools/dist/public",
   "installCommand": "pnpm install",
+  "env": {
+    "VITE_API_URL": "https://toolbox-api-nqgb.onrender.com/api"
+  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]

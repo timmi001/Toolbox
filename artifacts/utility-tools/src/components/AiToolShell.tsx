@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { getAiToolConfig } from '@/lib/ai-tools-config';
+import { ai } from '@/lib/api';
 
 interface AiToolShellProps {
   tool: Tool;
@@ -58,17 +59,7 @@ export function AiToolShell({ tool }: AiToolShellProps) {
     setResult('');
 
     try {
-      const res = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toolId: config!.toolId, inputs }),
-      });
-
-      const data = await res.json() as { result?: string; error?: string };
-
-      if (!res.ok) {
-        throw new Error(data.error ?? `Request failed (${res.status})`);
-      }
+      const data = await ai.generate({ toolId: config!.toolId, inputs });
 
       setResult(data.result ?? '');
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
