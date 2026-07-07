@@ -82,6 +82,22 @@ export const ai = {
     }),
 };
 
+// ─── HTTP Headers checker ──────────────────────────────────────────────────
+
+export interface HttpHeadersResponse {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+}
+
+export const httpHeaders = {
+  check: (url: string) =>
+    request<HttpHeadersResponse>('/http-headers', {
+      method: 'POST',
+      body: { url },
+    }),
+};
+
 // ─── Video downloader endpoints ────────────────────────────────────────────
 
 export type VideoFormat = {
