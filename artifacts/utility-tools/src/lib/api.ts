@@ -82,6 +82,35 @@ export const ai = {
     }),
 };
 
+// ─── Video downloader endpoints ────────────────────────────────────────────
+
+export type VideoFormat = {
+  quality: string;   // e.g. "1080p", "720p", "audio only"
+  ext: string;       // e.g. "mp4", "webm", "m4a"
+  url: string;       // direct download URL
+  filesize?: number; // bytes, optional
+};
+
+export interface VideoDownloadRequest {
+  url: string;
+  platform: 'youtube' | 'facebook' | 'instagram' | 'twitter' | 'tiktok';
+}
+
+export interface VideoDownloadResponse {
+  title: string;
+  thumbnail?: string;
+  duration?: number;   // seconds
+  formats: VideoFormat[];
+}
+
+export const videoDownload = {
+  fetch: (payload: VideoDownloadRequest) =>
+    request<VideoDownloadResponse>('/video/download', {
+      method: 'POST',
+      body: payload,
+    }),
+};
+
 // ─── Add more endpoint groups here as the app grows ────────────────────────
 // export const pdf = { ... }
 // export const image = { ... }

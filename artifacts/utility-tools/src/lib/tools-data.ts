@@ -195,6 +195,11 @@ export const toolsData: Tool[] = [
   { slug: 'add-subtitles', name: 'Add Subtitles', description: 'Burn SRT subtitles into your video as a visible text overlay and export the result.', category: 'video', keywords: ['video', 'subtitles', 'captions', 'srt', 'text overlay'], new: true, icon: 'Subtitles' },
   { slug: 'change-video-speed', name: 'Change Video Speed', description: 'Speed up or slow down a video and export the resped result as a new WebM file.', category: 'video', keywords: ['video', 'speed', 'slow motion', 'fast forward', 'playback'], new: true, icon: 'Gauge' },
   { slug: 'gif-maker', name: 'GIF Maker', description: 'Convert a short video clip into an animated GIF with control over frame rate and size.', category: 'video', keywords: ['gif', 'video', 'animate', 'convert', 'frames'], new: true, icon: 'Clapperboard' },
+  { slug: 'youtube-downloader', name: 'YouTube Downloader', description: 'Download YouTube videos in MP4, WebM, or audio-only formats at your chosen quality.', category: 'video', keywords: ['youtube', 'download', 'video', 'mp4', 'yt'], new: true, icon: 'Youtube' },
+  { slug: 'facebook-downloader', name: 'Facebook Downloader', description: 'Download Facebook videos and Reels in HD or SD directly to your device.', category: 'video', keywords: ['facebook', 'download', 'video', 'reels', 'fb'], new: true, icon: 'Facebook' },
+  { slug: 'instagram-downloader', name: 'Instagram Downloader', description: 'Download Instagram Reels, Videos, and IGTV content without watermark.', category: 'video', keywords: ['instagram', 'download', 'reels', 'igtv', 'video'], new: true, icon: 'Instagram' },
+  { slug: 'twitter-downloader', name: 'Twitter / X Downloader', description: 'Download videos from Twitter and X posts in the highest available quality.', category: 'video', keywords: ['twitter', 'x', 'download', 'video', 'tweet'], new: true, icon: 'Twitter' },
+  { slug: 'tiktok-downloader', name: 'TikTok Downloader', description: 'Download TikTok videos without watermark in the best available quality.', category: 'video', keywords: ['tiktok', 'download', 'video', 'no watermark', 'short'], new: true, icon: 'Music' },
 ];
 
 export const getToolsByCategory = (category: ToolCategory) => toolsData.filter(t => t.category === category);

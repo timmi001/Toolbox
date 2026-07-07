@@ -170,6 +170,11 @@ const RotateCropVideo = L(() => import("@/pages/tools/video/rotate-crop-video"))
 const AddSubtitles = L(() => import("@/pages/tools/video/add-subtitles"));
 const ChangeVideoSpeed = L(() => import("@/pages/tools/video/change-video-speed"));
 const GifMaker = L(() => import("@/pages/tools/video/gif-maker"));
+const YoutubeDownloader = L(() => import("@/pages/tools/video/youtube-downloader"));
+const FacebookDownloader = L(() => import("@/pages/tools/video/facebook-downloader"));
+const InstagramDownloader = L(() => import("@/pages/tools/video/instagram-downloader"));
+const TwitterDownloader = L(() => import("@/pages/tools/video/twitter-downloader"));
+const TiktokDownloader = L(() => import("@/pages/tools/video/tiktok-downloader"));
 
 // AI Tools
 const AiWriter = L(() => import("@/pages/tools/ai/ai-writer"));
@@ -409,6 +414,11 @@ function Router() {
         <Route path="/tools/video/add-subtitles" component={AddSubtitles} />
         <Route path="/tools/video/change-video-speed" component={ChangeVideoSpeed} />
         <Route path="/tools/video/gif-maker" component={GifMaker} />
+        <Route path="/tools/video/youtube-downloader" component={YoutubeDownloader} />
+        <Route path="/tools/video/facebook-downloader" component={FacebookDownloader} />
+        <Route path="/tools/video/instagram-downloader" component={InstagramDownloader} />
+        <Route path="/tools/video/twitter-downloader" component={TwitterDownloader} />
+        <Route path="/tools/video/tiktok-downloader" component={TiktokDownloader} />
 
         <Route component={NotFound} />
       </Switch>
