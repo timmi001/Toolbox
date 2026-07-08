@@ -3,22 +3,14 @@
  *
  * All requests to the backend go through this file.
  *
- * Environment variable:
- *   VITE_API_URL — base URL of the backend API (no trailing slash)
+ * The API server is a separate artifact in this workspace, mounted at the
+ * `/api` path behind the shared Replit proxy — so a same-origin relative
+ * path always reaches it, in both development and production.
  *
- * Development  → set in .env.local:  VITE_API_URL=http://localhost:3001/api
- * Production   → set in Vercel dashboard: VITE_API_URL=https://toolbox-api-nqgb.onrender.com/api
+ * Set VITE_API_URL only if the backend is hosted elsewhere.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL as string;
-
-if (!API_BASE) {
-  console.warn(
-    '[api] VITE_API_URL is not set. ' +
-      'Create .env.local with VITE_API_URL=http://localhost:3001/api for development, ' +
-      'or set it in your Vercel environment variables for production.',
-  );
-}
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

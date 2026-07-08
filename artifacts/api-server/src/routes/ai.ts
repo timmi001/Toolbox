@@ -58,10 +58,6 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-vision-statement": { required: ["future"], maxLengths: { business_name: 100, mission: 300, future: 300, impact: 300 } },
   "ai-company-bio": { required: ["company_name", "mission"], maxLengths: { company_name: 100, founded: 300, mission: 1000, achievements: 500 } },
   "ai-brand-story": { required: ["company_name", "founder_story"], maxLengths: { company_name: 100, founder_story: 1000, problem: 300, solution: 300 } },
-  "ai-mission-statement": { required: ["what"], maxLengths: { business_name: 100, what: 300, who: 200, values: 300 } },
-  "ai-vision-statement": { required: ["future"], maxLengths: { business_name: 100, mission: 300, future: 300, impact: 300 } },
-  "ai-company-bio": { required: ["company_name", "mission"], maxLengths: { company_name: 100, founded: 300, mission: 1000, achievements: 500 } },
-  "ai-brand-story": { required: ["company_name", "founder_story"], maxLengths: { company_name: 100, founder_story: 1000, problem: 300, solution: 300 } },
 };
 
 // ---------------------------------------------------------------------------
