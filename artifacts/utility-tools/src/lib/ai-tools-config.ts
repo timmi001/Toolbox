@@ -327,6 +327,50 @@ const configs: Record<string, AiToolConfig> = {
       { key: "tone", label: "Tone", type: "select", options: ["Urgent", "Friendly", "Confident", "Professional", "Playful"] },
     ],
   },
+  "ai-mission-statement": {
+    toolId: "ai-mission-statement",
+    buttonLabel: "Generate Mission Statement",
+    fields: [
+      { key: "business_name", label: "Business Name", type: "text", placeholder: "e.g. TechFlow", required: true },
+      { key: "what", label: "What You Do", type: "textarea", placeholder: "e.g. We provide cloud-based project management tools for remote teams", required: true, rows: 3 },
+      { key: "who", label: "Target Audience", type: "text", placeholder: "e.g. remote-first companies, startups, freelancers" },
+      { key: "values", label: "Core Values", type: "text", placeholder: "e.g. innovation, collaboration, reliability" },
+      { key: "tone", label: "Tone", type: "select", options: ["Inspiring", "Professional", "Action-oriented", "Values-driven"] },
+    ],
+  },
+  "ai-vision-statement": {
+    toolId: "ai-vision-statement",
+    buttonLabel: "Generate Vision Statement",
+    fields: [
+      { key: "business_name", label: "Business Name", type: "text", placeholder: "e.g. EcoGreen", required: true },
+      { key: "mission", label: "Current Mission (optional)", type: "text", placeholder: "e.g. Provide sustainable alternatives to single-use plastics" },
+      { key: "future", label: "Future Vision", type: "textarea", placeholder: "Where do you want the business to be in 5-10 years?", required: true, rows: 3 },
+      { key: "impact", label: "Desired Impact", type: "text", placeholder: "e.g. eliminate plastic waste, empower consumers" },
+      { key: "tone", label: "Tone", type: "select", options: ["Visionary", "Ambitious", "Hopeful", "Bold"] },
+    ],
+  },
+  "ai-company-bio": {
+    toolId: "ai-company-bio",
+    buttonLabel: "Generate Company Bio",
+    fields: [
+      { key: "company_name", label: "Company Name", type: "text", placeholder: "e.g. Stride Analytics", required: true },
+      { key: "founded", label: "Founded Year / Context", type: "text", placeholder: "e.g. Founded in 2021 by..." },
+      { key: "mission", label: "Mission / What You Do", type: "textarea", placeholder: "Brief summary of your business and what you offer", required: true, rows: 3 },
+      { key: "achievements", label: "Key Achievements", type: "text", placeholder: "e.g. 10K+ customers, Y Combinator S22, $5M funding" },
+      { key: "style", label: "Bio Style", type: "select", options: ["Formal", "Friendly", "Ambitious", "Technical"] },
+    ],
+  },
+  "ai-brand-story": {
+    toolId: "ai-brand-story",
+    buttonLabel: "Generate Brand Story",
+    fields: [
+      { key: "company_name", label: "Company Name", type: "text", placeholder: "e.g. DesignHub", required: true },
+      { key: "founder_story", label: "Founder's Background / Inspiration", type: "textarea", placeholder: "Why did you start this company? What inspired you?", required: true, rows: 4 },
+      { key: "problem", label: "Problem You're Solving", type: "text", placeholder: "e.g. designers waste time on repetitive tasks" },
+      { key: "solution", label: "Your Solution", type: "text", placeholder: "e.g. AI-powered design automation tools" },
+      { key: "tone", label: "Tone", type: "select", options: ["Personal", "Inspiring", "Professional", "Passionate"] },
+    ],
+  },
 };
 
 export function getAiToolConfig(toolId: string): AiToolConfig | undefined {

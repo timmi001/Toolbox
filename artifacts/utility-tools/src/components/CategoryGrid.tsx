@@ -13,7 +13,7 @@ const CATEGORIES = [
   { id: 'audio', name: 'Audio Tools', icon: Music, path: '/audio-tools', desc: 'Record, trim, merge, convert, and enhance audio.' },
   { id: 'video', name: 'Video Tools', icon: Video, path: '/video-tools', desc: 'Trim, compress, rotate, subtitle, and convert videos.' },
   { id: 'file-conversion', name: 'File Conversion', icon: FileStack, path: '/file-conversion-tools', desc: 'Convert media, documents, archives, and spreadsheets.' },
-  { id: 'business', name: 'Business Tools', icon: Briefcase, path: '/business-tools', desc: 'Create invoices, receipts, stickers, and business-ready assets.' },
+  { id: 'business', name: 'AI Business Tools', icon: Briefcase, path: '/business-tools', desc: 'Create invoices, receipts, stickers, and business-ready assets.' },
   { id: 'pdf', name: 'PDF Tools', icon: FileText, path: '/pdf-tools', desc: 'Merge, split, and manipulate PDF documents.' },
   { id: 'calculators', name: 'Calculators & Converters', icon: Calculator, path: '/calculators', desc: 'Math, dates, and unit conversions.' },
 ];

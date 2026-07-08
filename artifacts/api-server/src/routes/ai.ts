@@ -54,6 +54,14 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-sales-copy-generator": { required: ["product", "pain_point"], maxLengths: { product: 300, audience: 300, pain_point: 1500 } },
   "ai-landing-page-copy-generator": { required: ["product", "benefit"], maxLengths: { product: 300, audience: 300, benefit: 1500 } },
   "ai-cta-generator": { required: ["offer"], maxLengths: { offer: 300, audience: 300 } },
+  "ai-mission-statement": { required: ["what"], maxLengths: { business_name: 100, what: 300, who: 200, values: 300 } },
+  "ai-vision-statement": { required: ["future"], maxLengths: { business_name: 100, mission: 300, future: 300, impact: 300 } },
+  "ai-company-bio": { required: ["company_name", "mission"], maxLengths: { company_name: 100, founded: 300, mission: 1000, achievements: 500 } },
+  "ai-brand-story": { required: ["company_name", "founder_story"], maxLengths: { company_name: 100, founder_story: 1000, problem: 300, solution: 300 } },
+  "ai-mission-statement": { required: ["what"], maxLengths: { business_name: 100, what: 300, who: 200, values: 300 } },
+  "ai-vision-statement": { required: ["future"], maxLengths: { business_name: 100, mission: 300, future: 300, impact: 300 } },
+  "ai-company-bio": { required: ["company_name", "mission"], maxLengths: { company_name: 100, founded: 300, mission: 1000, achievements: 500 } },
+  "ai-brand-story": { required: ["company_name", "founder_story"], maxLengths: { company_name: 100, founder_story: 1000, problem: 300, solution: 300 } },
 };
 
 // ---------------------------------------------------------------------------
@@ -145,6 +153,39 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 
     case "ai-instagram-caption":
       return `Write 5 engaging Instagram captions for a post about: "${i.topic}"\nTone: ${i.tone || "Casual"}\n\nFor each caption:\n1. The caption (with emojis where appropriate)\n2. 5-10 relevant hashtags\n3. A call to action\n\nVary length (short/punchy, medium/storytelling, long/conversational). Make them authentic and platform-native.`;
+
+    case "ai-ad-copy-generator":
+      return `Create 5 high-impact ad copy options for: "${i.product}"\nTarget audience: ${i.audience || "general consumers"}\nOffer/CTA: ${i.offer || "undefined"}\n\nFor each version:\n1. Headline (max 30 characters)\n2. Description (2-3 sentences)\n3. Why it works for the audience\n\nMake them compelling, benefit-focused, and ready for advertising platforms (Google Ads, Facebook, LinkedIn, etc.).`;
+
+    case "ai-facebook-ad-copy-generator":
+      return `Write 5 compelling Facebook ad copy variations for: "${i.product}"\nTarget audience: ${i.audience || "Facebook users"}\nOffer: ${i.offer || "undefined"}\n\nFor each:\n1. Short headline\n2. Body copy (2-3 sentences)\n3. Suggested CTA button text\n\nOptimize for Facebook's visual-first format. Include emotional appeal and clear value proposition.`;
+
+    case "ai-google-ads-copy-generator":
+      return `Generate 3 high-converting Google Ads for: "${i.product}"\nKeyword: ${i.keyword || "primary keyword"}\n\nFor each ad include:\n1. Headline 1 (30 chars max)\n2. Headline 2 (30 chars max)\n3. Headline 3 (30 chars max)\n4. Description (90 chars max)\n\nInclude target keyword naturally. Focus on benefits and urgency.`;
+
+    case "ai-linkedin-ad-copy-generator":
+      return `Write 3 professional LinkedIn ad variations for: "${i.product}"\nTarget audience: ${i.audience || "B2B professionals"}\nKey benefit: ${i.benefit || "undefined"}\n\nFor each:\n1. Headline (50 chars max)\n2. Body text (150 chars max)\n3. CTA suggestion\n\nMake copy professional, value-driven, and B2B-focused.`;
+
+    case "ai-sales-copy-generator":
+      return `Write compelling sales copy for: "${i.product}"\nTarget audience: ${i.audience || "prospects"}\nMain pain point: ${i.pain_point || "undefined"}\nTone: ${i.tone || "Persuasive"}\n\nInclude:\n1. Attention-grabbing headline\n2. Problem statement\n3. Solution explanation\n4. Social proof / credibility\n5. Call to action\n\nMake it persuasive and conversion-focused.`;
+
+    case "ai-landing-page-copy-generator":
+      return `Generate landing page copy for: "${i.product}"\nTarget audience: ${i.audience || "prospects"}\nPrimary benefit: ${i.benefit || "undefined"}\nTone: ${i.tone || "Confident"}\n\nProvide:\n1. Hero headline\n2. Subheadline\n3. Value proposition bullets (3-5)\n4. Body section\n5. CTA button text\n\nFocus on conversion and clarity.`;
+
+    case "ai-cta-generator":
+      return `Generate 10 compelling call-to-action texts for: "${i.offer}"\nTarget audience: ${i.audience || "general audience"}\nTone: ${i.tone || "Professional"}\n\nFor each CTA:\n1. The CTA text (3-5 words)\n2. Variation for urgency/benefit\n3. Where it works best\n\nInclude mix of action verbs and emotional triggers.`;
+
+    case "ai-mission-statement":
+      return `Create a compelling mission statement for: "${i.business_name}"\n\nBusiness overview:\n- What: ${i.what}\n- Target: ${i.who || "undefined"}\n- Values: ${i.values || "undefined"}\nTone: ${i.tone || "Inspiring"}\n\nProvide:\n1. A concise mission statement (1-2 sentences)\n2. Explanation of why it resonates\n3. How it differentiates the company`;
+
+    case "ai-vision-statement":
+      return `Create an inspiring vision statement for: "${i.business_name}"\n\nContext:\n- Mission: ${i.mission || "undefined"}\n- Future goal: ${i.future}\n- Desired impact: ${i.impact || "undefined"}\nTone: ${i.tone || "Visionary"}\n\nProvide:\n1. A clear, aspirational vision statement\n2. Why it's compelling\n3. How to communicate it to stakeholders`;
+
+    case "ai-company-bio":
+      return `Write a professional company bio for: "${i.company_name}"\n\nDetails:\n- Founded: ${i.founded || "timing not specified"}\n- Mission: ${i.mission}\n- Achievements: ${i.achievements || "none specified"}\nStyle: ${i.style || "Formal"}\n\nProvide:\n1. Short bio (50-75 words for LinkedIn, website)\n2. Medium bio (150-200 words for "About" page)\n3. Long bio (300+ words for detailed company profile)`;
+
+    case "ai-brand-story":
+      return `Craft a compelling brand story for: "${i.company_name}"\n\nFounder/Origin:\n${i.founder_story}\n\nAdditional context:\n- Problem solved: ${i.problem || "undefined"}\n- Solution: ${i.solution || "undefined"}\nTone: ${i.tone || "Personal"}\n\nProvide:\n1. The brand story narrative\n2. Emotional hooks and turning points\n3. How to adapt it for different platforms`;
 
     default:
       return null;

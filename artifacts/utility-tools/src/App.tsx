@@ -115,6 +115,13 @@ const InvoiceGenerator = L(() => import("@/pages/tools/business/invoice-generato
 const ReceiptGenerator = L(() => import("@/pages/tools/business/receipt-generator"));
 const BarcodeGenerator = L(() => import("@/pages/tools/business/barcode-generator"));
 const BusinessProfitMarginCalculator = L(() => import("@/pages/tools/business/profit-margin-calculator"));
+const AiBusinessName = L(() => import("@/pages/tools/business/ai-business-name"));
+const AiSloganGenerator = L(() => import("@/pages/tools/business/ai-slogan-generator"));
+const AiMissionStatement = L(() => import("@/pages/tools/business/ai-mission-statement"));
+const AiVisionStatement = L(() => import("@/pages/tools/business/ai-vision-statement"));
+const AiCompanyBio = L(() => import("@/pages/tools/business/ai-company-bio"));
+const AiProductDescription = L(() => import("@/pages/tools/business/ai-product-description"));
+const AiBrandStory = L(() => import("@/pages/tools/business/ai-brand-story"));
 
 // PDF Tools
 const MergePdf = L(() => import("@/pages/tools/pdf/merge-pdf"));
@@ -207,9 +214,6 @@ const AiHumanizer = L(() => import("@/pages/tools/ai/ai-humanizer"));
 const AiEmailWriter = L(() => import("@/pages/tools/ai/ai-email-writer"));
 const AiResumeBuilder = L(() => import("@/pages/tools/ai/ai-resume-builder"));
 const AiCoverLetter = L(() => import("@/pages/tools/ai/ai-cover-letter"));
-const AiBusinessName = L(() => import("@/pages/tools/ai/ai-business-name"));
-const AiSloganGenerator = L(() => import("@/pages/tools/ai/ai-slogan-generator"));
-const AiProductDescription = L(() => import("@/pages/tools/ai/ai-product-description"));
 const AiSeoTitle = L(() => import("@/pages/tools/ai/ai-seo-title"));
 const AiMetaDescription = L(() => import("@/pages/tools/ai/ai-meta-description"));
 const AiKeywordGenerator = L(() => import("@/pages/tools/ai/ai-keyword-generator"));
@@ -359,6 +363,13 @@ function Router() {
         <Route path="/tools/business/receipt-generator" component={ReceiptGenerator} />
         <Route path="/tools/business/barcode-generator" component={BarcodeGenerator} />
         <Route path="/tools/business/profit-margin-calculator" component={BusinessProfitMarginCalculator} />
+        <Route path="/tools/business/ai-business-name" component={AiBusinessName} />
+        <Route path="/tools/business/ai-slogan-generator" component={AiSloganGenerator} />
+        <Route path="/tools/business/ai-mission-statement" component={AiMissionStatement} />
+        <Route path="/tools/business/ai-vision-statement" component={AiVisionStatement} />
+        <Route path="/tools/business/ai-company-bio" component={AiCompanyBio} />
+        <Route path="/tools/business/ai-product-description" component={AiProductDescription} />
+        <Route path="/tools/business/ai-brand-story" component={AiBrandStory} />
 
         {/* PDF Tools */}
         <Route path="/tools/pdf/merge-pdf" component={MergePdf} />
@@ -425,9 +436,6 @@ function Router() {
         <Route path="/tools/ai/ai-email-writer" component={AiEmailWriter} />
         <Route path="/tools/ai/ai-resume-builder" component={AiResumeBuilder} />
         <Route path="/tools/ai/ai-cover-letter" component={AiCoverLetter} />
-        <Route path="/tools/ai/ai-business-name" component={AiBusinessName} />
-        <Route path="/tools/ai/ai-slogan-generator" component={AiSloganGenerator} />
-        <Route path="/tools/ai/ai-product-description" component={AiProductDescription} />
         <Route path="/tools/ai/ai-seo-title" component={AiSeoTitle} />
         <Route path="/tools/ai/ai-meta-description" component={AiMetaDescription} />
         <Route path="/tools/ai/ai-keyword-generator" component={AiKeywordGenerator} />
