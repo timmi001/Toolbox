@@ -47,6 +47,13 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-hashtag-generator":  { required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-youtube-title":      { required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-instagram-caption":  { required: ["topic"],      maxLengths: { topic: 300 } },
+  "ai-ad-copy-generator": { required: ["product"], maxLengths: { product: 300, audience: 300, offer: 1000 } },
+  "ai-facebook-ad-copy-generator": { required: ["product", "offer"], maxLengths: { product: 300, audience: 300, offer: 1500 } },
+  "ai-google-ads-copy-generator": { required: ["product"], maxLengths: { product: 300, keyword: 200 } },
+  "ai-linkedin-ad-copy-generator": { required: ["product", "benefit"], maxLengths: { product: 300, audience: 300, benefit: 1500 } },
+  "ai-sales-copy-generator": { required: ["product", "pain_point"], maxLengths: { product: 300, audience: 300, pain_point: 1500 } },
+  "ai-landing-page-copy-generator": { required: ["product", "benefit"], maxLengths: { product: 300, audience: 300, benefit: 1500 } },
+  "ai-cta-generator": { required: ["offer"], maxLengths: { offer: 300, audience: 300 } },
 };
 
 // ---------------------------------------------------------------------------

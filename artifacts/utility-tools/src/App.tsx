@@ -71,6 +71,16 @@ const PaletteGenerator = L(() => import("@/pages/tools/developer/palette-generat
 const HexRgbConverter = L(() => import("@/pages/tools/developer/hex-rgb-converter"));
 const JwtDecoder = L(() => import("@/pages/tools/developer/jwt-decoder"));
 const QrCode = L(() => import("@/pages/tools/developer/qr-code"));
+const ColorConverter = L(() => import("@/pages/tools/developer/color-converter"));
+const CronGenerator = L(() => import("@/pages/tools/developer/cron-generator"));
+const DiffChecker = L(() => import("@/pages/tools/developer/diff-checker"));
+const DnsLookup = L(() => import("@/pages/tools/developer/dns-lookup"));
+const HashGenerator = L(() => import("@/pages/tools/developer/hash-generator"));
+const HttpHeadersChecker = L(() => import("@/pages/tools/developer/http-headers-checker"));
+const IpLookup = L(() => import("@/pages/tools/developer/ip-lookup"));
+const SqlFormatter = L(() => import("@/pages/tools/developer/sql-formatter"));
+const SqlMinifier = L(() => import("@/pages/tools/developer/sql-minifier"));
+const UserAgentParser = L(() => import("@/pages/tools/developer/user-agent-parser"));
 
 // Image Tools
 const ImageCompressor = L(() => import("@/pages/tools/image/image-compressor"));
@@ -149,6 +159,18 @@ const ScientificCalculator = L(() => import("@/pages/tools/calculators/scientifi
 const GpaCalculator = L(() => import("@/pages/tools/calculators/gpa-calculator"));
 const TimezoneConverter = L(() => import("@/pages/tools/calculators/timezone-converter"));
 const BinaryCalculator = L(() => import("@/pages/tools/calculators/binary-calculator"));
+const BreakEvenCalculator = L(() => import("@/pages/tools/calculators/break-even-calculator"));
+const BudgetPlanner = L(() => import("@/pages/tools/calculators/budget-planner"));
+const CalorieCalculator = L(() => import("@/pages/tools/calculators/calorie-calculator"));
+const ElectricityBillCalculator = L(() => import("@/pages/tools/calculators/electricity-bill-calculator"));
+const GstCalculator = L(() => import("@/pages/tools/calculators/gst-calculator"));
+const InflationCalculator = L(() => import("@/pages/tools/calculators/inflation-calculator"));
+const PaceCalculator = L(() => import("@/pages/tools/calculators/pace-calculator"));
+const PaypalFeeCalculator = L(() => import("@/pages/tools/calculators/paypal-fee-calculator"));
+const PregnancyDueDate = L(() => import("@/pages/tools/calculators/pregnancy-due-date"));
+const RetirementCalculator = L(() => import("@/pages/tools/calculators/retirement-calculator"));
+const SleepCalculator = L(() => import("@/pages/tools/calculators/sleep-calculator"));
+const WaterIntakeCalculator = L(() => import("@/pages/tools/calculators/water-intake-calculator"));
 
 // Audio Tools
 const Mp3Converter = L(() => import("@/pages/tools/audio/mp3-converter"));
@@ -205,6 +227,13 @@ const AiMeetingNotes = L(() => import("@/pages/tools/ai/ai-meeting-notes"));
 const AiHashtagGenerator = L(() => import("@/pages/tools/ai/ai-hashtag-generator"));
 const AiYoutubeTitle = L(() => import("@/pages/tools/ai/ai-youtube-title"));
 const AiInstagramCaption = L(() => import("@/pages/tools/ai/ai-instagram-caption"));
+const AiAdCopyGenerator = L(() => import("@/pages/tools/ai/ai-ad-copy-generator"));
+const AiFacebookAdCopyGenerator = L(() => import("@/pages/tools/ai/ai-facebook-ad-copy-generator"));
+const AiGoogleAdsCopyGenerator = L(() => import("@/pages/tools/ai/ai-google-ads-copy-generator"));
+const AiLinkedInAdCopyGenerator = L(() => import("@/pages/tools/ai/ai-linkedin-ad-copy-generator"));
+const AiSalesCopyGenerator = L(() => import("@/pages/tools/ai/ai-sales-copy-generator"));
+const AiLandingPageCopyGenerator = L(() => import("@/pages/tools/ai/ai-landing-page-copy-generator"));
+const AiCtaGenerator = L(() => import("@/pages/tools/ai/ai-cta-generator"));
 
 const queryClient = new QueryClient();
 
@@ -285,6 +314,16 @@ function Router() {
         <Route path="/tools/developer/hex-rgb-converter" component={HexRgbConverter} />
         <Route path="/tools/developer/jwt-decoder" component={JwtDecoder} />
         <Route path="/tools/developer/qr-code" component={QrCode} />
+        <Route path="/tools/developer/color-converter" component={ColorConverter} />
+        <Route path="/tools/developer/cron-generator" component={CronGenerator} />
+        <Route path="/tools/developer/diff-checker" component={DiffChecker} />
+        <Route path="/tools/developer/dns-lookup" component={DnsLookup} />
+        <Route path="/tools/developer/hash-generator" component={HashGenerator} />
+        <Route path="/tools/developer/http-headers-checker" component={HttpHeadersChecker} />
+        <Route path="/tools/developer/ip-lookup" component={IpLookup} />
+        <Route path="/tools/developer/sql-formatter" component={SqlFormatter} />
+        <Route path="/tools/developer/sql-minifier" component={SqlMinifier} />
+        <Route path="/tools/developer/user-agent-parser" component={UserAgentParser} />
 
         {/* Image Tools */}
         <Route path="/tools/image/image-compressor" component={ImageCompressor} />
@@ -363,6 +402,18 @@ function Router() {
         <Route path="/tools/calculators/gpa-calculator" component={GpaCalculator} />
         <Route path="/tools/calculators/timezone-converter" component={TimezoneConverter} />
         <Route path="/tools/calculators/binary-calculator" component={BinaryCalculator} />
+        <Route path="/tools/calculators/break-even-calculator" component={BreakEvenCalculator} />
+        <Route path="/tools/calculators/budget-planner" component={BudgetPlanner} />
+        <Route path="/tools/calculators/calorie-calculator" component={CalorieCalculator} />
+        <Route path="/tools/calculators/electricity-bill-calculator" component={ElectricityBillCalculator} />
+        <Route path="/tools/calculators/gst-calculator" component={GstCalculator} />
+        <Route path="/tools/calculators/inflation-calculator" component={InflationCalculator} />
+        <Route path="/tools/calculators/pace-calculator" component={PaceCalculator} />
+        <Route path="/tools/calculators/paypal-fee-calculator" component={PaypalFeeCalculator} />
+        <Route path="/tools/calculators/pregnancy-due-date" component={PregnancyDueDate} />
+        <Route path="/tools/calculators/retirement-calculator" component={RetirementCalculator} />
+        <Route path="/tools/calculators/sleep-calculator" component={SleepCalculator} />
+        <Route path="/tools/calculators/water-intake-calculator" component={WaterIntakeCalculator} />
 
         {/* AI Tools */}
         <Route path="/tools/ai/ai-writer" component={AiWriter} />
@@ -393,6 +444,13 @@ function Router() {
         <Route path="/tools/ai/ai-hashtag-generator" component={AiHashtagGenerator} />
         <Route path="/tools/ai/ai-youtube-title" component={AiYoutubeTitle} />
         <Route path="/tools/ai/ai-instagram-caption" component={AiInstagramCaption} />
+        <Route path="/tools/ai/ai-ad-copy-generator" component={AiAdCopyGenerator} />
+        <Route path="/tools/ai/ai-facebook-ad-copy-generator" component={AiFacebookAdCopyGenerator} />
+        <Route path="/tools/ai/ai-google-ads-copy-generator" component={AiGoogleAdsCopyGenerator} />
+        <Route path="/tools/ai/ai-linkedin-ad-copy-generator" component={AiLinkedInAdCopyGenerator} />
+        <Route path="/tools/ai/ai-sales-copy-generator" component={AiSalesCopyGenerator} />
+        <Route path="/tools/ai/ai-landing-page-copy-generator" component={AiLandingPageCopyGenerator} />
+        <Route path="/tools/ai/ai-cta-generator" component={AiCtaGenerator} />
 
         {/* Audio Tools */}
         <Route path="/tools/audio/mp3-converter" component={Mp3Converter} />

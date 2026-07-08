@@ -258,6 +258,75 @@ const configs: Record<string, AiToolConfig> = {
       { key: "tone", label: "Tone", type: "select", options: ["Casual", "Fun", "Inspiring", "Professional", "Bold", "Romantic"] },
     ],
   },
+  "ai-ad-copy-generator": {
+    toolId: "ai-ad-copy-generator",
+    buttonLabel: "Generate Ad Copy",
+    fields: [
+      { key: "product", label: "Product or Offer", type: "text", placeholder: "e.g. AI CRM platform for agencies", required: true },
+      { key: "audience", label: "Target Audience", type: "text", placeholder: "e.g. small business owners, B2B SaaS buyers" },
+      { key: "goal", label: "Campaign Goal", type: "select", options: ["Awareness", "Traffic", "Lead Generation", "Sales", "Signups"] },
+      { key: "tone", label: "Tone", type: "select", options: ["Persuasive", "Direct", "Friendly", "Luxury", "Urgent"] },
+    ],
+  },
+  "ai-facebook-ad-copy-generator": {
+    toolId: "ai-facebook-ad-copy-generator",
+    buttonLabel: "Generate Facebook Ad Copy",
+    fields: [
+      { key: "product", label: "Product or Offer", type: "text", placeholder: "e.g. productivity planner", required: true },
+      { key: "audience", label: "Audience", type: "text", placeholder: "e.g. busy moms, startup founders" },
+      { key: "offer", label: "Offer / Hook", type: "textarea", placeholder: "Describe the key offer, discount, or benefit", required: true, rows: 4 },
+      { key: "tone", label: "Tone", type: "select", options: ["Warm", "Bold", "Benefit-led", "Playful", "Professional"] },
+    ],
+  },
+  "ai-google-ads-copy-generator": {
+    toolId: "ai-google-ads-copy-generator",
+    buttonLabel: "Generate Google Ads Copy",
+    fields: [
+      { key: "product", label: "Product or Service", type: "text", placeholder: "e.g. local SEO audit service", required: true },
+      { key: "keyword", label: "Primary Keyword", type: "text", placeholder: "e.g. SEO audit" },
+      { key: "goal", label: "Goal", type: "select", options: ["Clicks", "Conversions", "Brand Awareness"] },
+      { key: "tone", label: "Tone", type: "select", options: ["Direct", "Professional", "Urgent", "Benefit-led"] },
+    ],
+  },
+  "ai-linkedin-ad-copy-generator": {
+    toolId: "ai-linkedin-ad-copy-generator",
+    buttonLabel: "Generate LinkedIn Ad Copy",
+    fields: [
+      { key: "product", label: "Product or Service", type: "text", placeholder: "e.g. B2B AI analytics platform", required: true },
+      { key: "audience", label: "Audience", type: "text", placeholder: "e.g. operations leaders, marketing directors" },
+      { key: "benefit", label: "Key Benefit", type: "textarea", placeholder: "What outcome or value should the ad highlight?", required: true, rows: 4 },
+      { key: "tone", label: "Tone", type: "select", options: ["Professional", "Confident", "Educational", "Thoughtful"] },
+    ],
+  },
+  "ai-sales-copy-generator": {
+    toolId: "ai-sales-copy-generator",
+    buttonLabel: "Generate Sales Copy",
+    fields: [
+      { key: "product", label: "Product or Offer", type: "text", placeholder: "e.g. online course on copywriting", required: true },
+      { key: "audience", label: "Target Audience", type: "text", placeholder: "e.g. freelancers, coaches, founders" },
+      { key: "pain_point", label: "Main Pain Point", type: "textarea", placeholder: "What problem does the audience need solved?", required: true, rows: 4 },
+      { key: "tone", label: "Tone", type: "select", options: ["Persuasive", "Empathetic", "Bold", "Confident"] },
+    ],
+  },
+  "ai-landing-page-copy-generator": {
+    toolId: "ai-landing-page-copy-generator",
+    buttonLabel: "Generate Landing Page Copy",
+    fields: [
+      { key: "product", label: "Product or Offer", type: "text", placeholder: "e.g. mortgage refinance service", required: true },
+      { key: "audience", label: "Audience", type: "text", placeholder: "e.g. home buyers, small business owners" },
+      { key: "benefit", label: "Primary Benefit", type: "textarea", placeholder: "What is the main value proposition?", required: true, rows: 4 },
+      { key: "tone", label: "Tone", type: "select", options: ["Confident", "Trustworthy", "Inspiring", "Direct"] },
+    ],
+  },
+  "ai-cta-generator": {
+    toolId: "ai-cta-generator",
+    buttonLabel: "Generate CTAs",
+    fields: [
+      { key: "offer", label: "Offer or Action", type: "text", placeholder: "e.g. start free trial, book a demo, download guide", required: true },
+      { key: "audience", label: "Audience", type: "text", placeholder: "e.g. SaaS buyers, ecommerce shoppers" },
+      { key: "tone", label: "Tone", type: "select", options: ["Urgent", "Friendly", "Confident", "Professional", "Playful"] },
+    ],
+  },
 };
 
 export function getAiToolConfig(toolId: string): AiToolConfig | undefined {
