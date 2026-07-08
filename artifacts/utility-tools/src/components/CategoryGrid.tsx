@@ -1,10 +1,11 @@
 import { Link } from 'wouter';
-import { Type, Code, Image as ImageIcon, FileText, Calculator, Search, FileStack, Briefcase, Sparkles, Music, Video } from 'lucide-react';
+import { Type, Code, Image as ImageIcon, FileText, Calculator, Search, FileStack, Briefcase, Sparkles, Music, Video, Megaphone } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { getToolsByCategory } from '@/lib/tools-data';
 
 const CATEGORIES = [
   { id: 'ai', name: 'AI Tools', icon: Sparkles, path: '/ai-tools', desc: 'Write, summarize, generate code, and more — powered by Gemini.', highlight: true },
+  { id: 'marketing', name: 'AI Marketing & Advertising', icon: Megaphone, path: '/ai-marketing-advertising', desc: 'Create ad copy, sales messaging, landing pages, and CTAs with AI.' },
   { id: 'text', name: 'Text Tools', icon: Type, path: '/text-tools', desc: 'Format, count, and clean text effortlessly.' },
   { id: 'developer', name: 'Developer Tools', icon: Code, path: '/developer-tools', desc: 'JSON, Base64, Hash, and more dev utilities.' },
   { id: 'seo', name: 'SEO Tools', icon: Search, path: '/seo-tools', desc: 'Generate meta tags, sitemaps, schema, and social previews.' },

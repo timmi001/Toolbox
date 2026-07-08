@@ -254,6 +254,7 @@ function Router() {
         <Route path="/pdf-tools" component={CategoryPage} />
         <Route path="/calculators" component={CategoryPage} />
         <Route path="/ai-tools" component={CategoryPage} />
+        <Route path="/ai-marketing-advertising" component={CategoryPage} />
         <Route path="/audio-tools" component={CategoryPage} />
         <Route path="/video-tools" component={CategoryPage} />
 
