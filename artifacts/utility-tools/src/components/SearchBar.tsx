@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Search } from 'lucide-react';
-import { searchTools, Tool } from '@/lib/tools-data';
+import { searchTools, Tool, getToolRoutePath } from '@/lib/tools-data';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
@@ -35,7 +35,7 @@ export function SearchBar() {
   const handleSelect = (tool: Tool) => {
     setQuery('');
     setIsOpen(false);
-    setLocation(`/tools/${tool.category}/${tool.slug}`);
+    setLocation(getToolRoutePath(tool));
   };
 
   return (

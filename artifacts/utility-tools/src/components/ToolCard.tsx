@@ -1,6 +1,6 @@
 import { Link } from 'wouter';
 import * as Icons from 'lucide-react';
-import { Tool, ToolCategory } from '@/lib/tools-data';
+import { Tool, ToolCategory, getToolRoutePath } from '@/lib/tools-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -18,6 +18,7 @@ const categoryColors: Record<ToolCategory, { bubble: string; hover: string; titl
   'file-conversion': { bubble: 'bg-indigo-500/10 text-indigo-500', hover: 'group-hover:bg-indigo-500 group-hover:text-white', title: 'group-hover:text-indigo-500' },
   business:        { bubble: 'bg-emerald-500/10 text-emerald-500', hover: 'group-hover:bg-emerald-500 group-hover:text-white', title: 'group-hover:text-emerald-500' },
   ai:              { bubble: 'bg-purple-500/10 text-purple-500',  hover: 'group-hover:bg-purple-500 group-hover:text-white',  title: 'group-hover:text-purple-500' },
+  marketing:       { bubble: 'bg-fuchsia-500/10 text-fuchsia-500', hover: 'group-hover:bg-fuchsia-500 group-hover:text-white', title: 'group-hover:text-fuchsia-500' },
   audio:           { bubble: 'bg-orange-500/10 text-orange-500', hover: 'group-hover:bg-orange-500 group-hover:text-white',  title: 'group-hover:text-orange-500' },
   video:           { bubble: 'bg-cyan-500/10 text-cyan-500',     hover: 'group-hover:bg-cyan-500 group-hover:text-white',    title: 'group-hover:text-cyan-500' },
 };
@@ -27,7 +28,7 @@ export function ToolCard({ tool }: ToolCardProps) {
   const colors = categoryColors[tool.category] ?? categoryColors.text;
 
   return (
-    <Link href={`/tools/${tool.category}/${tool.slug}`}>
+    <Link href={getToolRoutePath(tool)}>
       <Card className="h-full hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,168,107,0.15)] bg-card/40 backdrop-blur-sm group cursor-pointer overflow-hidden border-border/50">
         <CardHeader className="p-5 pb-3">
           <div className="flex justify-between items-start mb-2">

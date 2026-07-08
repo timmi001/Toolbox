@@ -45,6 +45,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 - AI tools require `GEMINI_API_KEY` secret. Without it, the backend returns 503.
 - `pdfjs-dist` version was bumped to v6 during install — test PDF tools if issues arise.
 - Do not run `pnpm dev` at the workspace root — use the managed workflows instead.
+- Tool category `marketing` has no `/tools/marketing/*` routes — those tools are registered under `/tools/ai/*` in `App.tsx`. Always build tool links with `getToolRoutePath()` from `lib/tools-data.ts`, never `/tools/${tool.category}/${tool.slug}` directly.
+- `.migration-backup/` at the repo root is a preserved snapshot of the original Vercel import, kept for reference. It's outside all tsconfig/package includes, so it's excluded from typecheck/build and artifact auto-detection.
 
 ## Pointers
 

@@ -17,6 +17,7 @@ const CATEGORY_NAMES: Record<ToolCategory, string> = {
   pdf: 'PDF Tools',
   calculators: 'Calculators & Converters',
   ai: 'AI Tools',
+  marketing: 'AI Marketing & Advertising',
   audio: 'Audio Tools',
   video: 'Video Tools',
 };
@@ -31,6 +32,7 @@ const CATEGORY_LINKS: Record<ToolCategory, string> = {
   pdf: '/pdf-tools',
   calculators: '/calculators',
   ai: '/ai-tools',
+  marketing: '/ai-marketing-advertising',
   audio: '/audio-tools',
   video: '/video-tools',
 };

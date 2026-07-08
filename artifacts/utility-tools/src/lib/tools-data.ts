@@ -235,6 +235,15 @@ export const toolsData: Tool[] = [
   { slug: 'tiktok-downloader', name: 'TikTok Downloader', description: 'Download TikTok videos without watermark in the best available quality.', category: 'video', keywords: ['tiktok', 'download', 'video', 'no watermark', 'short'], new: true, icon: 'Music' },
 ];
 
+// Marketing tools are routed alongside AI tools under /tools/ai/ (there is no
+// separate /tools/marketing/ route group in App.tsx), so any link built from
+// a tool's category must go through this to land on a valid route.
+const ROUTE_CATEGORY: Partial<Record<ToolCategory, string>> = {
+  marketing: 'ai',
+};
+export const getToolRoutePath = (tool: Pick<Tool, 'category' | 'slug'>) =>
+  `/tools/${ROUTE_CATEGORY[tool.category] ?? tool.category}/${tool.slug}`;
+
 export const getToolsByCategory = (category: ToolCategory) => toolsData.filter(t => t.category === category);
 export const getToolBySlug = (slug: string) => toolsData.find(t => t.slug === slug);
 export const searchTools = (query: string) => {
