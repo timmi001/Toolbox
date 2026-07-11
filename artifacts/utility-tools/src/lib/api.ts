@@ -23,35 +23,71 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
  *  - Sets Content-Type: application/json for object bodies
  *  - Throws on non-2xx responses with the server's error message
  */
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { body, headers, ...rest } = options;
+const isDev = import.meta.env.DEV;
+
+interface RequestOptionsWithTimeout extends RequestOptions {
+  /** Aborts the request if it hasn't resolved within this many ms. */
+  timeoutMs?: number;
+}
+
+async function request<T>(path: string, options: RequestOptionsWithTimeout = {}): Promise<T> {
+  const { body, headers, timeoutMs, ...rest } = options;
 
   const isObject = body !== undefined && typeof body === 'object';
 
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...rest,
-    headers: {
-      ...(isObject ? { 'Content-Type': 'application/json' } : {}),
-      ...headers,
-    },
-    body: isObject ? JSON.stringify(body) : body,
-  });
+  // Abort long-hanging requests instead of leaving the UI stuck loading forever.
+  const controller = new AbortController();
+  const timer = timeoutMs
+    ? setTimeout(() => controller.abort(), timeoutMs)
+    : undefined;
+
+  if (isDev) {
+    // eslint-disable-next-line no-console
+    console.debug(`[api] → ${options.method ?? 'GET'} ${path}`, isObject ? body : undefined);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...rest,
+      signal: controller.signal,
+      headers: {
+        ...(isObject ? { 'Content-Type': 'application/json' } : {}),
+        ...headers,
+      },
+      body: isObject ? JSON.stringify(body) : body,
+    });
+  } catch (err) {
+    if (isDev) console.debug(`[api] ✗ ${path}`, err);
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('The request timed out. Please check your connection and try again.');
+    }
+    throw new Error('Network error — please check your connection and try again.');
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 
   let data: unknown;
   const contentType = response.headers.get('content-type') ?? '';
-  if (contentType.includes('application/json')) {
-    data = await response.json();
-  } else {
-    data = await response.text();
+  try {
+    if (contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      data = await response.text();
+    }
+  } catch {
+    data = undefined;
   }
 
   if (!response.ok) {
     const message =
       (data as { error?: string })?.error ??
       `Request failed with status ${response.status}`;
+    if (isDev) console.debug(`[api] ✗ ${path} (${response.status})`, message);
     throw new Error(message);
   }
 
+  if (isDev) console.debug(`[api] ✓ ${path}`);
   return data as T;
 }
 
@@ -92,16 +128,50 @@ export const httpHeaders = {
 
 // ─── Video downloader endpoints ────────────────────────────────────────────
 
+export type VideoPlatform = 'youtube' | 'facebook' | 'instagram' | 'twitter' | 'tiktok';
+
+// Mirrors the backend's allow-list — used for instant client-side feedback
+// before a network request is made (server re-validates regardless).
+const VIDEO_PLATFORM_HOSTS: Record<VideoPlatform, string[]> = {
+  youtube: ['youtube.com', 'youtu.be'],
+  facebook: ['facebook.com', 'fb.watch'],
+  instagram: ['instagram.com'],
+  twitter: ['twitter.com', 'x.com'],
+  tiktok: ['tiktok.com'],
+};
+
+/** Validates a URL client-side before it's sent to the backend. */
+export function validateVideoUrl(rawUrl: string, platform: VideoPlatform): string | null {
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return 'Please paste a video URL.';
+
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return 'That doesn\u2019t look like a valid URL.';
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    return 'Only http(s) video links are supported.';
+  }
+  const host = parsed.hostname.toLowerCase();
+  const allowed = VIDEO_PLATFORM_HOSTS[platform].some(base => host === base || host.endsWith(`.${base}`));
+  if (!allowed) {
+    return `That link doesn\u2019t look like a valid ${platform} URL.`;
+  }
+  return null;
+}
+
 export type VideoFormat = {
-  quality: string;   // e.g. "1080p", "720p", "audio only"
-  ext: string;       // e.g. "mp4", "webm", "m4a"
-  url: string;       // direct download URL
-  filesize?: number; // bytes, optional
+  formatId: string;   // opaque id used to request the actual stream
+  quality: string;    // e.g. "1080p", "720p", "audio only"
+  ext: string;        // e.g. "mp4", "webm", "m4a"
+  filesize?: number;  // bytes, optional/approximate
 };
 
 export interface VideoDownloadRequest {
   url: string;
-  platform: 'youtube' | 'facebook' | 'instagram' | 'twitter' | 'tiktok';
+  platform: VideoPlatform;
 }
 
 export interface VideoDownloadResponse {
@@ -112,11 +182,36 @@ export interface VideoDownloadResponse {
 }
 
 export const videoDownload = {
+  /** Step 1: resolve title/thumbnail/duration + available formats. */
   fetch: (payload: VideoDownloadRequest) =>
     request<VideoDownloadResponse>('/video/download', {
       method: 'POST',
       body: payload,
+      timeoutMs: 35_000,
     }),
+
+  /**
+   * Step 2: build the same-origin URL that actually streams the file.
+   * The backend re-fetches from the source platform with the right
+   * headers/cookies and pipes bytes straight through — the browser never
+   * talks to the third-party CDN directly, so this works even for
+   * platforms (e.g. TikTok) whose direct links require session cookies.
+   */
+  buildStreamUrl: (opts: {
+    sourceUrl: string;
+    platform: VideoPlatform;
+    format: VideoFormat;
+    title: string;
+  }) => {
+    const params = new URLSearchParams({
+      src: opts.sourceUrl,
+      platform: opts.platform,
+      format: opts.format.formatId,
+      ext: opts.format.ext,
+      title: opts.title,
+    });
+    return `${API_BASE}/video/stream?${params.toString()}`;
+  },
 };
 
 // ─── Add more endpoint groups here as the app grows ────────────────────────
