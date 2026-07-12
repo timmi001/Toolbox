@@ -54,16 +54,66 @@ export function AiToolShell({ tool }: AiToolShellProps) {
   const canGenerate = requiredFields.every(f => (inputs[f.key] ?? '').trim().length > 0);
 
   async function generate() {
+    // ---- Performance diagnostics (read-only — does not change behavior) ----
+    // Stages measured on the client:
+    //   1. prepare  — time from click to the fetch actually being issued
+    //      (state updates + building the request payload)
+    //   2. request  — wall-clock time for the whole network round trip,
+    //      i.e. everything the server-side [perf][ai/generate] logs break
+    //      down internally (validate + prompt build + Gemini + serialize)
+    //      plus pure network transit time both ways
+    //   3. render   — time from receiving the response to the result
+    //      actually being painted in the DOM
+    // Comparing `request` here against `totalServerMs` in the backend logs
+    // for the same request isolates network latency from server processing.
+    const requestId = Math.random().toString(36).slice(2, 8);
+    const tClickStart = performance.now();
+    const tsClickStart = new Date().toISOString();
+
     setLoading(true);
     setError('');
     setResult('');
 
-    try {
-      const data = await ai.generate({ toolId: config!.toolId, inputs });
+    const tPrepareEnd = performance.now();
+    console.log(
+      `[perf][ai-tool][${requestId}] click→prepared in ${(tPrepareEnd - tClickStart).toFixed(1)}ms ` +
+      `(tool=${config!.toolId}, at ${tsClickStart})`,
+    );
 
+    try {
+      const tRequestStart = performance.now();
+      const data = await ai.generate({ toolId: config!.toolId, inputs });
+      const tRequestEnd = performance.now();
+      const requestMs = tRequestEnd - tRequestStart;
+      console.log(
+        `[perf][ai-tool][${requestId}] request round-trip: ${requestMs.toFixed(1)}ms ` +
+        `(network + server processing + Gemini call — see api-server logs for the server-side breakdown)`,
+      );
+
+      const tProcessStart = performance.now();
       setResult(data.result ?? '');
+      const tProcessEnd = performance.now();
+
+      // Rendering happens asynchronously after this React state update is
+      // committed. Measure the actual paint via requestAnimationFrame so the
+      // number reflects when the result is visible on screen, not just when
+      // setState was called.
+      requestAnimationFrame(() => {
+        const tPaint = performance.now();
+        const totalMs = tPaint - tClickStart;
+        console.log(
+          `[perf][ai-tool][${requestId}] response processed in ${(tProcessEnd - tProcessStart).toFixed(1)}ms, ` +
+          `rendered/painted after ${(tPaint - tRequestEnd).toFixed(1)}ms ` +
+          `— TOTAL click-to-visible: ${totalMs.toFixed(1)}ms`,
+        );
+      });
+
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     } catch (err) {
+      const tRequestEnd = performance.now();
+      console.log(
+        `[perf][ai-tool][${requestId}] request FAILED after ${(tRequestEnd - tClickStart).toFixed(1)}ms`,
+      );
       setError(err instanceof Error ? err.message : 'Generation failed. Please try again.');
     } finally {
       setLoading(false);

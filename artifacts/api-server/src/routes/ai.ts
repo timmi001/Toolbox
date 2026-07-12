@@ -1,8 +1,25 @@
 import { Router } from "express";
 import { GoogleGenAI } from "@google/genai";
 import rateLimit from "express-rate-limit";
+import { logger } from "../lib/logger";
 
 const router = Router();
+
+// ---------------------------------------------------------------------------
+// Performance diagnostics (read-only instrumentation — does not change
+// behavior or responses). Each stage is timed with a monotonic clock and
+// logged with wall-clock timestamps so stage durations can be correlated
+// across the frontend and backend logs for a single request.
+//
+//   validate  -> time spent on input validation/sanitization
+//   prompt    -> time spent building the prompt string
+//   gemini    -> time spent waiting on the Gemini API call (network + model)
+//   serialize -> time spent building/sending the JSON response
+//   total     -> validate + prompt + gemini + serialize (server-side total)
+// ---------------------------------------------------------------------------
+function nowMs(): number {
+  return Number(process.hrtime.bigint()) / 1_000_000;
+}
 
 // ---------------------------------------------------------------------------
 // Rate limiting — 20 requests per minute per IP
@@ -192,11 +209,23 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 // Route
 // ---------------------------------------------------------------------------
 router.post("/ai/generate", aiLimiter, async (req, res) => {
+  const requestId = req.id ?? Math.random().toString(36).slice(2, 8);
+  const tRequestStart = nowMs();
+  const timings: Record<string, number> = {};
+
   try {
     const { toolId, inputs } = req.body as {
       toolId: unknown;
       inputs: unknown;
     };
+
+    logger.info(
+      { requestId, toolId, ts: new Date().toISOString() },
+      `[perf][ai/generate][${requestId}] request received`,
+    );
+
+    // ---- Stage 1: validation ------------------------------------------------
+    const tValidateStart = nowMs();
 
     // Basic shape validation
     if (typeof toolId !== "string" || !toolId.trim()) {
@@ -243,8 +272,13 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         cleanInputs[key] = val;
       }
     }
+    timings.validateMs = nowMs() - tValidateStart;
 
+    // ---- Stage 2: prompt preparation ---------------------------------------
+    const tPromptStart = nowMs();
     const prompt = buildPrompt(toolId, cleanInputs);
+    timings.promptMs = nowMs() - tPromptStart;
+
     if (!prompt) {
       res.status(400).json({ error: "Could not build prompt for this tool." });
       return;
@@ -256,15 +290,92 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
+    logger.info(
+      {
+        requestId,
+        toolId,
+        promptChars: prompt.length,
+        // Rough token estimate (~4 chars/token for English) — useful to spot
+        // oversized prompts without pulling in a real tokenizer.
+        promptTokensEst: Math.ceil(prompt.length / 4),
+        maxOutputTokens: 8192,
+        ts: new Date().toISOString(),
+      },
+      `[perf][ai/generate][${requestId}] prompt ready (validate=${timings.validateMs.toFixed(1)}ms, build=${timings.promptMs.toFixed(1)}ms)`,
+    );
+
+    // ---- Stage 3: Gemini API call (network send + model latency + receive) --
     const ai = new GoogleGenAI({ apiKey });
+    const tGeminiStart = nowMs();
+    logger.info(
+      { requestId, ts: new Date().toISOString() },
+      `[perf][ai/generate][${requestId}] → sending request to Gemini (gemini-2.5-flash)`,
+    );
+
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: { maxOutputTokens: 8192 },
     });
 
-    res.json({ result: response.text ?? "" });
+    timings.geminiMs = nowMs() - tGeminiStart;
+    const usage = response.usageMetadata;
+    logger.info(
+      {
+        requestId,
+        geminiMs: Number(timings.geminiMs.toFixed(1)),
+        promptTokens: usage?.promptTokenCount,
+        outputTokens: usage?.candidatesTokenCount,
+        // gemini-2.5-flash has "thinking" enabled by default — these are
+        // internal reasoning tokens the model generates (and is billed/timed
+        // for) before producing the visible output. No thinkingConfig is set
+        // in this route, so the model uses its default thinking budget even
+        // for simple template-fill tools that don't need reasoning.
+        thinkingTokens: usage?.thoughtsTokenCount,
+        totalTokens: usage?.totalTokenCount,
+        ts: new Date().toISOString(),
+      },
+      `[perf][ai/generate][${requestId}] ← Gemini responded in ${timings.geminiMs.toFixed(1)}ms`,
+    );
+
+    // ---- Stage 4: response processing/serialization ------------------------
+    const tSerializeStart = nowMs();
+    const resultText = response.text ?? "";
+    const payload = { result: resultText };
+    timings.serializeMs = nowMs() - tSerializeStart;
+
+    timings.totalMs = nowMs() - tRequestStart;
+    logger.info(
+      {
+        requestId,
+        toolId,
+        resultChars: resultText.length,
+        validateMs: Number(timings.validateMs.toFixed(1)),
+        promptMs: Number(timings.promptMs.toFixed(1)),
+        geminiMs: Number(timings.geminiMs.toFixed(1)),
+        serializeMs: Number(timings.serializeMs.toFixed(1)),
+        totalServerMs: Number(timings.totalMs.toFixed(1)),
+        geminiShareOfTotalPct: Number(((timings.geminiMs / timings.totalMs) * 100).toFixed(1)),
+        ts: new Date().toISOString(),
+      },
+      `[perf][ai/generate][${requestId}] DONE — total=${timings.totalMs.toFixed(1)}ms ` +
+        `(validate=${timings.validateMs.toFixed(1)}ms, prompt=${timings.promptMs.toFixed(1)}ms, ` +
+        `gemini=${timings.geminiMs.toFixed(1)}ms, serialize=${timings.serializeMs.toFixed(1)}ms)`,
+    );
+
+    res.json(payload);
   } catch (err) {
+    timings.totalMs = nowMs() - tRequestStart;
+    logger.error(
+      {
+        requestId,
+        err,
+        totalServerMs: Number(timings.totalMs.toFixed(1)),
+        stageReachedMs: timings,
+        ts: new Date().toISOString(),
+      },
+      `[perf][ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms`,
+    );
     // Don't leak internal/upstream error strings — log server-side, return generic message
     const isKnown = err instanceof Error && (
       err.message.includes("API_KEY") ||
