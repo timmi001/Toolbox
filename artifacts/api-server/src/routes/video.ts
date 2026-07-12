@@ -10,6 +10,22 @@ const router = Router();
 const isDev = process.env["NODE_ENV"] !== "production";
 
 // ---------------------------------------------------------------------------
+// Timeouts — configurable via env so slow networks / large files don't need
+// a code change. Defaults are generous enough for most public videos while
+// still bounding worst-case resource usage.
+// ---------------------------------------------------------------------------
+const INFO_TIMEOUT_MS = Number(process.env["VIDEO_INFO_TIMEOUT_MS"] ?? 45_000);
+const INFO_SOCKET_TIMEOUT_S = Number(process.env["VIDEO_INFO_SOCKET_TIMEOUT_S"] ?? 25);
+const STREAM_SOCKET_TIMEOUT_S = Number(process.env["VIDEO_STREAM_SOCKET_TIMEOUT_S"] ?? 25);
+const STREAM_MAX_DURATION_MS = Number(process.env["VIDEO_STREAM_MAX_DURATION_MS"] ?? 10 * 60 * 1000);
+
+let requestCounter = 0;
+function nextRequestId(): number {
+  requestCounter += 1;
+  return requestCounter;
+}
+
+// ---------------------------------------------------------------------------
 // Rate limiting — video extraction/streaming is heavier than a normal API call
 // ---------------------------------------------------------------------------
 const videoInfoLimiter = rateLimit({
@@ -97,24 +113,99 @@ function isTimeoutError(err: unknown): boolean {
   return Boolean(e.killed) || e.signal === "SIGTERM" || e.code === "ETIMEDOUT";
 }
 
-function friendlyErrorFromStderr(stderr: string, timedOut: boolean): string {
-  if (timedOut) return "The request timed out. Please try again in a moment.";
+/** True when yt-dlp itself isn't installed/on PATH — a server config problem, not a bad link. */
+function isMissingBinaryError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as { code?: string };
+  return e.code === "ENOENT";
+}
+
+// ---------------------------------------------------------------------------
+// Error classification — maps a raw failure to (httpStatus, userMessage, reason)
+// so every failure path returns a clear, specific response instead of a bare
+// 502. Reason codes are always logged (never leaked to the client) so the
+// exact cause is traceable in server logs.
+// ---------------------------------------------------------------------------
+type FailureReason =
+  | "missing_binary"
+  | "timeout"
+  | "bot_check"
+  | "blocked_or_rate_limited"
+  | "auth_required"
+  | "unsupported_url"
+  | "not_found"
+  | "unavailable"
+  | "no_formats"
+  | "malformed_response"
+  | "unknown_extractor_error";
+
+function classifyFailure(
+  err: unknown,
+  stderr: string,
+): { status: number; message: string; reason: FailureReason } {
+  if (isMissingBinaryError(err)) {
+    return {
+      status: 500,
+      message: "The video downloader isn't available on this server right now. Please contact support.",
+      reason: "missing_binary",
+    };
+  }
+  if (isTimeoutError(err)) {
+    return {
+      status: 504,
+      message: "The video source took too long to respond. Please try again in a moment.",
+      reason: "timeout",
+    };
+  }
+  // YouTube frequently challenges requests from data-center/server IPs with
+  // a bot-check, even for ordinary public videos — this is unrelated to the
+  // video's actual privacy and shouldn't be reported as "private/login
+  // required", which misleads users into thinking the video itself is
+  // restricted.
+  if (/sign in to confirm you.?re not a bot/i.test(stderr)) {
+    return {
+      status: 429,
+      message:
+        "The source platform is challenging this server's requests as a bot right now. This isn't specific to your video — please try again in a few minutes.",
+      reason: "bot_check",
+    };
+  }
+  if (/HTTP Error 403|Forbidden|blocked|HTTP Error 429|rate.?limit|too many requests/i.test(stderr)) {
+    return {
+      status: 429,
+      message: "The platform is blocking or rate-limiting requests right now. Please try again shortly.",
+      reason: "blocked_or_rate_limited",
+    };
+  }
   if (/private|sign.?in|log.?in required|authentication|cookies/i.test(stderr)) {
-    return "This video is private, age-restricted, or requires login — it can't be downloaded here.";
+    return {
+      status: 422,
+      message: "This video is private, age-restricted, or requires login — it can't be downloaded here.",
+      reason: "auth_required",
+    };
   }
   if (/unsupported url|no extractor/i.test(stderr)) {
-    return "This link isn't supported yet.";
+    return { status: 422, message: "This link isn't supported yet.", reason: "unsupported_url" };
   }
-  if (/no video could be found/i.test(stderr)) {
-    return "No video was found at that link. Double-check the URL and try again.";
+  if (/no video could be found|HTTP Error 404|404: not found/i.test(stderr)) {
+    return {
+      status: 404,
+      message: "No video was found at that link. Double-check the URL and try again.",
+      reason: "not_found",
+    };
   }
-  if (/unavailable|not available|removed|404/i.test(stderr)) {
-    return "This video is unavailable or may have been removed.";
+  if (/unavailable|not available|removed|has been deleted/i.test(stderr)) {
+    return {
+      status: 422,
+      message: "This video is unavailable or may have been removed.",
+      reason: "unavailable",
+    };
   }
-  if (/rate.?limit|429|too many requests/i.test(stderr)) {
-    return "The platform is rate-limiting requests right now. Please try again shortly.";
-  }
-  return "Could not fetch this video. Please check the link and try again.";
+  return {
+    status: 502,
+    message: "Could not fetch this video from the source platform. Please check the link and try again.",
+    reason: "unknown_extractor_error",
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -151,16 +242,26 @@ interface OutFormat {
 function selectFormats(info: YtDlpInfo): OutFormat[] {
   const raw = info.formats ?? [];
 
-  const combined = raw.filter(
-    (f) =>
-      !!f.url &&
-      !!f.vcodec &&
-      f.vcodec !== "none" &&
-      !!f.acodec &&
-      f.acodec !== "none" &&
-      !(f.protocol ?? "").includes("m3u8") &&
-      !(f.protocol ?? "").includes("dash"),
-  );
+  // A format is usable for a single-file progressive download when:
+  //  - it has a direct URL and isn't a segmented stream (HLS/DASH manifest,
+  //    which would need server-side muxing we don't do), and
+  //  - it isn't *explicitly* marked video-only (acodec === "none") or
+  //    audio-only (vcodec === "none").
+  //
+  // Some platforms (notably X/Twitter) serve their best progressive files
+  // over plain https with vcodec/acodec left unset (null) rather than
+  // populated — those are still full muxed video+audio files, just with
+  // incomplete metadata. Requiring truthy codec fields (the previous
+  // behavior) silently filtered out every format for those platforms and
+  // surfaced as "No downloadable video formats", reported as a 502.
+  const combined = raw.filter((f) => {
+    if (!f.url) return false;
+    const protocol = f.protocol ?? "";
+    if (protocol.includes("m3u8") || protocol.includes("dash") || protocol.includes("f4m")) return false;
+    if (f.vcodec === "none") return false; // audio-only
+    if (f.acodec === "none") return false; // video-only, no audio track
+    return true;
+  });
 
   const sorted = [...combined].sort((a, b) => (b.height ?? 0) - (a.height ?? 0));
 
@@ -185,6 +286,8 @@ function selectFormats(info: YtDlpInfo): OutFormat[] {
 // POST /video/download — resolve title/thumbnail/duration + available formats
 // ---------------------------------------------------------------------------
 router.post("/video/download", videoInfoLimiter, async (req, res) => {
+  const requestId = nextRequestId();
+  const startedAt = Date.now();
   const { url, platform } = req.body as { url?: unknown; platform?: unknown };
 
   if (!isValidPlatform(platform)) {
@@ -199,10 +302,9 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
   }
 
   const targetUrl = validation.url.toString();
+  logger.info({ requestId, platform }, "[video/download] request received");
 
   try {
-    if (isDev) logger.debug({ platform, targetUrl }, "[video] resolving info");
-
     const { stdout } = await execFileAsync(
       "yt-dlp",
       [
@@ -210,21 +312,42 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
         "--no-warnings",
         "--no-playlist",
         "--socket-timeout",
-        "20",
+        String(INFO_SOCKET_TIMEOUT_S),
         ...extractorArgsFor(platform),
         targetUrl,
       ],
-      { timeout: 30_000, maxBuffer: 25 * 1024 * 1024 },
+      { timeout: INFO_TIMEOUT_MS, maxBuffer: 25 * 1024 * 1024 },
     );
 
-    const info = JSON.parse(stdout) as YtDlpInfo;
-    const formats = selectFormats(info);
-
-    if (formats.length === 0) {
-      res.status(502).json({ error: "No downloadable video formats were found for this link." });
+    let info: YtDlpInfo;
+    try {
+      info = JSON.parse(stdout) as YtDlpInfo;
+    } catch (parseErr) {
+      logger.error(
+        { requestId, platform, err: (parseErr as Error).message },
+        "[video/download] yt-dlp returned non-JSON output",
+      );
+      res.status(502).json({ error: "The video source returned an unexpected response. Please try again." });
       return;
     }
 
+    const formats = selectFormats(info);
+
+    if (formats.length === 0) {
+      logger.warn(
+        { requestId, platform, rawFormatCount: info.formats?.length ?? 0 },
+        "[video/download] no usable progressive formats after filtering",
+      );
+      res.status(422).json({
+        error: "No downloadable video was found for this link — it may only contain non-video content.",
+      });
+      return;
+    }
+
+    logger.info(
+      { requestId, platform, formatCount: formats.length, ms: Date.now() - startedAt },
+      "[video/download] DONE",
+    );
     res.json({
       title: info.title ?? "video",
       thumbnail: info.thumbnail,
@@ -233,12 +356,19 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
     });
   } catch (err) {
     const stderr = extractStderr(err);
-    const timedOut = isTimeoutError(err);
+    const { status, message, reason } = classifyFailure(err, stderr);
     logger.error(
-      { platform, timedOut, detail: isDev ? stderr || (err as Error)?.message : undefined },
-      "yt-dlp info fetch failed",
+      {
+        requestId,
+        platform,
+        reason,
+        status,
+        ms: Date.now() - startedAt,
+        detail: isDev ? stderr || (err as Error)?.message : undefined,
+      },
+      "[video/download] failed",
     );
-    res.status(502).json({ error: friendlyErrorFromStderr(stderr, timedOut) });
+    res.status(status).json({ error: message });
   }
 });
 
@@ -257,6 +387,8 @@ const EXT_MIME: Record<string, string> = {
 };
 
 router.get("/video/stream", videoStreamLimiter, (req, res) => {
+  const requestId = nextRequestId();
+  const startedAt = Date.now();
   const { src, format, platform, ext, title } = req.query as Record<string, string | undefined>;
 
   if (!isValidPlatform(platform)) {
@@ -274,10 +406,20 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
   }
   const safeExt = ext && /^[a-z0-9]{2,5}$/i.test(ext) ? ext.toLowerCase() : "mp4";
   const safeTitle = (title ?? "video").replace(/[^a-z0-9 _-]/gi, "").trim().slice(0, 80) || "video";
+  // NOTE: deliberately not sending a Content-Length header here. The only
+  // size we have is yt-dlp's `filesize_approx` — an *estimate* — and the
+  // real byte count streamed can differ slightly. A Content-Length that
+  // doesn't match the actual bytes sent makes browsers/curl treat a fully
+  // successful download as truncated/corrupted. Omitting it means the
+  // response is chunked and the browser shows bytes-received progress
+  // instead of an exact percentage — less precise, but never wrong.
   const targetUrl = validation.url.toString();
 
-  if (isDev) logger.debug({ platform, format: format, targetUrl }, "[video] starting stream");
+  logger.info({ requestId, platform, format }, "[video/stream] request received");
 
+  // Note: spawn() itself essentially never throws synchronously — a missing
+  // binary (ENOENT) surfaces asynchronously via the 'error' event below,
+  // which is handled and mapped to a clear 500 response.
   const child = spawn(
     "yt-dlp",
     [
@@ -286,7 +428,7 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
       "--no-warnings",
       "--no-part",
       "--socket-timeout",
-      "20",
+      String(STREAM_SOCKET_TIMEOUT_S),
       ...extractorArgsFor(platform),
       "-o",
       "-",
@@ -296,25 +438,33 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
   );
 
   let stderrBuf = "";
-  child.stderr.on("data", (chunk: Buffer) => {
+  child.stderr?.on("data", (chunk: Buffer) => {
     stderrBuf += chunk.toString();
     if (stderrBuf.length > 8000) stderrBuf = stderrBuf.slice(-8000);
   });
 
-  const killTimer = setTimeout(
-    () => {
-      child.kill("SIGKILL");
-    },
-    3 * 60 * 1000,
-  );
+  // Guards against a hung download (e.g. a stalled upstream connection)
+  // pinning a process + socket open forever. Configurable for large files.
+  const killTimer = setTimeout(() => {
+    logger.warn(
+      { requestId, platform, maxDurationMs: STREAM_MAX_DURATION_MS },
+      "[video/stream] exceeded max duration — killing process",
+    );
+    child.kill("SIGKILL");
+  }, STREAM_MAX_DURATION_MS);
 
   let started = false;
+  let bytesWritten = 0;
+  let clientDisconnected = false;
+
   req.on("close", () => {
-    // Client navigated away / cancelled — stop the yt-dlp process.
+    // Client navigated away / cancelled — stop the yt-dlp process so it
+    // doesn't keep downloading (and holding memory/bandwidth) for nobody.
+    clientDisconnected = true;
     if (!res.writableEnded) child.kill("SIGKILL");
   });
 
-  child.stdout.on("data", (chunk: Buffer) => {
+  child.stdout?.on("data", (chunk: Buffer) => {
     if (!started) {
       started = true;
       res.status(200);
@@ -322,35 +472,64 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
       res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}.${safeExt}"`);
       res.setHeader("Cache-Control", "no-store");
     }
-    res.write(chunk);
+    bytesWritten += chunk.length;
+    // Respect backpressure instead of buffering everything in memory if the
+    // client is slower than the source — avoids unbounded memory growth on
+    // large files / slow connections.
+    const canContinue = res.write(chunk);
+    if (!canContinue) child.stdout?.pause();
+  });
+
+  res.on("drain", () => {
+    child.stdout?.resume();
   });
 
   child.on("error", (err) => {
     clearTimeout(killTimer);
-    logger.error({ err: err.message, platform }, "yt-dlp stream failed to start");
+    const missingBinary = isMissingBinaryError(err);
+    logger.error(
+      { requestId, platform, err: err.message, missingBinary },
+      "[video/stream] failed to start",
+    );
     if (!started && !res.headersSent) {
-      res.status(502).json({ error: "Failed to start the download. Please try again." });
-    } else {
+      res.status(missingBinary ? 500 : 502).json({
+        error: missingBinary
+          ? "The video downloader isn't available on this server right now."
+          : "Failed to start the download. Please try again.",
+      });
+    } else if (!res.writableEnded) {
       res.end();
     }
   });
 
-  child.on("close", (code) => {
+  child.on("close", (code, signal) => {
     clearTimeout(killTimer);
+    const ms = Date.now() - startedAt;
+
     if (!started) {
+      const { status, message, reason } = classifyFailure(
+        signal === "SIGKILL" ? { killed: true } : null,
+        stderrBuf,
+      );
       logger.error(
-        { code, platform, detail: isDev ? stderrBuf : undefined },
-        "yt-dlp stream produced no output",
+        { requestId, platform, code, signal, reason, ms, detail: isDev ? stderrBuf : undefined },
+        "[video/stream] produced no output before exiting",
       );
       if (!res.headersSent) {
-        res.status(502).json({ error: friendlyErrorFromStderr(stderrBuf, false) });
+        res.status(status).json({ error: message });
       }
       return;
     }
-    if (code !== 0) {
-      logger.error({ code, platform, detail: isDev ? stderrBuf : undefined }, "yt-dlp stream exited with error");
+
+    if (code !== 0 && !clientDisconnected) {
+      logger.error(
+        { requestId, platform, code, signal, bytesWritten, ms, detail: isDev ? stderrBuf : undefined },
+        "[video/stream] exited with error mid-stream",
+      );
+    } else {
+      logger.info({ requestId, platform, bytesWritten, ms, clientDisconnected }, "[video/stream] DONE");
     }
-    res.end();
+    if (!res.writableEnded) res.end();
   });
 });
 

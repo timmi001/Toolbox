@@ -208,7 +208,7 @@ export const videoDownload = {
     request<VideoDownloadResponse>('/video/download', {
       method: 'POST',
       body: payload,
-      timeoutMs: 35_000,
+      timeoutMs: 50_000,
     }),
 
   /**
