@@ -37,6 +37,7 @@ function formatDuration(s?: number) {
 
 export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps) {
   const [url, setUrl] = useState('');
+  const [sourceUrl, setSourceUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<VideoDownloadResponse | null>(null);
@@ -49,6 +50,7 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
     setResult(null);
     try {
       const data = await videoDownload.fetch({ url: trimmed, platform: config.platform });
+      setSourceUrl(trimmed);
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -71,9 +73,15 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
   }
 
   function downloadFile(format: VideoFormat) {
+    if (!result || !sourceUrl) return;
     const a = document.createElement('a');
-    a.href = format.url;
-    a.download = `${result?.title ?? 'video'}.${format.ext}`;
+    a.href = videoDownload.buildStreamUrl({
+      sourceUrl,
+      platform: config.platform,
+      format,
+      title: result.title,
+    });
+    a.download = `${result.title}.${format.ext}`;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
     a.click();
