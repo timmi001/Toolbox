@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { getAiToolConfig } from '@/lib/ai-tools-config';
-import { ai } from '@/lib/api';
+import { ai, stripMarkdown } from '@/lib/api';
 
 interface AiToolShellProps {
   tool: Tool;
@@ -91,7 +91,7 @@ export function AiToolShell({ tool }: AiToolShellProps) {
       );
 
       const tProcessStart = performance.now();
-      setResult(data.result ?? '');
+      setResult(stripMarkdown(data.result ?? ''));
       const tProcessEnd = performance.now();
 
       // Rendering happens asynchronously after this React state update is
@@ -237,7 +237,7 @@ export function AiToolShell({ tool }: AiToolShellProps) {
               </Button>
             </div>
           </div>
-          <div className="bg-muted/30 border border-border rounded-lg p-4 text-sm text-foreground whitespace-pre-wrap leading-relaxed max-h-[600px] overflow-y-auto font-mono">
+          <div className="bg-muted/30 border border-border rounded-lg p-4 text-sm text-foreground whitespace-pre-wrap leading-relaxed max-h-[600px] overflow-y-auto font-sans">
             {result}
           </div>
         </div>

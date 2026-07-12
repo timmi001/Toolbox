@@ -110,6 +110,27 @@ export const ai = {
     }),
 };
 
+/**
+ * Strips markdown syntax (headers, bold/italic asterisks, bullet markers)
+ * from Gemini's raw output so results render as clean plain text instead of
+ * showing literal `#`/`*` characters. Keeps the underlying text content and
+ * line structure intact.
+ */
+export function stripMarkdown(raw: string): string {
+  return raw
+    // Headers: "## Title" -> "Title"
+    .replace(/^#{1,6}\s+/gm, '')
+    // Bullet markers: "* Item" -> "• Item" (single leading asterisk + space)
+    .replace(/^(\s*)[*-]\s+/gm, '$1• ')
+    // Bold: "**text**" -> "text"
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    // Italic: "*text*" -> "text"
+    .replace(/\*(.+?)\*/g, '$1')
+    // Any remaining stray markdown symbols
+    .replace(/[#*]/g, '')
+    .trim();
+}
+
 // ─── HTTP Headers checker ──────────────────────────────────────────────────
 
 export interface HttpHeadersResponse {
