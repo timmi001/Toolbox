@@ -33,3 +33,16 @@ description: Lessons for porting an imported Vercel app when it may already be a
   "marketing" category tools living under `/tools/ai/*` routes). Centralize any
   category→route-path mapping in one helper used by every card/link/search
   component, rather than constructing paths inline from the raw category field.
+
+- If `artifacts/*/.replit-artifact/artifact.toml` files already exist (e.g. from
+  a prior Replit export) but `listArtifacts()` returns empty and no workflows
+  are configured, the platform hasn't scanned/registered them yet. Force
+  registration by round-tripping one artifact.toml through
+  `verifyAndReplaceArtifactToml` (copy it to a sibling `.edit.toml`, call the
+  callback) — this triggers auto-registration of ALL pending artifacts +
+  their workflows in one shot, not just the one you targeted.
+
+- A co-located Express API server behind Replit's shared proxy needs
+  `app.set("trust proxy", 1)` or `express-rate-limit` throws
+  `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR` (proxy sets `X-Forwarded-For`). Easy to
+  miss when porting a rate-limited API server that worked fine on Vercel.
