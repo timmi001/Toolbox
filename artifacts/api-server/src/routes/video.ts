@@ -66,7 +66,10 @@ function runtimeDiagnostics() {
     usingVenvYtDlp: USE_VENV_YTDLP,
     venvPython: VENV_PYTHON,
     resolvedCommand: ytDlpCommand().command,
-    platform: process.platform,
+    // NOTE: named osPlatform (not "platform") to avoid colliding with the
+    // route-level `platform` field (youtube/facebook/etc.) whenever both are
+    // spread into the same log/response object.
+    osPlatform: process.platform,
     nodeVersion: process.version,
     isVercel: IS_VERCEL,
     isLambdaLike: IS_LAMBDA_LIKE,
@@ -220,6 +223,53 @@ type FailureReason =
   | "malformed_response"
   | "unknown_extractor_error";
 
+/** Name of the binary/command that yt-dlp resolution would attempt to run. Used to report exactly what's missing. */
+function missingBinaryName(): string {
+  return ytDlpCommand().command;
+}
+
+const VERCEL_LIMITATION_EXPLANATION =
+  "This is running on a Vercel serverless function. Vercel's Node.js function runtime is an ephemeral " +
+  "container that only contains Node.js itself — it has no OS-level binaries (no yt-dlp, no Python, no " +
+  "ffmpeg) and no package manager to install them at deploy time (no apt/pip/nix, no persistent " +
+  "filesystem outside /tmp). Any execFile/spawn of an external binary will always throw ENOENT here, " +
+  "regardless of how the command path is resolved. This route can only work on a host with a persistent " +
+  "filesystem and the ability to install system packages (e.g. this project's Replit deployment, a VPS, " +
+  "or a Docker container) — it cannot be made to work inside a Vercel serverless function.";
+
+/**
+ * Builds the client-facing error body. In development we never return the
+ * generic classifyFailure() message — we return the real exception message,
+ * its stack, the missing binary name (if applicable), and (on a serverless
+ * host) an explicit explanation of the platform limitation. In production
+ * we keep classifyFailure()'s safer, still-specific message.
+ */
+function buildErrorBody(
+  err: unknown,
+  stderr: string,
+): { status: number; body: Record<string, unknown> } {
+  const { status, message, reason } = classifyFailure(err, stderr);
+  if (!isDev) {
+    return { status, body: { error: message, reason } };
+  }
+
+  const rawError = err instanceof Error ? err : new Error(stderr || String(err));
+  const body: Record<string, unknown> = {
+    error: rawError.message || message,
+    reason,
+    stack: rawError.stack,
+    stderr: stderr || undefined,
+  };
+  if (reason === "missing_binary") {
+    body.missingBinary = missingBinaryName();
+    body.runtime = runtimeDiagnostics();
+    if (IS_SERVERLESS) {
+      body.vercelLimitation = VERCEL_LIMITATION_EXPLANATION;
+    }
+  }
+  return { status, body };
+}
+
 function classifyFailure(
   err: unknown,
   stderr: string,
@@ -227,7 +277,7 @@ function classifyFailure(
   if (isMissingBinaryError(err)) {
     return {
       status: 500,
-      message: "The video downloader isn't available on this server right now. Please contact support.",
+      message: `Missing required binary "${missingBinaryName()}" — it is not installed or not on PATH in this environment.`,
       reason: "missing_binary",
     };
   }
@@ -382,7 +432,12 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
     return;
   }
 
+  logger.info({ requestId, platform, step: "validate_url", stage: "start" }, "[video/download] validating URL");
   const targetUrl = validation.url.toString();
+  logger.info(
+    { requestId, platform, step: "validate_url", stage: "done", targetUrl },
+    "[video/download] URL validated",
+  );
   logger.info({ requestId, platform }, "[video/download] request received");
 
   try {
@@ -397,6 +452,11 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
       ...extractorArgsFor(platform),
       targetUrl,
     ];
+
+    logger.info(
+      { requestId, platform, step: "extract_info", stage: "start", command },
+      "[video/download] extracting video info via yt-dlp",
+    );
 
     // Instagram in particular intermittently returns a transient "empty
     // media response" for genuinely public, accessible posts — a flaky
@@ -428,23 +488,34 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
       }
     }
 
+    logger.info(
+      { requestId, platform, step: "extract_info", stage: "done", ms: Date.now() - startedAt },
+      "[video/download] video info extracted",
+    );
+
     let info: YtDlpInfo;
     try {
       info = JSON.parse(stdout) as YtDlpInfo;
     } catch (parseErr) {
+      const e = parseErr as Error;
       logger.error(
-        { requestId, platform, err: (parseErr as Error).message },
+        { requestId, platform, step: "extract_info", err: e.message, stack: e.stack, stdoutSnippet: stdout.slice(0, 500) },
         "[video/download] yt-dlp returned non-JSON output",
       );
-      res.status(502).json({ error: "The video source returned an unexpected response. Please try again." });
+      res.status(502).json(
+        isDev
+          ? { error: e.message, reason: "malformed_response", stack: e.stack }
+          : { error: "The video source returned an unexpected response. Please try again." },
+      );
       return;
     }
 
+    logger.info({ requestId, platform, step: "select_formats", stage: "start" }, "[video/download] processing formats");
     const formats = selectFormats(info);
 
     if (formats.length === 0) {
       logger.warn(
-        { requestId, platform, rawFormatCount: info.formats?.length ?? 0 },
+        { requestId, platform, step: "select_formats", rawFormatCount: info.formats?.length ?? 0 },
         "[video/download] no usable progressive formats after filtering",
       );
       res.status(422).json({
@@ -452,9 +523,13 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
       });
       return;
     }
+    logger.info(
+      { requestId, platform, step: "select_formats", stage: "done", formatCount: formats.length },
+      "[video/download] formats selected",
+    );
 
     logger.info(
-      { requestId, platform, formatCount: formats.length, ms: Date.now() - startedAt },
+      { requestId, platform, step: "return_response", formatCount: formats.length, ms: Date.now() - startedAt },
       "[video/download] DONE",
     );
     res.json({
@@ -465,24 +540,26 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
     });
   } catch (err) {
     const stderr = extractStderr(err);
-    const { status, message, reason } = classifyFailure(err, stderr);
-    // Missing-binary failures are a deployment/environment problem, not a
-    // per-request/user-data concern — always log full diagnostics (not just
-    // in dev) so a production/Vercel failure reports the real cause instead
-    // of only "ENOENT" with no context.
+    const { status, body } = buildErrorBody(err, stderr);
+    const rawError = err instanceof Error ? err : new Error(stderr || String(err));
+    // Always log the complete error, including stack — regardless of
+    // NODE_ENV — so the real cause is traceable in server logs even when
+    // the client-facing response is intentionally generic in production.
     logger.error(
       {
         requestId,
         platform,
-        reason,
+        step: "failed",
         status,
         ms: Date.now() - startedAt,
-        detail: isDev ? stderr || (err as Error)?.message : undefined,
-        ...(reason === "missing_binary" ? runtimeDiagnostics() : {}),
+        err: rawError.message,
+        stack: rawError.stack,
+        stderr: stderr || undefined,
+        ...(body["reason"] === "missing_binary" ? { missingBinary: missingBinaryName(), ...runtimeDiagnostics() } : {}),
       },
       "[video/download] failed",
     );
-    res.status(status).json({ error: message });
+    res.status(status).json(body);
   }
 });
 
@@ -528,6 +605,10 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
   // response is chunked and the browser shows bytes-received progress
   // instead of an exact percentage — less precise, but never wrong.
   const targetUrl = validation.url.toString();
+  logger.info(
+    { requestId, platform, format, step: "validate_url", stage: "done", targetUrl },
+    "[video/stream] URL validated",
+  );
 
   logger.info({ requestId, platform, format }, "[video/stream] request received");
 
@@ -535,6 +616,10 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
   // binary (ENOENT) surfaces asynchronously via the 'error' event below,
   // which is handled and mapped to a clear 500 response.
   const { command: streamCommand, baseArgs: streamBaseArgs } = ytDlpCommand();
+  logger.info(
+    { requestId, platform, step: "download_video", stage: "start", command: streamCommand },
+    "[video/stream] starting yt-dlp process",
+  );
   const child = spawn(
     streamCommand,
     [
@@ -603,21 +688,38 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
   child.on("error", (err) => {
     clearTimeout(killTimer);
     const missingBinary = isMissingBinaryError(err);
+    // Always log the full exception + stack, regardless of NODE_ENV.
     logger.error(
       {
         requestId,
         platform,
+        step: "download_video",
         err: err.message,
+        stack: err.stack,
         missingBinary,
-        ...(missingBinary ? runtimeDiagnostics() : {}),
+        ...(missingBinary ? { missingBinaryName: missingBinaryName(), ...runtimeDiagnostics() } : {}),
       },
       "[video/stream] failed to start",
     );
     if (!started && !res.headersSent) {
+      if (!isDev) {
+        res.status(missingBinary ? 500 : 502).json({
+          error: missingBinary
+            ? `Missing required binary "${missingBinaryName()}" — it is not installed or not on PATH in this environment.`
+            : "Failed to start the download. Please try again.",
+        });
+        return;
+      }
       res.status(missingBinary ? 500 : 502).json({
-        error: missingBinary
-          ? "The video downloader isn't available on this server right now."
-          : "Failed to start the download. Please try again.",
+        error: err.message,
+        stack: err.stack,
+        ...(missingBinary
+          ? {
+              missingBinary: missingBinaryName(),
+              runtime: runtimeDiagnostics(),
+              ...(IS_SERVERLESS ? { vercelLimitation: VERCEL_LIMITATION_EXPLANATION } : {}),
+            }
+          : {}),
       });
     } else if (!res.writableEnded) {
       res.end();
@@ -629,36 +731,38 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
     const ms = Date.now() - startedAt;
 
     if (!started) {
-      const { status, message, reason } = classifyFailure(
-        signal === "SIGKILL" ? { killed: true } : null,
-        stderrBuf,
-      );
+      const simulatedErr = signal === "SIGKILL" ? { killed: true } : new Error(stderrBuf || `yt-dlp exited with code ${code}`);
+      const { status, body } = buildErrorBody(simulatedErr, stderrBuf);
+      // Always log the complete error/stack, regardless of NODE_ENV.
       logger.error(
         {
           requestId,
           platform,
+          step: "download_video",
           code,
           signal,
-          reason,
           ms,
-          detail: isDev ? stderrBuf : undefined,
-          ...(reason === "missing_binary" ? runtimeDiagnostics() : {}),
+          stderr: stderrBuf || undefined,
+          ...(body["reason"] === "missing_binary" ? { missingBinary: missingBinaryName(), ...runtimeDiagnostics() } : {}),
         },
         "[video/stream] produced no output before exiting",
       );
       if (!res.headersSent) {
-        res.status(status).json({ error: message });
+        res.status(status).json(body);
       }
       return;
     }
 
     if (code !== 0 && !clientDisconnected) {
       logger.error(
-        { requestId, platform, code, signal, bytesWritten, ms, detail: isDev ? stderrBuf : undefined },
+        { requestId, platform, step: "process_file", code, signal, bytesWritten, ms, stderr: stderrBuf || undefined },
         "[video/stream] exited with error mid-stream",
       );
     } else {
-      logger.info({ requestId, platform, bytesWritten, ms, clientDisconnected }, "[video/stream] DONE");
+      logger.info(
+        { requestId, platform, step: "return_response", bytesWritten, ms, clientDisconnected },
+        "[video/stream] DONE",
+      );
     }
     if (!res.writableEnded) res.end();
   });
