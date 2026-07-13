@@ -39,10 +39,53 @@ function ytDlpCommand(): { command: string; baseArgs: string[] } {
   return { command: "yt-dlp", baseArgs: [] };
 }
 
-logger.info(
-  { usingVenvYtDlp: USE_VENV_YTDLP, venvPython: VENV_PYTHON },
-  "[video] yt-dlp resolution",
+// ---------------------------------------------------------------------------
+// Serverless / binary-support detection.
+//
+// yt-dlp, the venv Python interpreter, and ffmpeg are all OS-level binaries
+// that only exist because this Nix-based Replit environment installs them.
+// Vercel (and other Lambda-style serverless hosts) run Node functions in a
+// minimal, ephemeral container image that has NONE of these binaries and no
+// way to install them at deploy time — so `execFile`/`spawn` for any of them
+// will always throw ENOENT there, regardless of how the code resolves the
+// command. This is a platform capability gap, not a fixable bug: this route
+// can only ever work on a host that provides those binaries (this Replit
+// deployment, a VPS/container host, etc.) — never on Vercel serverless.
+// Detect it up front so failures log the real cause instead of a mystery
+// ENOENT, and so the one-time startup log makes the limitation obvious
+// before any request even comes in.
+// ---------------------------------------------------------------------------
+const IS_VERCEL = Boolean(process.env["VERCEL"] || process.env["VERCEL_ENV"]);
+const IS_LAMBDA_LIKE = Boolean(
+  process.env["AWS_LAMBDA_FUNCTION_NAME"] || process.env["NETLIFY"] || process.env["LAMBDA_TASK_ROOT"],
 );
+const IS_SERVERLESS = IS_VERCEL || IS_LAMBDA_LIKE;
+
+function runtimeDiagnostics() {
+  return {
+    usingVenvYtDlp: USE_VENV_YTDLP,
+    venvPython: VENV_PYTHON,
+    resolvedCommand: ytDlpCommand().command,
+    platform: process.platform,
+    nodeVersion: process.version,
+    isVercel: IS_VERCEL,
+    isLambdaLike: IS_LAMBDA_LIKE,
+    isServerless: IS_SERVERLESS,
+    PATH: process.env["PATH"],
+  };
+}
+
+if (IS_SERVERLESS) {
+  logger.error(
+    runtimeDiagnostics(),
+    "[video] Running in a serverless runtime (Vercel/Lambda-style). yt-dlp, ffmpeg, and Python are " +
+      "OS binaries that do not exist in this runtime and cannot be installed at deploy time — every " +
+      "video-download request WILL fail with 'missing_binary' (ENOENT). This route must be hosted on a " +
+      "persistent VM/container (e.g. this app's Replit deployment), not on Vercel serverless functions.",
+  );
+} else {
+  logger.info(runtimeDiagnostics(), "[video] yt-dlp resolution");
+}
 
 // ---------------------------------------------------------------------------
 // Timeouts — configurable via env so slow networks / large files don't need
@@ -423,6 +466,10 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
   } catch (err) {
     const stderr = extractStderr(err);
     const { status, message, reason } = classifyFailure(err, stderr);
+    // Missing-binary failures are a deployment/environment problem, not a
+    // per-request/user-data concern — always log full diagnostics (not just
+    // in dev) so a production/Vercel failure reports the real cause instead
+    // of only "ENOENT" with no context.
     logger.error(
       {
         requestId,
@@ -431,6 +478,7 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
         status,
         ms: Date.now() - startedAt,
         detail: isDev ? stderr || (err as Error)?.message : undefined,
+        ...(reason === "missing_binary" ? runtimeDiagnostics() : {}),
       },
       "[video/download] failed",
     );
@@ -556,7 +604,13 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
     clearTimeout(killTimer);
     const missingBinary = isMissingBinaryError(err);
     logger.error(
-      { requestId, platform, err: err.message, missingBinary },
+      {
+        requestId,
+        platform,
+        err: err.message,
+        missingBinary,
+        ...(missingBinary ? runtimeDiagnostics() : {}),
+      },
       "[video/stream] failed to start",
     );
     if (!started && !res.headersSent) {
@@ -580,7 +634,16 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
         stderrBuf,
       );
       logger.error(
-        { requestId, platform, code, signal, reason, ms, detail: isDev ? stderrBuf : undefined },
+        {
+          requestId,
+          platform,
+          code,
+          signal,
+          reason,
+          ms,
+          detail: isDev ? stderrBuf : undefined,
+          ...(reason === "missing_binary" ? runtimeDiagnostics() : {}),
+        },
         "[video/stream] produced no output before exiting",
       );
       if (!res.headersSent) {
