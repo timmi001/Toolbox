@@ -31,10 +31,6 @@ export default function Home() {
     <div className="space-y-24 pb-12 animate-in fade-in duration-700">
       {/* Hero Section */}
       <section className="text-center pt-16 pb-8 px-4">
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground mb-6">
-          Premium tools.<br />
-          <span className="text-primary">Always free.</span>
-        </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
           100+ fully functional utility tools running securely in your browser. Fast, reliable, and completely free.
         </p>
