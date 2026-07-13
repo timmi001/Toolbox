@@ -371,6 +371,211 @@ const configs: Record<string, AiToolConfig> = {
       { key: "tone", label: "Tone", type: "select", options: ["Personal", "Inspiring", "Professional", "Passionate"] },
     ],
   },
+  "ai-resume-summary": {
+    toolId: "ai-resume-summary",
+    buttonLabel: "Generate Summary",
+    fields: [
+      { key: "target_role", label: "Target Job Title", type: "text", placeholder: "e.g. Senior Software Engineer", required: true },
+      { key: "experience", label: "Background / Experience", type: "textarea", placeholder: "Briefly describe your experience, key skills, and achievements...", required: true, rows: 4 },
+      { key: "skills", label: "Key Skills", type: "text", placeholder: "e.g. React, Node.js, Leadership" },
+    ],
+  },
+  "ai-resume-bullet-points": {
+    toolId: "ai-resume-bullet-points",
+    buttonLabel: "Generate Bullet Points",
+    fields: [
+      { key: "role", label: "Job Title", type: "text", placeholder: "e.g. Marketing Manager", required: true },
+      { key: "responsibilities", label: "Responsibilities / Tasks", type: "textarea", placeholder: "Describe your day-to-day tasks and responsibilities...", required: true, rows: 5 },
+      { key: "count", label: "Number of Bullet Points", type: "select", options: ["3","5","8"] },
+    ],
+  },
+  "ai-linkedin-headline": {
+    toolId: "ai-linkedin-headline",
+    buttonLabel: "Generate Headline",
+    fields: [
+      { key: "role", label: "Current Role / Title", type: "text", placeholder: "e.g. Product Designer at Acme", required: true },
+      { key: "skills", label: "Key Skills / Specialties", type: "text", placeholder: "e.g. UX research, design systems, Figma" },
+      { key: "industry", label: "Industry", type: "text", placeholder: "e.g. fintech, healthcare, SaaS" },
+    ],
+  },
+  "ai-professional-bio": {
+    toolId: "ai-professional-bio",
+    buttonLabel: "Generate Bio",
+    fields: [
+      { key: "name", label: "Your Name", type: "text", placeholder: "e.g. Jane Doe", required: true },
+      { key: "role", label: "Role / Title", type: "text", placeholder: "e.g. Senior Data Scientist", required: true },
+      { key: "background", label: "Background / Highlights", type: "textarea", placeholder: "Key experience, achievements, and interests...", required: true, rows: 4 },
+      { key: "tone", label: "Tone", type: "select", options: ["Professional","Friendly","Confident","Creative"] },
+    ],
+  },
+  "ai-twitter-post": {
+    toolId: "ai-twitter-post",
+    buttonLabel: "Generate Post",
+    fields: [
+      { key: "topic", label: "Topic / Message", type: "text", placeholder: "e.g. launching our new AI feature today", required: true },
+      { key: "tone", label: "Tone", type: "select", options: ["Witty","Informative","Bold","Casual","Professional"] },
+    ],
+  },
+  "ai-linkedin-post": {
+    toolId: "ai-linkedin-post",
+    buttonLabel: "Generate Post",
+    fields: [
+      { key: "topic", label: "Topic / Message", type: "text", placeholder: "e.g. lessons learned from scaling a remote team", required: true },
+      { key: "goal", label: "Goal", type: "select", options: ["Thought Leadership","Career Update","Company News","Engagement"] },
+      { key: "tone", label: "Tone", type: "select", options: ["Professional","Personal","Inspiring"] },
+    ],
+  },
+  "ai-tiktok-caption": {
+    toolId: "ai-tiktok-caption",
+    buttonLabel: "Generate Caption",
+    fields: [
+      { key: "topic", label: "Video Topic / Description", type: "text", placeholder: "e.g. day in my life as a software engineer", required: true },
+      { key: "tone", label: "Tone", type: "select", options: ["Fun","Trendy","Relatable","Bold"] },
+    ],
+  },
+  "ai-youtube-description": {
+    toolId: "ai-youtube-description",
+    buttonLabel: "Generate Description",
+    fields: [
+      { key: "title", label: "Video Title", type: "text", placeholder: "e.g. How I Built a SaaS App in 30 Days", required: true },
+      { key: "topic", label: "Video Summary", type: "textarea", placeholder: "What is the video about? Key points covered...", required: true, rows: 4 },
+      { key: "keywords", label: "Target Keywords", type: "text", placeholder: "e.g. saas, indie hacker, coding" },
+    ],
+  },
+  "ai-blog-title": {
+    toolId: "ai-blog-title",
+    buttonLabel: "Generate Titles",
+    fields: [
+      { key: "topic", label: "Blog Topic", type: "text", placeholder: "e.g. productivity tips for remote workers", required: true },
+      { key: "keywords", label: "Target Keywords", type: "text", placeholder: "e.g. remote work, productivity" },
+    ],
+  },
+  "ai-blog-outline": {
+    toolId: "ai-blog-outline",
+    buttonLabel: "Generate Outline",
+    fields: [
+      { key: "topic", label: "Blog Topic", type: "text", placeholder: "e.g. beginner's guide to investing in index funds", required: true },
+      { key: "audience", label: "Target Audience", type: "text", placeholder: "e.g. young professionals, beginners" },
+    ],
+  },
+  "ai-blog-introduction": {
+    toolId: "ai-blog-introduction",
+    buttonLabel: "Generate Introduction",
+    fields: [
+      { key: "topic", label: "Blog Topic", type: "text", placeholder: "e.g. why most startups fail in year one", required: true },
+      { key: "hook", label: "Hook Style", type: "select", options: ["Question","Statistic","Story","Bold Statement"] },
+    ],
+  },
+  "ai-blog-conclusion": {
+    toolId: "ai-blog-conclusion",
+    buttonLabel: "Generate Conclusion",
+    fields: [
+      { key: "topic", label: "Blog Topic", type: "text", placeholder: "e.g. how to build a personal budget", required: true },
+      { key: "cta", label: "Call to Action (optional)", type: "text", placeholder: "e.g. subscribe to our newsletter, book a free call" },
+    ],
+  },
+  "ai-article-rewriter": {
+    toolId: "ai-article-rewriter",
+    buttonLabel: "Rewrite Article",
+    fields: [
+      { key: "text", label: "Article to Rewrite", type: "textarea", placeholder: "Paste the full article text here...", required: true, rows: 10 },
+    ],
+  },
+  "ai-paragraph-rewriter": {
+    toolId: "ai-paragraph-rewriter",
+    buttonLabel: "Rewrite Paragraph",
+    fields: [
+      { key: "text", label: "Paragraph to Rewrite", type: "textarea", placeholder: "Paste your paragraph here...", required: true, rows: 5 },
+      { key: "style", label: "Style", type: "select", options: ["Standard","Formal","Casual","Simpler"] },
+    ],
+  },
+  "ai-sentence-rewriter": {
+    toolId: "ai-sentence-rewriter",
+    buttonLabel: "Rewrite Sentence",
+    fields: [
+      { key: "text", label: "Sentence(s) to Rewrite", type: "textarea", placeholder: "Enter one or more sentences...", required: true, rows: 3 },
+      { key: "style", label: "Style", type: "select", options: ["Standard","Formal","Casual","Concise"] },
+    ],
+  },
+  "ai-cold-email": {
+    toolId: "ai-cold-email",
+    buttonLabel: "Generate Email",
+    fields: [
+      { key: "recipient", label: "Recipient (name/role)", type: "text", placeholder: "e.g. Head of Marketing" },
+      { key: "offer", label: "What You're Offering", type: "textarea", placeholder: "Describe your product/service and the value it provides...", required: true, rows: 4 },
+      { key: "tone", label: "Tone", type: "select", options: ["Direct","Friendly","Professional"] },
+    ],
+  },
+  "ai-sales-email": {
+    toolId: "ai-sales-email",
+    buttonLabel: "Generate Email",
+    fields: [
+      { key: "product", label: "Product / Offer", type: "text", placeholder: "e.g. annual plan upgrade with 20% discount", required: true },
+      { key: "audience", label: "Target Audience", type: "text", placeholder: "e.g. existing free-tier users" },
+      { key: "tone", label: "Tone", type: "select", options: ["Persuasive","Friendly","Urgent"] },
+    ],
+  },
+  "ai-followup-email": {
+    toolId: "ai-followup-email",
+    buttonLabel: "Generate Email",
+    fields: [
+      { key: "context", label: "Context / Situation", type: "textarea", placeholder: "e.g. following up after an interview last week, no response to a proposal sent 5 days ago...", required: true, rows: 4 },
+      { key: "tone", label: "Tone", type: "select", options: ["Polite","Direct","Warm"] },
+    ],
+  },
+  "ai-support-reply": {
+    toolId: "ai-support-reply",
+    buttonLabel: "Generate Reply",
+    fields: [
+      { key: "issue", label: "Customer's Issue / Message", type: "textarea", placeholder: "Paste or describe the customer's complaint or question...", required: true, rows: 4 },
+      { key: "tone", label: "Tone", type: "select", options: ["Empathetic","Professional","Friendly"] },
+    ],
+  },
+  "ai-thank-you-email": {
+    toolId: "ai-thank-you-email",
+    buttonLabel: "Generate Email",
+    fields: [
+      { key: "occasion", label: "Occasion", type: "text", placeholder: "e.g. job interview, business meeting, customer purchase", required: true },
+      { key: "recipient", label: "Recipient (name/role)", type: "text", placeholder: "e.g. Sarah, Hiring Manager" },
+      { key: "details", label: "Additional Details (optional)", type: "textarea", placeholder: "Anything specific to mention...", rows: 3 },
+    ],
+  },
+  "ai-text-improver": {
+    toolId: "ai-text-improver",
+    buttonLabel: "Improve Text",
+    fields: [
+      { key: "text", label: "Text to Improve", type: "textarea", placeholder: "Paste your text here...", required: true, rows: 8 },
+    ],
+  },
+  "ai-tone-changer": {
+    toolId: "ai-tone-changer",
+    buttonLabel: "Change Tone",
+    fields: [
+      { key: "text", label: "Text", type: "textarea", placeholder: "Paste your text here...", required: true, rows: 6 },
+      { key: "tone", label: "Target Tone", type: "select", options: ["Formal","Friendly","Confident","Professional","Casual","Persuasive"], required: true },
+    ],
+  },
+  "ai-expand-text": {
+    toolId: "ai-expand-text",
+    buttonLabel: "Expand Text",
+    fields: [
+      { key: "text", label: "Text to Expand", type: "textarea", placeholder: "Paste the text you want to expand...", required: true, rows: 5 },
+    ],
+  },
+  "ai-shorten-text": {
+    toolId: "ai-shorten-text",
+    buttonLabel: "Shorten Text",
+    fields: [
+      { key: "text", label: "Text to Shorten", type: "textarea", placeholder: "Paste the text you want to shorten...", required: true, rows: 6 },
+    ],
+  },
+  "ai-proofreader": {
+    toolId: "ai-proofreader",
+    buttonLabel: "Proofread Text",
+    fields: [
+      { key: "text", label: "Text to Proofread", type: "textarea", placeholder: "Paste your text here for a full proofreading pass...", required: true, rows: 8 },
+    ],
+  },
 };
 
 export function getAiToolConfig(toolId: string): AiToolConfig | undefined {

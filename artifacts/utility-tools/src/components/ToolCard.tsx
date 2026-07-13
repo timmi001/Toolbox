@@ -21,6 +21,11 @@ const categoryColors: Record<ToolCategory, { bubble: string; hover: string; titl
   marketing:       { bubble: 'bg-fuchsia-500/10 text-fuchsia-500', hover: 'group-hover:bg-fuchsia-500 group-hover:text-white', title: 'group-hover:text-fuchsia-500' },
   audio:           { bubble: 'bg-orange-500/10 text-orange-500', hover: 'group-hover:bg-orange-500 group-hover:text-white',  title: 'group-hover:text-orange-500' },
   video:           { bubble: 'bg-cyan-500/10 text-cyan-500',     hover: 'group-hover:bg-cyan-500 group-hover:text-white',    title: 'group-hover:text-cyan-500' },
+  'ai-resume':       { bubble: 'bg-sky-500/10 text-sky-500',       hover: 'group-hover:bg-sky-500 group-hover:text-white',       title: 'group-hover:text-sky-500' },
+  'ai-social':       { bubble: 'bg-rose-500/10 text-rose-500',     hover: 'group-hover:bg-rose-500 group-hover:text-white',      title: 'group-hover:text-rose-500' },
+  'ai-blogging-seo': { bubble: 'bg-lime-500/10 text-lime-500',     hover: 'group-hover:bg-lime-500 group-hover:text-white',      title: 'group-hover:text-lime-500' },
+  'ai-email':        { bubble: 'bg-yellow-500/10 text-yellow-600', hover: 'group-hover:bg-yellow-500 group-hover:text-white',    title: 'group-hover:text-yellow-600' },
+  'ai-grammar':      { bubble: 'bg-slate-500/10 text-slate-500',   hover: 'group-hover:bg-slate-500 group-hover:text-white',     title: 'group-hover:text-slate-500' },
 };
 
 export function ToolCard({ tool }: ToolCardProps) {

@@ -238,6 +238,31 @@ const AiLinkedInAdCopyGenerator = L(() => import("@/pages/tools/ai/ai-linkedin-a
 const AiSalesCopyGenerator = L(() => import("@/pages/tools/ai/ai-sales-copy-generator"));
 const AiLandingPageCopyGenerator = L(() => import("@/pages/tools/ai/ai-landing-page-copy-generator"));
 const AiCtaGenerator = L(() => import("@/pages/tools/ai/ai-cta-generator"));
+const AiResumeSummary = L(() => import("@/pages/tools/ai/ai-resume-summary"));
+const AiResumeBulletPoints = L(() => import("@/pages/tools/ai/ai-resume-bullet-points"));
+const AiLinkedinHeadline = L(() => import("@/pages/tools/ai/ai-linkedin-headline"));
+const AiProfessionalBio = L(() => import("@/pages/tools/ai/ai-professional-bio"));
+const AiTwitterPost = L(() => import("@/pages/tools/ai/ai-twitter-post"));
+const AiLinkedinPost = L(() => import("@/pages/tools/ai/ai-linkedin-post"));
+const AiTiktokCaption = L(() => import("@/pages/tools/ai/ai-tiktok-caption"));
+const AiYoutubeDescription = L(() => import("@/pages/tools/ai/ai-youtube-description"));
+const AiBlogTitle = L(() => import("@/pages/tools/ai/ai-blog-title"));
+const AiBlogOutline = L(() => import("@/pages/tools/ai/ai-blog-outline"));
+const AiBlogIntroduction = L(() => import("@/pages/tools/ai/ai-blog-introduction"));
+const AiBlogConclusion = L(() => import("@/pages/tools/ai/ai-blog-conclusion"));
+const AiArticleRewriter = L(() => import("@/pages/tools/ai/ai-article-rewriter"));
+const AiParagraphRewriter = L(() => import("@/pages/tools/ai/ai-paragraph-rewriter"));
+const AiSentenceRewriter = L(() => import("@/pages/tools/ai/ai-sentence-rewriter"));
+const AiColdEmail = L(() => import("@/pages/tools/ai/ai-cold-email"));
+const AiSalesEmail = L(() => import("@/pages/tools/ai/ai-sales-email"));
+const AiFollowupEmail = L(() => import("@/pages/tools/ai/ai-followup-email"));
+const AiSupportReply = L(() => import("@/pages/tools/ai/ai-support-reply"));
+const AiThankYouEmail = L(() => import("@/pages/tools/ai/ai-thank-you-email"));
+const AiTextImprover = L(() => import("@/pages/tools/ai/ai-text-improver"));
+const AiToneChanger = L(() => import("@/pages/tools/ai/ai-tone-changer"));
+const AiExpandText = L(() => import("@/pages/tools/ai/ai-expand-text"));
+const AiShortenText = L(() => import("@/pages/tools/ai/ai-shorten-text"));
+const AiProofreader = L(() => import("@/pages/tools/ai/ai-proofreader"));
 
 const queryClient = new QueryClient();
 
@@ -259,6 +284,11 @@ function Router() {
         <Route path="/calculators" component={CategoryPage} />
         <Route path="/ai-tools" component={CategoryPage} />
         <Route path="/ai-marketing-advertising" component={CategoryPage} />
+        <Route path="/ai-resume-tools" component={CategoryPage} />
+        <Route path="/ai-social-media-tools" component={CategoryPage} />
+        <Route path="/ai-blogging-seo-tools" component={CategoryPage} />
+        <Route path="/ai-email-tools" component={CategoryPage} />
+        <Route path="/ai-grammar-tools" component={CategoryPage} />
         <Route path="/audio-tools" component={CategoryPage} />
         <Route path="/video-tools" component={CategoryPage} />
 
@@ -460,6 +490,31 @@ function Router() {
         <Route path="/tools/ai/ai-sales-copy-generator" component={AiSalesCopyGenerator} />
         <Route path="/tools/ai/ai-landing-page-copy-generator" component={AiLandingPageCopyGenerator} />
         <Route path="/tools/ai/ai-cta-generator" component={AiCtaGenerator} />
+        <Route path="/tools/ai/ai-resume-summary" component={AiResumeSummary} />
+        <Route path="/tools/ai/ai-resume-bullet-points" component={AiResumeBulletPoints} />
+        <Route path="/tools/ai/ai-linkedin-headline" component={AiLinkedinHeadline} />
+        <Route path="/tools/ai/ai-professional-bio" component={AiProfessionalBio} />
+        <Route path="/tools/ai/ai-twitter-post" component={AiTwitterPost} />
+        <Route path="/tools/ai/ai-linkedin-post" component={AiLinkedinPost} />
+        <Route path="/tools/ai/ai-tiktok-caption" component={AiTiktokCaption} />
+        <Route path="/tools/ai/ai-youtube-description" component={AiYoutubeDescription} />
+        <Route path="/tools/ai/ai-blog-title" component={AiBlogTitle} />
+        <Route path="/tools/ai/ai-blog-outline" component={AiBlogOutline} />
+        <Route path="/tools/ai/ai-blog-introduction" component={AiBlogIntroduction} />
+        <Route path="/tools/ai/ai-blog-conclusion" component={AiBlogConclusion} />
+        <Route path="/tools/ai/ai-article-rewriter" component={AiArticleRewriter} />
+        <Route path="/tools/ai/ai-paragraph-rewriter" component={AiParagraphRewriter} />
+        <Route path="/tools/ai/ai-sentence-rewriter" component={AiSentenceRewriter} />
+        <Route path="/tools/ai/ai-cold-email" component={AiColdEmail} />
+        <Route path="/tools/ai/ai-sales-email" component={AiSalesEmail} />
+        <Route path="/tools/ai/ai-followup-email" component={AiFollowupEmail} />
+        <Route path="/tools/ai/ai-support-reply" component={AiSupportReply} />
+        <Route path="/tools/ai/ai-thank-you-email" component={AiThankYouEmail} />
+        <Route path="/tools/ai/ai-text-improver" component={AiTextImprover} />
+        <Route path="/tools/ai/ai-tone-changer" component={AiToneChanger} />
+        <Route path="/tools/ai/ai-expand-text" component={AiExpandText} />
+        <Route path="/tools/ai/ai-shorten-text" component={AiShortenText} />
+        <Route path="/tools/ai/ai-proofreader" component={AiProofreader} />
 
         {/* Audio Tools */}
         <Route path="/tools/audio/mp3-converter" component={Mp3Converter} />

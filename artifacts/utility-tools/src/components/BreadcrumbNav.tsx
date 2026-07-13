@@ -20,6 +20,11 @@ const CATEGORY_NAMES: Record<ToolCategory, string> = {
   marketing: 'AI Marketing & Advertising',
   audio: 'Audio Tools',
   video: 'Video Tools',
+  'ai-resume': 'AI Resume Tools',
+  'ai-social': 'AI Social Media Tools',
+  'ai-blogging-seo': 'AI Blogging & SEO Tools',
+  'ai-email': 'AI Email Tools',
+  'ai-grammar': 'AI Grammar & Writing Tools',
 };
 
 const CATEGORY_LINKS: Record<ToolCategory, string> = {
@@ -35,6 +40,11 @@ const CATEGORY_LINKS: Record<ToolCategory, string> = {
   marketing: '/ai-marketing-advertising',
   audio: '/audio-tools',
   video: '/video-tools',
+  'ai-resume': '/ai-resume-tools',
+  'ai-social': '/ai-social-media-tools',
+  'ai-blogging-seo': '/ai-blogging-seo-tools',
+  'ai-email': '/ai-email-tools',
+  'ai-grammar': '/ai-grammar-tools',
 };
 
 export function BreadcrumbNav({ category, toolName }: BreadcrumbNavProps) {

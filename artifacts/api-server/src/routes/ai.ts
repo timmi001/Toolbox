@@ -75,6 +75,31 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-vision-statement": { required: ["future"], maxLengths: { business_name: 100, mission: 300, future: 300, impact: 300 } },
   "ai-company-bio": { required: ["company_name", "mission"], maxLengths: { company_name: 100, founded: 300, mission: 1000, achievements: 500 } },
   "ai-brand-story": { required: ["company_name", "founder_story"], maxLengths: { company_name: 100, founder_story: 1000, problem: 300, solution: 300 } },
+  "ai-resume-summary": { required: ["target_role","experience"], maxLengths: {"target_role":100,"experience":2000,"skills":500} },
+  "ai-resume-bullet-points": { required: ["role","responsibilities"], maxLengths: {"role":150,"responsibilities":3000} },
+  "ai-linkedin-headline": { required: ["role"], maxLengths: {"role":150,"skills":300,"industry":150} },
+  "ai-professional-bio": { required: ["name","role","background"], maxLengths: {"name":100,"role":150,"background":2000} },
+  "ai-twitter-post": { required: ["topic"], maxLengths: {"topic":300} },
+  "ai-linkedin-post": { required: ["topic"], maxLengths: {"topic":300} },
+  "ai-tiktok-caption": { required: ["topic"], maxLengths: {"topic":300} },
+  "ai-youtube-description": { required: ["title","topic"], maxLengths: {"title":200,"topic":2000,"keywords":300} },
+  "ai-blog-title": { required: ["topic"], maxLengths: {"topic":300,"keywords":300} },
+  "ai-blog-outline": { required: ["topic"], maxLengths: {"topic":300,"audience":300} },
+  "ai-blog-introduction": { required: ["topic"], maxLengths: {"topic":300} },
+  "ai-blog-conclusion": { required: ["topic"], maxLengths: {"topic":300,"cta":300} },
+  "ai-article-rewriter": { required: ["text"], maxLengths: {"text":15000} },
+  "ai-paragraph-rewriter": { required: ["text"], maxLengths: {"text":4000} },
+  "ai-sentence-rewriter": { required: ["text"], maxLengths: {"text":1000} },
+  "ai-cold-email": { required: ["offer"], maxLengths: {"recipient":200,"offer":2000} },
+  "ai-sales-email": { required: ["product"], maxLengths: {"product":300,"audience":300} },
+  "ai-followup-email": { required: ["context"], maxLengths: {"context":2000} },
+  "ai-support-reply": { required: ["issue"], maxLengths: {"issue":3000} },
+  "ai-thank-you-email": { required: ["occasion"], maxLengths: {"occasion":300,"recipient":200,"details":1000} },
+  "ai-text-improver": { required: ["text"], maxLengths: {"text":10000} },
+  "ai-tone-changer": { required: ["text"], maxLengths: {"text":8000} },
+  "ai-expand-text": { required: ["text"], maxLengths: {"text":5000} },
+  "ai-shorten-text": { required: ["text"], maxLengths: {"text":10000} },
+  "ai-proofreader": { required: ["text"], maxLengths: {"text":10000} },
 };
 
 // ---------------------------------------------------------------------------
@@ -199,6 +224,81 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 
     case "ai-brand-story":
       return `Craft a compelling brand story for: "${i.company_name}"\n\nFounder/Origin:\n${i.founder_story}\n\nAdditional context:\n- Problem solved: ${i.problem || "undefined"}\n- Solution: ${i.solution || "undefined"}\nTone: ${i.tone || "Personal"}\n\nProvide:\n1. The brand story narrative\n2. Emotional hooks and turning points\n3. How to adapt it for different platforms`;
+
+    case "ai-resume-summary":
+      return `Write a compelling, ATS-friendly professional resume summary (3-4 sentences) for a candidate targeting the role of ${i.target_role}.\n\nBackground: ${i.experience}\nKey skills: ${i.skills || "not specified"}\n\nMake it punchy, results-oriented, and tailored to the target role. Provide 2 alternate versions.`;
+
+    case "ai-resume-bullet-points":
+      return `Convert the following job responsibilities for a ${i.role} into ${i.count || "5"} powerful, achievement-focused resume bullet points.\n\nResponsibilities:\n${i.responsibilities}\n\nRules:\n- Start each bullet with a strong action verb\n- Quantify impact with numbers/metrics where plausible\n- Keep each bullet to one line\n- Focus on outcomes, not just duties`;
+
+    case "ai-linkedin-headline":
+      return `Generate 8 attention-grabbing LinkedIn headlines (under 220 characters each) for someone who is a "${i.role}"${i.industry ? ` in the ${i.industry} industry` : ""}.\nKey skills/specialties: ${i.skills || "not specified"}\n\nMake them keyword-rich for LinkedIn search, specific, and value-focused rather than just a job title.`;
+
+    case "ai-professional-bio":
+      return `Write a ${i.tone || "Professional"} personal bio for ${i.name}, a ${i.role}.\n\nBackground: ${i.background}\n\nProvide 3 versions: a short one-liner (for Twitter/X bio), a medium version (100-150 words for LinkedIn/website "About"), and a longer version (250+ words for a speaker page or press kit). Write in third person.`;
+
+    case "ai-twitter-post":
+      return `Write 5 engaging X (Twitter) posts about: "${i.topic}"\nTone: ${i.tone || "Witty"}\n\nEach post must be under 280 characters. Vary the hook style (question, bold claim, stat, story, list). Include relevant hashtags only where they add value.`;
+
+    case "ai-linkedin-post":
+      return `Write a LinkedIn post about: "${i.topic}"\nGoal: ${i.goal || "Thought Leadership"}\nTone: ${i.tone || "Professional"}\n\nStructure it with a strong hook line, short paragraphs (1-2 sentences each) for scannability, a personal or concrete example, and a closing line that invites engagement (question or CTA). Keep it under 200 words.`;
+
+    case "ai-tiktok-caption":
+      return `Write 5 scroll-stopping TikTok captions for a video about: "${i.topic}"\nTone: ${i.tone || "Fun"}\n\nFor each caption:\n1. Short hook-driven caption (under 150 characters)\n2. 5-8 relevant trending hashtags\n\nMake them native to TikTok's casual, high-energy style.`;
+
+    case "ai-youtube-description":
+      return `Write an SEO-optimized YouTube video description for the video titled "${i.title}".\n\nVideo summary: ${i.topic}\nTarget keywords: ${i.keywords || "derived from topic"}\n\nInclude:\n1. A compelling first 2 lines (shown before "Show more")\n2. A fuller description with natural keyword usage\n3. A placeholder timestamp outline (e.g. 00:00 Intro)\n4. A call to action to subscribe\n5. 10-15 relevant hashtags at the end`;
+
+    case "ai-blog-title":
+      return `Generate 10 catchy, click-worthy blog post titles about: "${i.topic}"\nTarget keywords: ${i.keywords || "derived from topic"}\n\nVary the formats (how-to, listicle, question, ultimate guide, comparison). Keep each title under 70 characters and naturally include the target keyword where possible.`;
+
+    case "ai-blog-outline":
+      return `Create a detailed blog post outline for the topic: "${i.topic}"\nTarget audience: ${i.audience || "general readers"}\n\nProvide:\n1. A working title\n2. Introduction hook idea\n3. 5-8 H2 section headings with 2-3 bullet points of key content under each\n4. A conclusion idea with a call to action\n\nMake it logically structured and comprehensive enough to write a full article from.`;
+
+    case "ai-blog-introduction":
+      return `Write 3 alternative blog post introductions (2-3 short paragraphs each) for a post about: "${i.topic}"\nHook style: ${i.hook || "Question"}\n\nEach introduction should grab attention immediately, establish why the reader should care, and transition naturally into the body of the article.`;
+
+    case "ai-blog-conclusion":
+      return `Write a strong closing conclusion (1-2 short paragraphs) for a blog post about: "${i.topic}"\n\nSummarize the key takeaway, reinforce the value to the reader, and end with a clear call to action${i.cta ? ` encouraging them to: ${i.cta}` : ""}.`;
+
+    case "ai-article-rewriter":
+      return `Rewrite the following article to be more original, engaging, and well-structured while preserving all facts, claims, and meaning. Improve flow, vary sentence structure, and tighten weak phrasing.\n\nOriginal article:\n${i.text}`;
+
+    case "ai-paragraph-rewriter":
+      return `Rewrite the following paragraph in a ${i.style || "Standard"} style, keeping the same meaning but improving flow and word choice.\n\nOriginal paragraph:\n${i.text}`;
+
+    case "ai-sentence-rewriter":
+      return `Rewrite the following sentence(s) in a ${i.style || "Standard"} style. Provide 3 alternative phrasings for each, keeping the original meaning.\n\nOriginal:\n${i.text}`;
+
+    case "ai-cold-email":
+      return `Write a short, effective cold outreach email to ${i.recipient || "a potential customer"} in a ${i.tone || "Direct"} tone.\n\nWhat's being offered:\n${i.offer}\n\nInclude a subject line (prefixed with "Subject:"), a personalized-feeling opener, a clear value proposition, and a low-friction call to action. Keep it under 120 words.`;
+
+    case "ai-sales-email":
+      return `Write a persuasive sales email for: ${i.product}\nTarget audience: ${i.audience || "prospects"}\nTone: ${i.tone || "Persuasive"}\n\nInclude a subject line (prefixed with "Subject:"), a benefit-driven opening, 2-3 key selling points, and a clear call to action. Keep it concise and conversion-focused.`;
+
+    case "ai-followup-email":
+      return `Write a polite, effective follow-up email in a ${i.tone || "Polite"} tone for this situation:\n\n${i.context}\n\nInclude a subject line (prefixed with "Subject:"), a brief reminder of the prior contact, and a clear, low-pressure next step or question.`;
+
+    case "ai-support-reply":
+      return `Write a ${i.tone || "Empathetic"} customer support reply to this issue:\n\n${i.issue}\n\nAcknowledge the customer's frustration or question, provide a clear next step or resolution, and close with a helpful, professional tone. Keep it concise.`;
+
+    case "ai-thank-you-email":
+      return `Write a warm, genuine thank-you email to ${i.recipient || "the recipient"} for the occasion: ${i.occasion}.\n${i.details ? `\nAdditional details: ${i.details}\n` : ""}\nInclude a subject line (prefixed with "Subject:"), a sincere thank you, a specific detail that makes it feel personal, and an appropriate closing.`;
+
+    case "ai-text-improver":
+      return `Improve the clarity, flow, and word choice of the following text while preserving its original meaning and intent. Fix awkward phrasing and tighten wordy sentences.\n\nText:\n${i.text}`;
+
+    case "ai-tone-changer":
+      return `Rewrite the following text in a ${i.tone || "Formal"} tone, keeping the same core meaning and information.\n\nOriginal text:\n${i.text}`;
+
+    case "ai-expand-text":
+      return `Expand the following text into a longer, more detailed version by adding relevant explanation, examples, or context, while keeping the original meaning and tone.\n\nOriginal text:\n${i.text}`;
+
+    case "ai-shorten-text":
+      return `Condense the following text into a shorter, punchier version while keeping the essential meaning and key points intact. Remove redundancy and filler words.\n\nOriginal text:\n${i.text}`;
+
+    case "ai-proofreader":
+      return `Proofread the following text thoroughly. Check grammar, spelling, punctuation, clarity, tone consistency, and word choice.\n\nProvide:\n1. The fully corrected version\n2. A list of every change made with a brief explanation\n\nText:\n${i.text}`;
 
     default:
       return null;

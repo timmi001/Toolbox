@@ -20,6 +20,11 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'ai-marketing-advertising': { title: 'AI Marketing & Advertising', desc: 'Create ad copy, sales messaging, landing page content, and conversion-focused CTAs with AI-powered marketing tools.' },
   'audio-tools': { title: 'Audio Tools', desc: 'Record, trim, merge, convert, and enhance audio files entirely in your browser — no installs needed.' },
   'video-tools': { title: 'Video Tools', desc: 'Trim, merge, compress, rotate, subtitle, and convert videos with simple browser-based tools.' },
+  'ai-resume-tools': { title: 'AI Resume Tools', desc: 'Build resumes, cover letters, LinkedIn headlines, and professional bios with AI.' },
+  'ai-social-media-tools': { title: 'AI Social Media Tools', desc: 'Generate captions, posts, and descriptions for Instagram, X, TikTok, LinkedIn, and YouTube.' },
+  'ai-blogging-seo-tools': { title: 'AI Blogging & SEO Tools', desc: 'Write blog titles, outlines, articles, and SEO meta tags with AI.' },
+  'ai-email-tools': { title: 'AI Email Tools', desc: 'Draft cold emails, sales emails, follow-ups, support replies, and thank-you notes.' },
+  'ai-grammar-tools': { title: 'AI Grammar & Writing Tools', desc: 'Check grammar, improve tone, summarize, paraphrase, and proofread any text.' },
 };
 
 export default function CategoryPage() {
@@ -40,7 +45,13 @@ export default function CategoryPage() {
     categoryPath === 'ai-tools' ? 'ai' :
     categoryPath === 'ai-marketing-advertising' ? 'marketing' :
     categoryPath === 'audio-tools' ? 'audio' :
-    categoryPath === 'video-tools' ? 'video' : 'calculators';
+    categoryPath === 'video-tools' ? 'video' :
+    categoryPath === 'ai-resume-tools' ? 'ai-resume' :
+    categoryPath === 'ai-social-media-tools' ? 'ai-social' :
+    categoryPath === 'ai-blogging-seo-tools' ? 'ai-blogging-seo' :
+    categoryPath === 'ai-email-tools' ? 'ai-email' :
+    categoryPath === 'ai-grammar-tools' ? 'ai-grammar' :
+    'calculators';
 
   useSEO(
     details ? `${details.title} | ToolKit` : 'ToolKit',

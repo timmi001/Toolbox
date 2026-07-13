@@ -1,4 +1,4 @@
-export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'seo' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video';
+export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'seo' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar';
 
 export type Tool = {
   slug: string;
@@ -141,16 +141,16 @@ export const toolsData: Tool[] = [
   { slug: 'pdf-thumbnail', name: 'PDF Thumbnail Generator', description: 'Generate image thumbnails from PDF files.', category: 'pdf', keywords: ['pdf', 'thumbnail', 'image'], new: true, icon: 'Image' },
 
   // AI Tools
-  { slug: 'ai-writer', name: 'AI Writer', description: 'Generate high-quality articles, blog posts, and content on any topic using AI.', category: 'ai', keywords: ['ai', 'writer', 'content', 'article', 'generator'], new: true, icon: 'PenSquare' },
-  { slug: 'ai-summarizer', name: 'AI Summarizer', description: 'Summarize long articles, documents, or text into concise, clear summaries with AI.', category: 'ai', keywords: ['ai', 'summarize', 'summary', 'condense'], new: true, icon: 'FileText' },
-  { slug: 'ai-paraphraser', name: 'AI Paraphraser', description: 'Rewrite text in a different style while preserving the original meaning.', category: 'ai', keywords: ['ai', 'paraphrase', 'rewrite', 'rephrase'], new: true, icon: 'Repeat2' },
-  { slug: 'ai-grammar-checker', name: 'AI Grammar Checker', description: 'Detect and fix grammar, spelling, and punctuation errors using AI.', category: 'ai', keywords: ['ai', 'grammar', 'spelling', 'proofreading'], new: true, icon: 'SpellCheck' },
+  { slug: 'ai-writer', name: 'AI Article Writer', description: 'Generate high-quality articles, blog posts, and content on any topic using AI.', category: 'ai-blogging-seo', keywords: ['ai', 'writer', 'content', 'article', 'generator'], new: true, icon: 'PenSquare' },
+  { slug: 'ai-summarizer', name: 'AI Summarizer', description: 'Summarize long articles, documents, or text into concise, clear summaries with AI.', category: 'ai-grammar', keywords: ['ai', 'summarize', 'summary', 'condense'], new: true, icon: 'FileText' },
+  { slug: 'ai-paraphraser', name: 'AI Paraphrasing Tool', description: 'Rewrite text in a different style while preserving the original meaning.', category: 'ai-grammar', keywords: ['ai', 'paraphrase', 'rewrite', 'rephrase'], new: true, icon: 'Repeat2' },
+  { slug: 'ai-grammar-checker', name: 'AI Grammar Checker', description: 'Detect and fix grammar, spelling, and punctuation errors using AI.', category: 'ai-grammar', keywords: ['ai', 'grammar', 'spelling', 'proofreading'], new: true, icon: 'SpellCheck' },
   { slug: 'ai-humanizer', name: 'AI Humanizer', description: 'Transform robotic AI-generated text into natural, human-sounding writing.', category: 'ai', keywords: ['ai', 'humanize', 'natural', 'human text'], new: true, icon: 'UserRound' },
-  { slug: 'ai-email-writer', name: 'AI Email Writer', description: 'Compose professional, personalized emails for any occasion or audience.', category: 'ai', keywords: ['ai', 'email', 'compose', 'professional'], new: true, icon: 'Mail' },
-  { slug: 'ai-resume-builder', name: 'AI Resume Builder', description: 'Build a polished, ATS-friendly resume from your experience and skills using AI.', category: 'ai', keywords: ['ai', 'resume', 'cv', 'career', 'job'], new: true, icon: 'ClipboardList' },
-  { slug: 'ai-cover-letter', name: 'AI Cover Letter Generator', description: 'Generate tailored cover letters for any job application in seconds.', category: 'ai', keywords: ['ai', 'cover letter', 'job application', 'career'], new: true, icon: 'ScrollText' },
-  { slug: 'ai-seo-title', name: 'AI SEO Title Generator', description: 'Generate click-worthy, SEO-optimized page titles for better search rankings.', category: 'ai', keywords: ['ai', 'seo', 'title', 'meta title', 'search engine'], new: true, icon: 'TrendingUp' },
-  { slug: 'ai-meta-description', name: 'AI Meta Description Generator', description: 'Create concise, keyword-rich meta descriptions to improve click-through rates.', category: 'ai', keywords: ['ai', 'meta description', 'seo', 'snippet'], new: true, icon: 'AlignLeft' },
+  { slug: 'ai-email-writer', name: 'AI Email Writer', description: 'Compose professional, personalized emails for any occasion or audience.', category: 'ai-email', keywords: ['ai', 'email', 'compose', 'professional'], new: true, icon: 'Mail' },
+  { slug: 'ai-resume-builder', name: 'AI Resume Builder', description: 'Build a polished, ATS-friendly resume from your experience and skills using AI.', category: 'ai-resume', keywords: ['ai', 'resume', 'cv', 'career', 'job'], new: true, icon: 'ClipboardList' },
+  { slug: 'ai-cover-letter', name: 'AI Cover Letter Generator', description: 'Generate tailored cover letters for any job application in seconds.', category: 'ai-resume', keywords: ['ai', 'cover letter', 'job application', 'career'], new: true, icon: 'ScrollText' },
+  { slug: 'ai-seo-title', name: 'AI SEO Meta Title Generator', description: 'Generate click-worthy, SEO-optimized page titles for better search rankings.', category: 'ai-blogging-seo', keywords: ['ai', 'seo', 'title', 'meta title', 'search engine'], new: true, icon: 'TrendingUp' },
+  { slug: 'ai-meta-description', name: 'AI SEO Meta Description Generator', description: 'Create concise, keyword-rich meta descriptions to improve click-through rates.', category: 'ai-blogging-seo', keywords: ['ai', 'meta description', 'seo', 'snippet'], new: true, icon: 'AlignLeft' },
   { slug: 'ai-keyword-generator', name: 'AI Keyword Generator', description: 'Discover high-value keywords and search terms for your content and SEO strategy.', category: 'ai', keywords: ['ai', 'keywords', 'seo', 'research'], new: true, icon: 'Tags' },
   { slug: 'ai-sql-generator', name: 'AI SQL Generator', description: 'Generate SQL queries from plain English descriptions — no SQL knowledge required.', category: 'ai', keywords: ['ai', 'sql', 'database', 'query', 'developer'], new: true, icon: 'Database' },
   { slug: 'ai-regex-generator', name: 'AI Regex Generator', description: 'Create regular expressions from human-readable descriptions instantly.', category: 'ai', keywords: ['ai', 'regex', 'regular expression', 'pattern', 'developer'], new: true, icon: 'Regex' },
@@ -163,9 +163,9 @@ export const toolsData: Tool[] = [
   { slug: 'ai-flashcard-generator', name: 'AI Flashcard Generator', description: 'Create flashcards for memorization and spaced repetition on any subject.', category: 'ai', keywords: ['ai', 'flashcards', 'study', 'memorize', 'education'], new: true, icon: 'Layers' },
   { slug: 'ai-interview-questions', name: 'AI Interview Question Generator', description: 'Generate role-specific interview questions for any position and experience level.', category: 'ai', keywords: ['ai', 'interview', 'questions', 'hiring', 'career'], new: true, icon: 'MessageSquare' },
   { slug: 'ai-meeting-notes', name: 'AI Meeting Notes Generator', description: 'Convert raw meeting transcripts into clean, actionable meeting notes.', category: 'ai', keywords: ['ai', 'meeting notes', 'minutes', 'summary', 'business'], new: true, icon: 'ClipboardEdit' },
-  { slug: 'ai-hashtag-generator', name: 'AI Hashtag Generator', description: 'Generate trending, relevant hashtags to maximize your social media reach.', category: 'ai', keywords: ['ai', 'hashtags', 'social media', 'instagram', 'twitter'], new: true, icon: 'Hash' },
-  { slug: 'ai-youtube-title', name: 'AI YouTube Title Generator', description: 'Create click-worthy YouTube video titles that rank and drive views.', category: 'ai', keywords: ['ai', 'youtube', 'title', 'video', 'content creator'], new: true, icon: 'Youtube' },
-  { slug: 'ai-instagram-caption', name: 'AI Instagram Caption Generator', description: 'Write engaging Instagram captions with the right tone and personality.', category: 'ai', keywords: ['ai', 'instagram', 'caption', 'social media', 'content'], new: true, icon: 'Camera' },
+  { slug: 'ai-hashtag-generator', name: 'AI Hashtag Generator', description: 'Generate trending, relevant hashtags to maximize your social media reach.', category: 'ai-social', keywords: ['ai', 'hashtags', 'social media', 'instagram', 'twitter'], new: true, icon: 'Hash' },
+  { slug: 'ai-youtube-title', name: 'AI YouTube Title Generator', description: 'Create click-worthy YouTube video titles that rank and drive views.', category: 'ai-social', keywords: ['ai', 'youtube', 'title', 'video', 'content creator'], new: true, icon: 'Youtube' },
+  { slug: 'ai-instagram-caption', name: 'AI Instagram Caption Generator', description: 'Write engaging Instagram captions with the right tone and personality.', category: 'ai-social', keywords: ['ai', 'instagram', 'caption', 'social media', 'content'], new: true, icon: 'Camera' },
   { slug: 'ai-ad-copy-generator', name: 'AI Ad Copy Generator', description: 'Create high-impact ad copy for paid campaigns, launches, and product promotions.', category: 'marketing', keywords: ['ai', 'ad copy', 'marketing', 'advertising', 'campaign'], new: true, icon: 'Megaphone' },
   { slug: 'ai-facebook-ad-copy-generator', name: 'AI Facebook Ad Copy Generator', description: 'Write persuasive Facebook ad copy tailored to your audience and objective.', category: 'marketing', keywords: ['ai', 'facebook ads', 'social media', 'marketing', 'copy'], new: true, icon: 'BadgeCheck' },
   { slug: 'ai-google-ads-copy-generator', name: 'AI Google Ads Copy Generator', description: 'Generate concise, conversion-focused Google Ads copy for search and display campaigns.', category: 'marketing', keywords: ['ai', 'google ads', 'ppc', 'marketing', 'copy'], new: true, icon: 'Search' },
@@ -173,6 +173,36 @@ export const toolsData: Tool[] = [
   { slug: 'ai-sales-copy-generator', name: 'AI Sales Copy Generator', description: 'Write persuasive sales copy for emails, landing pages, and product offers.', category: 'marketing', keywords: ['ai', 'sales copy', 'conversion', 'marketing', 'copywriting'], new: true, icon: 'TrendingUp' },
   { slug: 'ai-landing-page-copy-generator', name: 'AI Landing Page Copy Generator', description: 'Generate conversion-focused landing page sections, headlines, and benefits.', category: 'marketing', keywords: ['ai', 'landing page', 'copywriting', 'marketing', 'conversion'], new: true, icon: 'LayoutPanelTop' },
   { slug: 'ai-cta-generator', name: 'AI CTA Generator', description: 'Generate clear, compelling call-to-action text for ads, emails, and landing pages.', category: 'marketing', keywords: ['ai', 'cta', 'call to action', 'conversion', 'marketing'], new: true, icon: 'MousePointerSquare' },
+  // AI Resume Tools
+  { slug: 'ai-resume-summary', name: 'AI Resume Summary Generator', description: 'Write a compelling professional summary for the top of your resume based on your background and target role.', category: 'ai-resume', keywords: ["ai","resume","summary","career"], new: true, icon: 'FileText' },
+  { slug: 'ai-resume-bullet-points', name: 'AI Resume Bullet Point Generator', description: 'Turn your job responsibilities into powerful, achievement-focused resume bullet points.', category: 'ai-resume', keywords: ["ai","resume","bullet points","career"], new: true, icon: 'ListChecks' },
+  { slug: 'ai-linkedin-headline', name: 'AI LinkedIn Headline Generator', description: 'Create a standout LinkedIn headline that highlights your role, skills, and value.', category: 'ai-resume', keywords: ["ai","linkedin","headline","career"], new: true, icon: 'Linkedin' },
+  { slug: 'ai-professional-bio', name: 'AI Professional Bio Generator', description: 'Write a polished professional bio for your portfolio, speaker page, or personal website.', category: 'ai-resume', keywords: ["ai","bio","professional","about me"], new: true, icon: 'UserRound' },
+  // AI Social Media Tools
+  { slug: 'ai-twitter-post', name: 'AI X (Twitter) Post Generator', description: 'Generate punchy, engaging X (Twitter) posts and threads on any topic.', category: 'ai-social', keywords: ["ai","twitter","x","social media","post"], new: true, icon: 'Twitter' },
+  { slug: 'ai-linkedin-post', name: 'AI LinkedIn Post Generator', description: 'Write professional LinkedIn posts that drive engagement and establish thought leadership.', category: 'ai-social', keywords: ["ai","linkedin","social media","post"], new: true, icon: 'Linkedin' },
+  { slug: 'ai-tiktok-caption', name: 'AI TikTok Caption Generator', description: 'Create scroll-stopping TikTok captions with the right hooks and hashtags.', category: 'ai-social', keywords: ["ai","tiktok","caption","social media"], new: true, icon: 'Music2' },
+  { slug: 'ai-youtube-description', name: 'AI YouTube Description Generator', description: 'Generate SEO-friendly YouTube video descriptions with timestamps and keywords.', category: 'ai-social', keywords: ["ai","youtube","description","seo"], new: true, icon: 'Youtube' },
+  // AI Blogging & SEO Tools
+  { slug: 'ai-blog-title', name: 'AI Blog Title Generator', description: 'Generate catchy, SEO-friendly blog post titles that get clicks.', category: 'ai-blogging-seo', keywords: ["ai","blog","title","seo"], new: true, icon: 'Heading1' },
+  { slug: 'ai-blog-outline', name: 'AI Blog Outline Generator', description: 'Create a structured blog post outline with headings and key points for any topic.', category: 'ai-blogging-seo', keywords: ["ai","blog","outline","content"], new: true, icon: 'ListOrdered' },
+  { slug: 'ai-blog-introduction', name: 'AI Blog Introduction Generator', description: 'Write an engaging opening paragraph that hooks readers into your blog post.', category: 'ai-blogging-seo', keywords: ["ai","blog","introduction","content"], new: true, icon: 'PenLine' },
+  { slug: 'ai-blog-conclusion', name: 'AI Blog Conclusion Generator', description: 'Wrap up your blog post with a strong conclusion and call to action.', category: 'ai-blogging-seo', keywords: ["ai","blog","conclusion","content"], new: true, icon: 'CheckSquare' },
+  { slug: 'ai-article-rewriter', name: 'AI Article Rewriter', description: 'Rewrite an entire article to be more original and engaging while keeping the facts intact.', category: 'ai-blogging-seo', keywords: ["ai","article","rewrite","content"], new: true, icon: 'RefreshCw' },
+  { slug: 'ai-paragraph-rewriter', name: 'AI Paragraph Rewriter', description: 'Rewrite a single paragraph in a new style or tone.', category: 'ai-blogging-seo', keywords: ["ai","paragraph","rewrite","content"], new: true, icon: 'AlignLeft' },
+  { slug: 'ai-sentence-rewriter', name: 'AI Sentence Rewriter', description: 'Rephrase individual sentences for clarity, variety, or tone.', category: 'ai-blogging-seo', keywords: ["ai","sentence","rewrite","content"], new: true, icon: 'Repeat' },
+  // AI Email Tools
+  { slug: 'ai-cold-email', name: 'AI Cold Email Generator', description: 'Write cold outreach emails that get replies from prospects and leads.', category: 'ai-email', keywords: ["ai","cold email","outreach","sales"], new: true, icon: 'Send' },
+  { slug: 'ai-sales-email', name: 'AI Sales Email Generator', description: 'Create persuasive sales emails that move prospects toward a purchase.', category: 'ai-email', keywords: ["ai","sales email","conversion"], new: true, icon: 'DollarSign' },
+  { slug: 'ai-followup-email', name: 'AI Follow-up Email Generator', description: 'Write polite, effective follow-up emails for any situation.', category: 'ai-email', keywords: ["ai","follow up","email"], new: true, icon: 'Reply' },
+  { slug: 'ai-support-reply', name: 'AI Customer Support Reply Generator', description: 'Generate helpful, empathetic customer support responses in seconds.', category: 'ai-email', keywords: ["ai","customer support","reply","email"], new: true, icon: 'Headset' },
+  { slug: 'ai-thank-you-email', name: 'AI Thank You Email Generator', description: 'Write warm, genuine thank-you emails for interviews, meetings, or purchases.', category: 'ai-email', keywords: ["ai","thank you","email"], new: true, icon: 'HeartHandshake' },
+  // AI Grammar & Writing Tools
+  { slug: 'ai-text-improver', name: 'AI Text Improver', description: 'Improve clarity, flow, and word choice in any piece of writing.', category: 'ai-grammar', keywords: ["ai","text improver","writing","clarity"], new: true, icon: 'Sparkles' },
+  { slug: 'ai-tone-changer', name: 'AI Tone Changer', description: 'Rewrite text in a different tone — formal, friendly, confident, and more.', category: 'ai-grammar', keywords: ["ai","tone","rewrite","writing"], new: true, icon: 'Palette' },
+  { slug: 'ai-expand-text', name: 'AI Expand Text', description: 'Expand short text into a longer, more detailed version.', category: 'ai-grammar', keywords: ["ai","expand","writing","elaborate"], new: true, icon: 'Maximize2' },
+  { slug: 'ai-shorten-text', name: 'AI Shorten Text', description: 'Condense text down to a shorter, punchier version without losing meaning.', category: 'ai-grammar', keywords: ["ai","shorten","condense","writing"], new: true, icon: 'Minimize2' },
+  { slug: 'ai-proofreader', name: 'AI Proofreader', description: 'Get a full proofreading pass — grammar, clarity, tone, and consistency — on your writing.', category: 'ai-grammar', keywords: ["ai","proofread","grammar","editing"], new: true, icon: 'CheckCircle2' },
 
   // Calculators & Converters
   { slug: 'percentage-calculator', name: 'Percentage Calculator', description: 'Calculate percentages easily.', category: 'calculators', keywords: ['percentage', 'math', 'calculator'], popular: true, icon: 'Percent' },
@@ -240,6 +270,11 @@ export const toolsData: Tool[] = [
 // a tool's category must go through this to land on a valid route.
 const ROUTE_CATEGORY: Partial<Record<ToolCategory, string>> = {
   marketing: 'ai',
+  'ai-resume': 'ai',
+  'ai-social': 'ai',
+  'ai-blogging-seo': 'ai',
+  'ai-email': 'ai',
+  'ai-grammar': 'ai',
 };
 export const getToolRoutePath = (tool: Pick<Tool, 'category' | 'slug'>) =>
   `/tools/${ROUTE_CATEGORY[tool.category] ?? tool.category}/${tool.slug}`;

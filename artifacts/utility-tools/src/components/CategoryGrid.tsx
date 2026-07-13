@@ -1,11 +1,16 @@
 import { Link } from 'wouter';
-import { Type, Code, Image as ImageIcon, FileText, Calculator, Search, FileStack, Briefcase, Sparkles, Music, Video, Megaphone } from 'lucide-react';
+import { Type, Code, Image as ImageIcon, FileText, Calculator, Search, FileStack, Briefcase, Sparkles, Music, Video, Megaphone, FileBadge, Share2, Newspaper, SpellCheck2, Mail } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { getToolsByCategory } from '@/lib/tools-data';
 
 const CATEGORIES = [
   { id: 'ai', name: 'AI Tools', icon: Sparkles, path: '/ai-tools', desc: 'Write, summarize, generate code, and more — powered by Gemini.', highlight: true },
   { id: 'marketing', name: 'AI Marketing & Advertising', icon: Megaphone, path: '/ai-marketing-advertising', desc: 'Create ad copy, sales messaging, landing pages, and CTAs with AI.' },
+  { id: 'ai-resume', name: 'AI Resume Tools', icon: FileBadge, path: '/ai-resume-tools', desc: 'Build resumes, cover letters, LinkedIn headlines, and professional bios with AI.' },
+  { id: 'ai-social', name: 'AI Social Media Tools', icon: Share2, path: '/ai-social-media-tools', desc: 'Generate captions, posts, and descriptions for Instagram, X, TikTok, LinkedIn, and YouTube.' },
+  { id: 'ai-blogging-seo', name: 'AI Blogging & SEO Tools', icon: Newspaper, path: '/ai-blogging-seo-tools', desc: 'Write blog titles, outlines, articles, and SEO meta tags with AI.' },
+  { id: 'ai-email', name: 'AI Email Tools', icon: Mail, path: '/ai-email-tools', desc: 'Draft cold emails, sales emails, follow-ups, support replies, and thank-you notes.' },
+  { id: 'ai-grammar', name: 'AI Grammar & Writing Tools', icon: SpellCheck2, path: '/ai-grammar-tools', desc: 'Check grammar, improve tone, summarize, paraphrase, and proofread any text.' },
   { id: 'text', name: 'Text Tools', icon: Type, path: '/text-tools', desc: 'Format, count, and clean text effortlessly.' },
   { id: 'developer', name: 'Developer Tools', icon: Code, path: '/developer-tools', desc: 'JSON, Base64, Hash, and more dev utilities.' },
   { id: 'seo', name: 'SEO Tools', icon: Search, path: '/seo-tools', desc: 'Generate meta tags, sitemaps, schema, and social previews.' },
