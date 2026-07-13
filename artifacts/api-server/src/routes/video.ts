@@ -2,12 +2,47 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { logger } from "../lib/logger";
 
 const execFileAsync = promisify(execFile);
 const router = Router();
 
 const isDev = process.env["NODE_ENV"] !== "production";
+
+// ---------------------------------------------------------------------------
+// yt-dlp resolution.
+//
+// The Nix-provided `yt-dlp` binary on PATH is version-pinned by the nixpkgs
+// channel and can lag over a year behind upstream — old enough that some
+// sites' extractors are simply broken against it (e.g. Instagram's "empty
+// media response" bug, fixed upstream months after this channel's release).
+// A newer version is kept up to date via pip (`uv add yt-dlp[default]`,
+// tracked in pyproject.toml/uv.lock) into the project-local `.pythonlibs`
+// venv — but invoking that venv's own `yt-dlp` *script* still picks up the
+// old version, because the environment's PYTHONPATH (set by the Nix yt-dlp
+// package) puts the old package ahead of the venv's site-packages on
+// sys.path. Running the venv's Python with `-I` (isolated mode) ignores
+// PYTHONPATH entirely, so `-m yt_dlp` reliably resolves to the pip-installed
+// version. Falls back to the plain `yt-dlp` command if the venv isn't
+// present (e.g. a different environment where the pip package wasn't set up).
+// ---------------------------------------------------------------------------
+const PROJECT_ROOT = process.env["REPL_HOME"] ?? path.resolve(import.meta.dirname, "../../../..");
+const VENV_PYTHON = path.join(PROJECT_ROOT, ".pythonlibs/bin/python");
+const USE_VENV_YTDLP = existsSync(VENV_PYTHON);
+
+function ytDlpCommand(): { command: string; baseArgs: string[] } {
+  if (USE_VENV_YTDLP) {
+    return { command: VENV_PYTHON, baseArgs: ["-I", "-m", "yt_dlp"] };
+  }
+  return { command: "yt-dlp", baseArgs: [] };
+}
+
+logger.info(
+  { usingVenvYtDlp: USE_VENV_YTDLP, venvPython: VENV_PYTHON },
+  "[video] yt-dlp resolution",
+);
 
 // ---------------------------------------------------------------------------
 // Timeouts — configurable via env so slow networks / large files don't need
@@ -305,9 +340,11 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
   logger.info({ requestId, platform }, "[video/download] request received");
 
   try {
+    const { command, baseArgs } = ytDlpCommand();
     const { stdout } = await execFileAsync(
-      "yt-dlp",
+      command,
       [
+        ...baseArgs,
         "-j",
         "--no-warnings",
         "--no-playlist",
@@ -420,9 +457,11 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
   // Note: spawn() itself essentially never throws synchronously — a missing
   // binary (ENOENT) surfaces asynchronously via the 'error' event below,
   // which is handled and mapped to a clear 500 response.
+  const { command: streamCommand, baseArgs: streamBaseArgs } = ytDlpCommand();
   const child = spawn(
-    "yt-dlp",
+    streamCommand,
     [
+      ...streamBaseArgs,
       "-f",
       format,
       "--no-warnings",
