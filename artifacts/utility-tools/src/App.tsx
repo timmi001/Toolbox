@@ -228,6 +228,7 @@ const AiQuizGenerator = L(() => import("@/pages/tools/ai/ai-quiz-generator"));
 const AiFlashcardGenerator = L(() => import("@/pages/tools/ai/ai-flashcard-generator"));
 const AiInterviewQuestions = L(() => import("@/pages/tools/ai/ai-interview-questions"));
 const AiMeetingNotes = L(() => import("@/pages/tools/ai/ai-meeting-notes"));
+const AiInterviewPractice = L(() => import("@/pages/tools/ai/ai-interview-practice"));
 const AiHashtagGenerator = L(() => import("@/pages/tools/ai/ai-hashtag-generator"));
 const AiYoutubeTitle = L(() => import("@/pages/tools/ai/ai-youtube-title"));
 const AiInstagramCaption = L(() => import("@/pages/tools/ai/ai-instagram-caption"));
@@ -479,6 +480,7 @@ function Router() {
         <Route path="/tools/ai/ai-flashcard-generator" component={AiFlashcardGenerator} />
         <Route path="/tools/ai/ai-interview-questions" component={AiInterviewQuestions} />
         <Route path="/tools/ai/ai-meeting-notes" component={AiMeetingNotes} />
+        <Route path="/tools/ai/ai-interview-practice" component={AiInterviewPractice} />
         <Route path="/tools/ai/ai-hashtag-generator" component={AiHashtagGenerator} />
         <Route path="/tools/ai/ai-youtube-title" component={AiYoutubeTitle} />
         <Route path="/tools/ai/ai-instagram-caption" component={AiInstagramCaption} />

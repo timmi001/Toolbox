@@ -233,6 +233,15 @@ const configs: Record<string, AiToolConfig> = {
       { key: "transcript", label: "Meeting Transcript / Raw Notes", type: "textarea", placeholder: "Paste your meeting transcript or rough notes here...", required: true, rows: 10 },
     ],
   },
+  "ai-interview-practice": {
+    toolId: "ai-interview-practice",
+    buttonLabel: "Get Feedback",
+    fields: [
+      { key: "role", label: "Job Role / Position", type: "text", placeholder: "e.g. Frontend Engineer, Product Manager", required: true },
+      { key: "question", label: "Interview Question", type: "textarea", placeholder: "e.g. Tell me about a time you handled a difficult stakeholder.", required: true, rows: 3 },
+      { key: "answer", label: "Your Answer", type: "textarea", placeholder: "Type or paste the answer you'd give in the interview...", required: true, rows: 8 },
+    ],
+  },
   "ai-hashtag-generator": {
     toolId: "ai-hashtag-generator",
     buttonLabel: "Generate Hashtags",

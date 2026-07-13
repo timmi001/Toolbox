@@ -61,6 +61,7 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-flashcard-generator":{ required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-interview-questions":{ required: ["role"],       maxLengths: { role: 200 } },
   "ai-meeting-notes":      { required: ["transcript"], maxLengths: { transcript: 20000 } },
+  "ai-interview-practice": { required: ["role", "question", "answer"], maxLengths: { role: 200, question: 2000, answer: 5000 } },
   "ai-hashtag-generator":  { required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-youtube-title":      { required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-instagram-caption":  { required: ["topic"],      maxLengths: { topic: 300 } },
@@ -182,6 +183,9 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 
     case "ai-meeting-notes":
       return `Convert the following meeting content into professional, structured meeting notes:\n\n${i.transcript}\n\nFormat as:\n## Meeting Notes\n\n**Date:** [if mentioned]\n**Attendees:** [if mentioned]\n\n### Key Discussion Points\n[Organized bullet points]\n\n### Decisions Made\n[Clear list of decisions]\n\n### Action Items\n| Owner | Task | Deadline |\n[Table of action items]\n\n### Next Steps\n[Summary of follow-ups]\n\nMake the notes clear, professional, and scannable.`;
+
+    case "ai-interview-practice":
+      return `You are an expert interview coach. The candidate is practicing for a "${i.role}" position.\n\nInterview question: "${i.question}"\n\nCandidate's answer:\n"${i.answer}"\n\nEvaluate the answer and respond with:\n## Overall Score\n[X/10] with a one-line summary\n\n### Strengths\n[What the candidate did well — structure, specifics, relevance]\n\n### Areas to Improve\n[Concrete gaps — missing structure like STAR, vague claims, no metrics, etc.]\n\n### Improved Sample Answer\n[Rewrite the answer as a strong, concise model response for this role]\n\n### Follow-up Questions to Expect\n[2-3 likely follow-up questions an interviewer might ask next]\n\nBe direct, specific, and encouraging.`;
 
     case "ai-hashtag-generator":
       return `Generate ${i.count || "30"} highly relevant hashtags for the topic: "${i.topic}" optimized for ${i.platform || "Instagram"}.\n\nOrganize into:\n**High Reach (1M+ posts):** [5-8 hashtags]\n**Medium Reach (100K-1M posts):** [10-12 hashtags]\n**Niche/Low Competition (under 100K):** [8-10 hashtags]\n**Branded/Unique:** [3-5 hashtags]\n\nInclude strategy tips for best results on ${i.platform || "Instagram"}.`;
