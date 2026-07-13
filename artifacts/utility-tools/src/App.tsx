@@ -39,12 +39,12 @@ const RandomTextGenerator = L(() => import("@/pages/tools/text/random-text-gener
 const KeywordDensity = L(() => import("@/pages/tools/text/keyword-density"));
 const HtmlStripper = L(() => import("@/pages/tools/text/html-stripper"));
 const MarkdownPreview = L(() => import("@/pages/tools/text/markdown-preview"));
-const MetaTagGenerator = L(() => import("@/pages/tools/text/meta-tag-generator"));
-const RobotsGenerator = L(() => import("@/pages/tools/text/robots-generator"));
-const SitemapGenerator = L(() => import("@/pages/tools/text/sitemap-generator"));
-const SerpPreview = L(() => import("@/pages/tools/text/serp-preview"));
-const SchemaMarkupGenerator = L(() => import("@/pages/tools/text/schema-markup-generator"));
-const OpenGraphGenerator = L(() => import("@/pages/tools/text/open-graph-generator"));
+const MetaTagGenerator = L(() => import("@/pages/tools/ai/meta-tag-generator"));
+const RobotsGenerator = L(() => import("@/pages/tools/ai/robots-generator"));
+const SitemapGenerator = L(() => import("@/pages/tools/ai/sitemap-generator"));
+const SerpPreview = L(() => import("@/pages/tools/ai/serp-preview"));
+const SchemaMarkupGenerator = L(() => import("@/pages/tools/ai/schema-markup-generator"));
+const OpenGraphGenerator = L(() => import("@/pages/tools/ai/open-graph-generator"));
 
 // Developer Tools
 const JsonFormatter = L(() => import("@/pages/tools/developer/json-formatter"));
@@ -276,7 +276,6 @@ function Router() {
         {/* Categories */}
         <Route path="/text-tools" component={CategoryPage} />
         <Route path="/developer-tools" component={CategoryPage} />
-        <Route path="/seo-tools" component={CategoryPage} />
         <Route path="/image-tools" component={CategoryPage} />
         <Route path="/file-conversion-tools" component={CategoryPage} />
         <Route path="/business-tools" component={CategoryPage} />
@@ -317,12 +316,12 @@ function Router() {
         <Route path="/tools/text/keyword-density" component={KeywordDensity} />
         <Route path="/tools/text/html-stripper" component={HtmlStripper} />
         <Route path="/tools/text/markdown-preview" component={MarkdownPreview} />
-        <Route path="/tools/seo/meta-tag-generator" component={MetaTagGenerator} />
-        <Route path="/tools/seo/robots-generator" component={RobotsGenerator} />
-        <Route path="/tools/seo/sitemap-generator" component={SitemapGenerator} />
-        <Route path="/tools/seo/serp-preview" component={SerpPreview} />
-        <Route path="/tools/seo/schema-markup-generator" component={SchemaMarkupGenerator} />
-        <Route path="/tools/seo/open-graph-generator" component={OpenGraphGenerator} />
+        <Route path="/tools/ai/meta-tag-generator" component={MetaTagGenerator} />
+        <Route path="/tools/ai/robots-generator" component={RobotsGenerator} />
+        <Route path="/tools/ai/sitemap-generator" component={SitemapGenerator} />
+        <Route path="/tools/ai/serp-preview" component={SerpPreview} />
+        <Route path="/tools/ai/schema-markup-generator" component={SchemaMarkupGenerator} />
+        <Route path="/tools/ai/open-graph-generator" component={OpenGraphGenerator} />
 
         {/* Developer Tools */}
         <Route path="/tools/developer/json-formatter" component={JsonFormatter} />

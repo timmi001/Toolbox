@@ -13,7 +13,6 @@ const CATEGORIES = [
   { id: 'ai-grammar', name: 'AI Grammar & Writing Tools', icon: SpellCheck2, path: '/ai-grammar-tools', desc: 'Check grammar, improve tone, summarize, paraphrase, and proofread any text.' },
   { id: 'text', name: 'Text Tools', icon: Type, path: '/text-tools', desc: 'Format, count, and clean text effortlessly.' },
   { id: 'developer', name: 'Developer Tools', icon: Code, path: '/developer-tools', desc: 'JSON, Base64, Hash, and more dev utilities.' },
-  { id: 'seo', name: 'SEO Tools', icon: Search, path: '/seo-tools', desc: 'Generate meta tags, sitemaps, schema, and social previews.' },
   { id: 'image', name: 'Image Tools', icon: ImageIcon, path: '/image-tools', desc: 'Compress, crop, resize, and convert images.' },
   { id: 'audio', name: 'Audio Tools', icon: Music, path: '/audio-tools', desc: 'Record, trim, merge, convert, and enhance audio.' },
   { id: 'video', name: 'Video Tools', icon: Video, path: '/video-tools', desc: 'Trim, compress, rotate, subtitle, and convert videos.' },

@@ -1,4 +1,4 @@
-export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'seo' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar';
+export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar';
 
 export type Tool = {
   slug: string;
@@ -26,12 +26,6 @@ export const toolsData: Tool[] = [
   { slug: 'random-text-generator', name: 'Random Text Generator', description: 'Generate random words, sentences, or paragraphs.', category: 'text', keywords: ['random', 'generator', 'words'], icon: 'Shuffle' },
   { slug: 'lorem-ipsum', name: 'Lorem Ipsum Generator', description: 'Generate Lorem Ipsum dummy text.', category: 'text', keywords: ['lorem ipsum', 'dummy text', 'placeholder'], popular: true, icon: 'FileType' },
   { slug: 'slug-generator', name: 'Slug Generator', description: 'Convert text to a URL-friendly slug.', category: 'text', keywords: ['slug', 'url', 'seo'], icon: 'Link2' },
-  { slug: 'meta-tag-generator', name: 'Meta Tag Generator', description: 'Generate title, description, keyword, and robots meta tags for any page.', category: 'seo', keywords: ['meta tags', 'seo', 'html'], icon: 'Tag' },
-  { slug: 'robots-generator', name: 'Robots.txt Generator', description: 'Create a simple robots.txt file with allow and disallow rules.', category: 'seo', keywords: ['robots', 'seo', 'crawl'], icon: 'Bot' },
-  { slug: 'sitemap-generator', name: 'Sitemap Generator', description: 'Generate a basic XML sitemap from your page list.', category: 'seo', keywords: ['sitemap', 'xml', 'seo'], icon: 'Map' },
-  { slug: 'serp-preview', name: 'SERP Preview', description: 'Preview how your page title and description may look in search results.', category: 'seo', keywords: ['serp', 'seo', 'preview'], icon: 'Search' },
-  { slug: 'schema-markup-generator', name: 'Schema Markup Generator', description: 'Create JSON-LD schema markup for your website or business.', category: 'seo', keywords: ['schema', 'json-ld', 'seo'], icon: 'Code2' },
-  { slug: 'open-graph-generator', name: 'Open Graph Generator', description: 'Generate Open Graph tags for elegant social previews.', category: 'seo', keywords: ['open graph', 'social preview', 'seo'], icon: 'Share2' },
   { slug: 'url-encoder', name: 'URL Encoder', description: 'Encode URL or URL components.', category: 'text', keywords: ['encode', 'url', 'percent encoding'], icon: 'Lock' },
   { slug: 'url-decoder', name: 'URL Decoder', description: 'Decode URL-encoded strings.', category: 'text', keywords: ['decode', 'url', 'percent decoding'], icon: 'Unlock' },
   { slug: 'text-cleaner', name: 'Text Cleaner', description: 'Remove extra spaces and special characters.', category: 'text', keywords: ['clean', 'format', 'spaces'], icon: 'Eraser' },
@@ -191,6 +185,12 @@ export const toolsData: Tool[] = [
   { slug: 'ai-article-rewriter', name: 'AI Article Rewriter', description: 'Rewrite an entire article to be more original and engaging while keeping the facts intact.', category: 'ai-blogging-seo', keywords: ["ai","article","rewrite","content"], new: true, icon: 'RefreshCw' },
   { slug: 'ai-paragraph-rewriter', name: 'AI Paragraph Rewriter', description: 'Rewrite a single paragraph in a new style or tone.', category: 'ai-blogging-seo', keywords: ["ai","paragraph","rewrite","content"], new: true, icon: 'AlignLeft' },
   { slug: 'ai-sentence-rewriter', name: 'AI Sentence Rewriter', description: 'Rephrase individual sentences for clarity, variety, or tone.', category: 'ai-blogging-seo', keywords: ["ai","sentence","rewrite","content"], new: true, icon: 'Repeat' },
+  { slug: 'meta-tag-generator', name: 'Meta Tag Generator', description: 'Generate title, description, keyword, and robots meta tags for any page.', category: 'ai-blogging-seo', keywords: ['meta tags', 'seo', 'html'], icon: 'Tag' },
+  { slug: 'robots-generator', name: 'Robots.txt Generator', description: 'Create a simple robots.txt file with allow and disallow rules.', category: 'ai-blogging-seo', keywords: ['robots', 'seo', 'crawl'], icon: 'Bot' },
+  { slug: 'sitemap-generator', name: 'Sitemap Generator', description: 'Generate a basic XML sitemap from your page list.', category: 'ai-blogging-seo', keywords: ['sitemap', 'xml', 'seo'], icon: 'Map' },
+  { slug: 'serp-preview', name: 'SERP Preview', description: 'Preview how your page title and description may look in search results.', category: 'ai-blogging-seo', keywords: ['serp', 'seo', 'preview'], icon: 'Search' },
+  { slug: 'schema-markup-generator', name: 'Schema Markup Generator', description: 'Create JSON-LD schema markup for your website or business.', category: 'ai-blogging-seo', keywords: ['schema', 'json-ld', 'seo'], icon: 'Code2' },
+  { slug: 'open-graph-generator', name: 'Open Graph Generator', description: 'Generate Open Graph tags for elegant social previews.', category: 'ai-blogging-seo', keywords: ['open graph', 'social preview', 'seo'], icon: 'Share2' },
   // AI Email Tools
   { slug: 'ai-cold-email', name: 'AI Cold Email Generator', description: 'Write cold outreach emails that get replies from prospects and leads.', category: 'ai-email', keywords: ["ai","cold email","outreach","sales"], new: true, icon: 'Send' },
   { slug: 'ai-sales-email', name: 'AI Sales Email Generator', description: 'Create persuasive sales emails that move prospects toward a purchase.', category: 'ai-email', keywords: ["ai","sales email","conversion"], new: true, icon: 'DollarSign' },
