@@ -217,12 +217,12 @@ const AiCoverLetter = L(() => import("@/pages/tools/ai/ai-cover-letter"));
 const AiSeoTitle = L(() => import("@/pages/tools/ai/ai-seo-title"));
 const AiMetaDescription = L(() => import("@/pages/tools/ai/ai-meta-description"));
 const AiKeywordGenerator = L(() => import("@/pages/tools/ai/ai-keyword-generator"));
-const AiSqlGenerator = L(() => import("@/pages/tools/ai/ai-sql-generator"));
-const AiRegexGenerator = L(() => import("@/pages/tools/ai/ai-regex-generator"));
-const AiCodeExplainer = L(() => import("@/pages/tools/ai/ai-code-explainer"));
-const AiCodeReviewer = L(() => import("@/pages/tools/ai/ai-code-reviewer"));
-const AiBugFinder = L(() => import("@/pages/tools/ai/ai-bug-finder"));
-const AiJsonFormatter = L(() => import("@/pages/tools/ai/ai-json-formatter"));
+const AiSqlGenerator = L(() => import("@/pages/tools/developer/ai-sql-generator"));
+const AiRegexGenerator = L(() => import("@/pages/tools/developer/ai-regex-generator"));
+const AiCodeExplainer = L(() => import("@/pages/tools/developer/ai-code-explainer"));
+const AiCodeReviewer = L(() => import("@/pages/tools/developer/ai-code-reviewer"));
+const AiBugFinder = L(() => import("@/pages/tools/developer/ai-bug-finder"));
+const AiJsonFormatter = L(() => import("@/pages/tools/developer/ai-json-formatter"));
 const AiStudyNotes = L(() => import("@/pages/tools/ai/ai-study-notes"));
 const AiQuizGenerator = L(() => import("@/pages/tools/ai/ai-quiz-generator"));
 const AiFlashcardGenerator = L(() => import("@/pages/tools/ai/ai-flashcard-generator"));
@@ -469,12 +469,12 @@ function Router() {
         <Route path="/tools/ai/ai-seo-title" component={AiSeoTitle} />
         <Route path="/tools/ai/ai-meta-description" component={AiMetaDescription} />
         <Route path="/tools/ai/ai-keyword-generator" component={AiKeywordGenerator} />
-        <Route path="/tools/ai/ai-sql-generator" component={AiSqlGenerator} />
-        <Route path="/tools/ai/ai-regex-generator" component={AiRegexGenerator} />
-        <Route path="/tools/ai/ai-code-explainer" component={AiCodeExplainer} />
-        <Route path="/tools/ai/ai-code-reviewer" component={AiCodeReviewer} />
-        <Route path="/tools/ai/ai-bug-finder" component={AiBugFinder} />
-        <Route path="/tools/ai/ai-json-formatter" component={AiJsonFormatter} />
+        <Route path="/tools/developer/ai-sql-generator" component={AiSqlGenerator} />
+        <Route path="/tools/developer/ai-regex-generator" component={AiRegexGenerator} />
+        <Route path="/tools/developer/ai-code-explainer" component={AiCodeExplainer} />
+        <Route path="/tools/developer/ai-code-reviewer" component={AiCodeReviewer} />
+        <Route path="/tools/developer/ai-bug-finder" component={AiBugFinder} />
+        <Route path="/tools/developer/ai-json-formatter" component={AiJsonFormatter} />
         <Route path="/tools/ai/ai-study-notes" component={AiStudyNotes} />
         <Route path="/tools/ai/ai-quiz-generator" component={AiQuizGenerator} />
         <Route path="/tools/ai/ai-flashcard-generator" component={AiFlashcardGenerator} />
