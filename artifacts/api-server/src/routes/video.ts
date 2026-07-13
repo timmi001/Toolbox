@@ -53,6 +53,9 @@ const INFO_TIMEOUT_MS = Number(process.env["VIDEO_INFO_TIMEOUT_MS"] ?? 45_000);
 const INFO_SOCKET_TIMEOUT_S = Number(process.env["VIDEO_INFO_SOCKET_TIMEOUT_S"] ?? 25);
 const STREAM_SOCKET_TIMEOUT_S = Number(process.env["VIDEO_STREAM_SOCKET_TIMEOUT_S"] ?? 25);
 const STREAM_MAX_DURATION_MS = Number(process.env["VIDEO_STREAM_MAX_DURATION_MS"] ?? 10 * 60 * 1000);
+const TRANSIENT_RETRY_ATTEMPTS = 3;
+const TRANSIENT_RETRY_DELAY_MS = 1500;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 let requestCounter = 0;
 function nextRequestId(): number {
@@ -341,20 +344,46 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
 
   try {
     const { command, baseArgs } = ytDlpCommand();
-    const { stdout } = await execFileAsync(
-      command,
-      [
-        ...baseArgs,
-        "-j",
-        "--no-warnings",
-        "--no-playlist",
-        "--socket-timeout",
-        String(INFO_SOCKET_TIMEOUT_S),
-        ...extractorArgsFor(platform),
-        targetUrl,
-      ],
-      { timeout: INFO_TIMEOUT_MS, maxBuffer: 25 * 1024 * 1024 },
-    );
+    const infoArgs = [
+      ...baseArgs,
+      "-j",
+      "--no-warnings",
+      "--no-playlist",
+      "--socket-timeout",
+      String(INFO_SOCKET_TIMEOUT_S),
+      ...extractorArgsFor(platform),
+      targetUrl,
+    ];
+
+    // Instagram in particular intermittently returns a transient "empty
+    // media response" for genuinely public, accessible posts — a flaky
+    // upstream hiccup rather than a real auth wall. A short retry clears it
+    // most of the time, so don't surface it to the user as a hard failure
+    // on the first occurrence.
+    let stdout: string;
+    let attempt = 0;
+    for (;;) {
+      attempt += 1;
+      try {
+        ({ stdout } = await execFileAsync(command, infoArgs, {
+          timeout: INFO_TIMEOUT_MS,
+          maxBuffer: 25 * 1024 * 1024,
+        }));
+        break;
+      } catch (attemptErr) {
+        const stderr = extractStderr(attemptErr);
+        const isTransientEmptyResponse = /empty media response/i.test(stderr);
+        if (isTransientEmptyResponse && attempt < TRANSIENT_RETRY_ATTEMPTS) {
+          logger.warn(
+            { requestId, platform, attempt },
+            "[video/download] transient empty media response, retrying",
+          );
+          await sleep(TRANSIENT_RETRY_DELAY_MS);
+          continue;
+        }
+        throw attemptErr;
+      }
+    }
 
     let info: YtDlpInfo;
     try {
