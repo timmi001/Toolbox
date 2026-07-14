@@ -13,6 +13,7 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'image-tools': { title: 'Image Tools', desc: 'Compress, crop, resize, and convert images entirely in your browser.' },
   'file-conversion-tools': { title: 'File Conversion Tools', desc: 'Convert documents, archives, spreadsheets, and media formats in a few clicks.' },
   'business-tools': { title: 'Business Tools', desc: 'Create invoices, receipts, labels, business names, and simple financial insights.' },
+  'pdf-tools': { title: 'PDF Tools', desc: 'Merge, split, and manipulate PDF documents securely.' },
   'calculators': { title: 'Calculators & Converters', desc: 'Solve math problems, convert units, and calculate dates.' },
   'ai-marketing-advertising': { title: 'AI Marketing & Advertising', desc: 'Create ad copy, sales messaging, landing page content, and conversion-focused CTAs with AI-powered marketing tools.' },
   'audio-tools': { title: 'Audio Tools', desc: 'Record, trim, merge, convert, and enhance audio files entirely in your browser — no installs needed.' },
@@ -22,9 +23,10 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'ai-blogging-seo-tools': { title: 'AI Blogging & SEO Tools', desc: 'Write blog titles, outlines, articles, and SEO meta tags with AI.' },
   'ai-email-tools': { title: 'AI Email Tools', desc: 'Draft cold emails, sales emails, follow-ups, support replies, and thank-you notes.' },
   'ai-grammar-tools': { title: 'AI Grammar & Writing Tools', desc: 'Check grammar, improve tone, summarize, paraphrase, and proofread any text.' },
-  'ai-ghostwriting-tools': { title: 'AI Ghostwriting', desc: 'Create polished essays, stories, book outlines, chapters, and speeches with a guided writing workflow.' },
-  'ai-event-tools': { title: 'AI Events & Ticketing', desc: 'Create polished event concepts, day-of itineraries, checklists, and guest-ready invites for launches, weddings, birthdays, and professional gatherings.' },
-  'ai-study-exams': { title: 'AI Study & Exams', desc: 'Generate practice questions, mock exams, study plans, notes, flashcards, and revision resources for exams and certifications.' },
+  'ai-study-exams-tools': { title: 'AI Study & Exams', desc: 'Study notes, quizzes, flashcards, homework help, math solver, planners, and JAMB/WAEC prep tools for smarter revision.' },
+  'ai-ghostwriting-tools': { title: 'AI Ghostwriting Tools', desc: 'Write stories, book chapters, speeches, scripts, newsletters, biographies, personal statements, and letters with AI.' },
+  'ai-study-tools': { title: 'AI Study Workspace', desc: 'Generate practice questions, mock exams, study plans, tutor explanations, performance reviews, and revision resources.' },
+  'ai-event-tools': { title: 'AI Events & Ticketing', desc: 'Create event itineraries, checklists, invitations, ticket plans, local event searches, and event-day travel plans.' },
 };
 
 export default function CategoryPage() {
@@ -40,6 +42,7 @@ export default function CategoryPage() {
     categoryPath === 'image-tools' ? 'image' :
     categoryPath === 'file-conversion-tools' ? 'file-conversion' :
     categoryPath === 'business-tools' ? 'business' :
+    categoryPath === 'pdf-tools' ? 'pdf' :
     categoryPath === 'ai-marketing-advertising' ? 'marketing' :
     categoryPath === 'audio-tools' ? 'audio' :
     categoryPath === 'video-tools' ? 'video' :
@@ -48,13 +51,14 @@ export default function CategoryPage() {
     categoryPath === 'ai-blogging-seo-tools' ? 'ai-blogging-seo' :
     categoryPath === 'ai-email-tools' ? 'ai-email' :
     categoryPath === 'ai-grammar-tools' ? 'ai-grammar' :
+    categoryPath === 'ai-study-exams-tools' ? 'ai-study-exams' :
     categoryPath === 'ai-ghostwriting-tools' ? 'ai-ghostwriting' :
+    categoryPath === 'ai-study-tools' ? 'ai-study' :
     categoryPath === 'ai-event-tools' ? 'ai-events' :
-    categoryPath === 'ai-study-exams' ? 'ai-study' :
     'calculators';
 
   useSEO(
-    details ? `${details.title} | Toolbuxx` : 'Toolbuxx',
+    details ? `${details.title} | ToolKit` : 'ToolKit',
     details?.desc ?? ''
   );
 
@@ -72,11 +76,9 @@ export default function CategoryPage() {
     <div className="py-5 animate-in fade-in duration-500">
       <BreadcrumbNav category={mappedCategory} />
 
-      <header className="mb-6 space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{details.title}</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{details.desc}</p>
-        </div>
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1.5">{details.title}</h1>
+        <p className="text-sm text-muted-foreground mb-4 max-w-2xl">{details.desc}</p>
 
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />

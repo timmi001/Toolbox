@@ -27,9 +27,6 @@ function nowMs(): number {
 // ---------------------------------------------------------------------------
 const DEFAULT_MAX_OUTPUT_TOKENS = 1000;
 const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
-  "hub-ai-assistant": 1200,
-  "hub-creator": 1200,
-  "hub-study": 1200,
   "ai-grammar-checker": 300,
   "ai-email-writer": 700,
   "ai-resume-builder": 1200,
@@ -68,10 +65,15 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "ai-expand-text": 900,
   "ai-shorten-text": 700,
   "ai-proofreader": 700,
+  "ai-study-notes": 1100,
+  "ai-homework-helper": 1000,
+  "ai-study-planner": 800,
   "ai-story-writer": 1400,
   "ai-book-outline-generator": 1200,
   "ai-chapter-generator": 1800,
   "ai-speech-writer": 1000,
+  "ai-quiz-generator": 900,
+  "ai-flashcard-generator": 800,
   "ai-interview-questions": 1200,
   "ai-meeting-notes": 1000,
   "ai-interview-practice": 1100,
@@ -90,41 +92,24 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "ai-code-reviewer": 900,
   "ai-bug-finder": 900,
   "ai-json-formatter": 800,
-  "ai-event-itinerary": 900,
-  "ai-event-checklist": 900,
-  "ai-event-invitation": 800,
-  "ai-ticket-finder": 900,
-  "ai-event-search": 900,
-  "ai-price-comparison": 900,
-  "ai-price-tracker": 900,
-  "ai-ticket-alerts": 800,
-  "ai-artist-tour-finder": 900,
-  "ai-sports-tickets": 900,
-  "ai-festival-finder": 900,
-  "ai-theatre-shows": 900,
-  "ai-nearby-events": 900,
-  "ai-seat-finder": 900,
-  "ai-event-trip-planner": 1000,
-  "ai-practice-questions": 1000,
-  "ai-mock-exam-generator": 1400,
-  "ai-tutor-chat": 900,
-  "ai-flashcard-generator": 900,
-  "ai-study-notes-generator": 1200,
-  "ai-weak-topic-analyzer": 900,
-  "ai-study-planner": 900,
-  "ai-previous-question-generator": 1000,
-  "ai-performance-analytics": 900,
-  "ai-pdf-practice-papers": 1400,
-  "ai-daily-practice": 900,
+  "ai-math-solver": 900,
+  "ai-jamb-cbt-practice": 1000,
+  "ai-notes-summarizer": 1000,
+  "waec-past-questions": 1000,
+  "ai-essay-writer": 1200,
+  "ai-essay-improver": 1200,
+  "ai-paraphrasing-tool": 800,
+  "ai-jamb-subject-combination": 700,
+  "ai-jamb-cutoff-checker": 700,
 };
 
 const COMPLEX_TOOL_IDS = new Set([
-  "hub-ai-assistant",
-  "hub-creator",
-  "hub-study",
   "ai-resume-builder",
   "ai-cover-letter",
   "ai-essay-generator",
+  "ai-study-notes",
+  "ai-homework-helper",
+  "ai-study-planner",
   "ai-story-writer",
   "ai-book-outline-generator",
   "ai-chapter-generator",
@@ -133,6 +118,12 @@ const COMPLEX_TOOL_IDS = new Set([
   "ai-interview-practice",
   "ai-resume-summary",
   "ai-resume-bullet-points",
+  "ai-jamb-cbt-practice",
+  "ai-math-solver",
+  "ai-notes-summarizer",
+  "waec-past-questions",
+  "ai-essay-writer",
+  "ai-essay-improver",
 ]);
 
 function getOutputTokenBudget(toolId: string): number {
@@ -160,9 +151,6 @@ const aiLimiter = rateLimit({
 // Per-tool schema: required keys + max character lengths for each input field
 // ---------------------------------------------------------------------------
 const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<string, number> }> = {
-  "hub-ai-assistant": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, context: 1000, pdfDocumentId: 1000, pdfDocumentName: 2000, pdfDocumentStatus: 500, pdfContext: 500 } },
-  "hub-creator": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, context: 1000 } },
-  "hub-study": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, subject: 100, level: 100 } },
   "ai-writer":             { required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-summarizer":         { required: ["text"],       maxLengths: { text: 20000 } },
   "ai-paraphraser":        { required: ["text"],       maxLengths: { text: 10000 } },
@@ -183,11 +171,13 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-code-reviewer":      { required: ["code"],       maxLengths: { code: 15000 } },
   "ai-bug-finder":         { required: ["code"],       maxLengths: { code: 15000 } },
   "ai-json-formatter":     { required: ["json"],       maxLengths: { json: 20000 } },
-  "ai-essay-generator":    { required: ["topic"],      maxLengths: { topic: 300, style: 50 } },
-  "ai-story-writer":       { required: ["prompt"],      maxLengths: { prompt: 1000, tone: 50 } },
-  "ai-book-outline-generator": { required: ["topic"], maxLengths: { topic: 300 } },
-  "ai-chapter-generator":  { required: ["topic"],      maxLengths: { topic: 300, chapter: 200 } },
-  "ai-speech-writer":      { required: ["topic"],      maxLengths: { topic: 300, audience: 200 } },
+  "ai-study-notes":        { required: ["topic"],      maxLengths: { topic: 300 } },
+  "ai-homework-helper":    { required: ["question"],   maxLengths: { question: 3000, subject: 100, grade_level: 50 } },
+  "ai-study-planner":      { required: ["subjects", "exam_date"], maxLengths: { subjects: 500, exam_date: 100, goals: 1000 } },
+  "ai-math-solver":        { required: ["problem"],    maxLengths: { problem: 2000, grade_level: 50 } },
+  "ai-jamb-cbt-practice":  { required: ["subject"],    maxLengths: { subject: 100, topic: 200 } },
+  "ai-quiz-generator":     { required: ["topic"],      maxLengths: { topic: 300 } },
+  "ai-flashcard-generator":{ required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-interview-questions":{ required: ["role"],       maxLengths: { role: 200 } },
   "ai-meeting-notes":      { required: ["transcript"], maxLengths: { transcript: 20000 } },
   "ai-interview-practice": { required: ["role", "question", "answer"], maxLengths: { role: 200, question: 2000, answer: 5000 } },
@@ -231,34 +221,45 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-tone-changer": { required: ["text"], maxLengths: {"text":8000} },
   "ai-expand-text": { required: ["text"], maxLengths: {"text":5000} },
   "ai-shorten-text": { required: ["text"], maxLengths: {"text":10000} },
-  "ai-proofreader":    { required: ["text"],  maxLengths: {"text":10000} },
-  "ai-ghostwriting":   { required: ["topic"], maxLengths: {"topic":3000} },
-  "ai-event-itinerary": { required: ["event_name", "flow"], maxLengths: { event_name: 200, duration: 100, flow: 4000 } },
-  "ai-event-checklist": { required: ["event_name", "timeline"], maxLengths: { event_name: 200, details: 3000 } },
-  "ai-event-invitation": { required: ["event_name", "tone"], maxLengths: { event_name: 200, audience: 200, details: 2000 } },
-  "ai-ticket-finder": { required: ["query"], maxLengths: { query: 300, location: 200, budget: 100 } },
-  "ai-event-search": { required: ["query"], maxLengths: { query: 300, location: 200, date: 100 } },
-  "ai-price-comparison": { required: ["event"], maxLengths: { event: 300, location: 200, budget: 100 } },
-  "ai-price-tracker": { required: ["event"], maxLengths: { event: 300, budget: 100, notes: 2000 } },
-  "ai-ticket-alerts": { required: ["event"], maxLengths: { event: 300, location: 200, frequency: 100 } },
-  "ai-artist-tour-finder": { required: ["artist"], maxLengths: { artist: 300, location: 200, date: 100 } },
-  "ai-sports-tickets": { required: ["sport"], maxLengths: { sport: 300, location: 200, date: 100 } },
-  "ai-festival-finder": { required: ["genre"], maxLengths: { genre: 300, location: 200, date: 100 } },
-  "ai-theatre-shows": { required: ["genre"], maxLengths: { genre: 300, location: 200, budget: 100 } },
-  "ai-nearby-events": { required: ["location"], maxLengths: { location: 300, interest: 300, date: 100 } },
-  "ai-seat-finder": { required: ["event"], maxLengths: { event: 300, preference: 300, notes: 2000 } },
-  "ai-event-trip-planner": { required: ["event"], maxLengths: { event: 300, location: 200, budget: 100 } },
-  "ai-practice-questions": { required: ["topic"], maxLengths: { topic: 300, exam: 200, difficulty: 50, count: 20 } },
-  "ai-mock-exam-generator": { required: ["topic"], maxLengths: { topic: 300, duration: 100, difficulty: 50, count: 20 } },
-  "ai-tutor-chat": { required: ["topic", "question"], maxLengths: { topic: 300, question: 3000, level: 50 } },
-  "ai-flashcard-generator": { required: ["topic"], maxLengths: { topic: 300, level: 50, count: 20 } },
-  "ai-study-notes-generator": { required: ["topic"], maxLengths: { topic: 300, level: 50, format: 100 } },
-  "ai-weak-topic-analyzer": { required: ["topic", "details"], maxLengths: { topic: 300, details: 4000 } },
-  "ai-study-planner": { required: ["topic"], maxLengths: { topic: 300, date: 100, hours: 100 } },
-  "ai-previous-question-generator": { required: ["topic"], maxLengths: { topic: 300, exam: 200, count: 20 } },
-  "ai-performance-analytics": { required: ["topic", "details"], maxLengths: { topic: 300, details: 4000 } },
-  "ai-pdf-practice-papers": { required: ["topic"], maxLengths: { topic: 300, level: 100, count: 20 } },
-  "ai-daily-practice": { required: ["topic"], maxLengths: { topic: 300, goal: 200, difficulty: 50 } },
+  "ai-proofreader": { required: ["text"], maxLengths: {"text":10000} },
+  "ai-essay-generator": { required: ["topic"], maxLengths: { topic: 300 } },
+  "ai-story-writer": { required: ["premise"], maxLengths: { premise: 3000 } },
+  "ai-book-outline-generator": { required: ["premise"], maxLengths: { title: 200, premise: 3000 } },
+  "ai-chapter-generator": { required: ["book_context", "chapter_focus"], maxLengths: { book_context: 5000, chapter_focus: 2000 } },
+  "ai-speech-writer": { required: ["occasion", "key_points"], maxLengths: { occasion: 200, speaker: 150, key_points: 3000 } },
+  "ai-script-writer": { required: ["premise"], maxLengths: { premise: 3000, characters: 1000 } },
+  "ai-newsletter-writer": { required: ["topic", "key_points"], maxLengths: { topic: 200, audience: 300, key_points: 3000 } },
+  "ai-biography-generator": { required: ["name", "key_facts"], maxLengths: { name: 100, key_facts: 3000 } },
+  "ai-personal-statement-writer": { required: ["purpose", "background", "goals"], maxLengths: { background: 3000, goals: 2000 } },
+  "ai-letter-writer": { required: ["letter_type", "purpose"], maxLengths: { recipient: 200, purpose: 3000 } },
+  "ai-notes-summarizer": { required: ["notes"], maxLengths: { notes: 15000, focus: 300 } },
+  "ai-essay-writer": { required: ["topic"], maxLengths: { topic: 300 } },
+  "ai-essay-improver": { required: ["essay"], maxLengths: { essay: 15000 } },
+  "ai-paraphrasing-tool": { required: ["text"], maxLengths: { text: 8000 } },
+  "waec-past-questions": { required: ["subject"], maxLengths: { subject: 100, topic: 200 } },
+  "ai-jamb-subject-combination": { required: ["course"], maxLengths: { course: 200, institution: 200 } },
+  "ai-jamb-cutoff-checker": { required: ["course"], maxLengths: { course: 200, institution: 200 } },
+  "ai-practice-questions": { required: [], maxLengths: {} },
+  "ai-mock-exam-generator": { required: [], maxLengths: {} },
+  "ai-tutor-chat": { required: [], maxLengths: {} },
+  "ai-study-notes-generator": { required: [], maxLengths: {} },
+  "ai-weak-topic-analyzer": { required: [], maxLengths: {} },
+  "ai-previous-question-generator": { required: [], maxLengths: {} },
+  "ai-performance-analytics": { required: [], maxLengths: {} },
+  "ai-pdf-practice-papers": { required: [], maxLengths: {} },
+  "ai-daily-practice": { required: [], maxLengths: {} },
+  "ai-event-itinerary": { required: [], maxLengths: {} },
+  "ai-event-checklist": { required: [], maxLengths: {} },
+  "ai-event-invitation": { required: [], maxLengths: {} },
+  "ai-ticket-finder": { required: [], maxLengths: {} },
+  "ai-event-search": { required: [], maxLengths: {} },
+  "ai-artist-tour-finder": { required: [], maxLengths: {} },
+  "ai-sports-tickets": { required: [], maxLengths: {} },
+  "ai-festival-finder": { required: [], maxLengths: {} },
+  "ai-theatre-shows": { required: [], maxLengths: {} },
+  "ai-nearby-events": { required: [], maxLengths: {} },
+  "ai-seat-finder": { required: [], maxLengths: {} },
+  "ai-event-trip-planner": { required: [], maxLengths: {} },
 };
 
 // ---------------------------------------------------------------------------
@@ -267,15 +268,6 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
 function buildPrompt(toolId: string, inputs: Record<string, string>): string | null {
   const i = inputs;
   switch (toolId) {
-    case "hub-ai-assistant":
-      return `You are Toolbuxx AI Assistant. Help the user with the selected mode: ${i.mode || "General help"}.\n\nUser request:\n${i.prompt}\n\nAdditional context: ${i.context || "None provided"}${i.pdfDocumentId ? `\n\nSelected PDF context:\n- Document ID(s): ${i.pdfDocumentId}\n- Filename(s): ${i.pdfDocumentName || "Unknown"}\n- Processing status: ${i.pdfDocumentStatus || "unknown"}\n- Context source: ${i.pdfContext || "extracted text included in the request"}` : ""}\n\nGive a direct, useful answer with clear steps. Use Markdown when it improves readability.`;
-
-    case "hub-creator":
-      return `You are Toolbuxx Creator Studio. Help create a ${i.mode || "creative asset"}.\n\nCreator brief:\n${i.prompt}\n\nAdditional context: ${i.context || "None provided"}\n\nReturn production-ready copy, a structured concept, or a detailed generation brief as appropriate. Include practical next steps.`;
-
-    case "hub-study":
-      return `You are a patient personal tutor in Toolbuxx Study Hub. Study mode: ${i.mode || "Explain"}. Subject: ${i.subject || "General"}. Learner level: ${i.level || "Not specified"}.\n\nStudent request:\n${i.prompt}\n\nTeach step by step, include an example, check understanding with one follow-up question, and avoid inventing facts.`;
-
     case "ai-writer":
       return `Write a high-quality, engaging ${i.length || "medium-length"} article about "${i.topic}" in a ${i.tone || "professional"} tone. Include a compelling introduction, well-structured body sections with clear headings, and a strong conclusion. Make it informative and valuable to the reader.`;
 
@@ -477,195 +469,91 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
     case "ai-proofreader":
       return `Proofread the following text thoroughly. Check grammar, spelling, punctuation, clarity, tone consistency, and word choice.\n\nProvide:\n1. The fully corrected version\n2. A list of every change made with a brief explanation\n\nText:\n${i.text}`;
 
-    case "ai-ghostwriting":
-      return `Write a polished, ready-to-publish ${i.type || "Blog Article"} about the following topic/brief in a ${i.tone || "Professional"} voice:\n\n${i.topic}\n\nDeliver well-structured, engaging content that reads as if written by a seasoned human author. Match the content length and format appropriate for the selected type.`;
-
-    case "ai-math-solver":
-      return `Solve the following math problem step by step with clear explanations.\n\nProblem:\n${i.problem}\n\nProvide:\n1. **Identify the problem type** — what branch of math this belongs to (algebra, geometry, calculus, etc.)\n2. **List key formulas** — relevant equations or theorems\n3. **Step-by-step solution** — show all working clearly\n4. **Final answer** — clearly state the result\n5. **Explanation** — why each step works, common mistakes to avoid\n\nMake it educational and easy to follow for a student.`;
-
-    case "ai-jamb-cbt-practice":
-      return `Generate 10 realistic JAMB CBT practice questions for the subject: "${i.subject}".\n\nFor EACH question provide:\n\n**Question [N]:** [The question text]\n\n**A)** [Option A]\n**B)** [Option B]\n**C)** [Option C]\n**D)** [Option D]\n\n**Correct Answer:** [A/B/C/D]\n**Explanation:** [Why this is correct and why other options are wrong - helps learning]\n\n---\n\nMake questions realistic to actual JAMB exams, vary difficulty levels, and focus on core concepts covered in the curriculum.`;
-
-    // ai-event-assistant removed
-
-    case "ai-event-itinerary":
-      return `Create a clear event itinerary for "${i.event_name}" with the following flow notes:
-
-${i.flow}
-
-Include a timeline with suggested start/end times, transitions, key moments, and hosting notes. The tone should feel ${i.tone || "energetic"} and the plan should be easy to follow.`;
-
-    case "ai-event-checklist":
-      return `Create a practical planning checklist for "${i.event_name}" for a ${i.timeline || "flexible"} timeline.
-
-Specific needs:
-${i.details || "None provided"}
-
-Organize the checklist into planning phases: early prep, mid planning, final week, and day-of. Include both admin tasks and execution tasks.`;
-
-    case "ai-event-invitation":
-      return `Write a polished event invitation for "${i.event_name}" aimed at ${i.audience || "guests"}.
-
-Tone: ${i.tone || "warm"}
-Additional details: ${i.details || "None provided"}
-
-Return a short invitation message with a warm opening, key event details, and a polished sign-off. Keep it concise and ready to copy into a message or card.`;
-
-    case "ai-practice-questions":
-      return `Generate ${i.count || "10"} practice questions about "${i.topic}" for ${i.exam || "a general exam"}. Difficulty: ${i.difficulty || "Mixed"}.
-
-For each question provide:
-1. The question text
-2. 4 options (A-D) where relevant
-3. The correct answer
-4. A brief explanation
-
-Make the questions clear, varied, and useful for studying.`;
-
-    case "ai-mock-exam-generator":
-      return `Create a ${i.duration || "60 minutes"} mock exam on "${i.topic}" with ${i.count || "10"} questions. Difficulty: ${i.difficulty || "Mixed"}.
-
-Structure the exam with:
-1. Clear instructions
-2. Questions in a realistic exam style
-3. Answer key
-4. Brief scoring guidance and study tips
-
-Make it suitable for self-testing and revision.`;
-
-    case "ai-tutor-chat":
-      return `Act as a patient tutor and explain the topic: "${i.topic}" for a ${i.level || "Beginner"} learner.
-
-The learner asks: "${i.question}"
-
-Provide:
-1. A clear explanation
-2. A simple example
-3. A step-by-step breakdown if needed
-4. A follow-up question or next step for deeper learning
-
-Keep the tone encouraging and easy to follow.`;
-
-    case "ai-study-notes-generator":
-      return `Create ${i.format || "Detailed Notes"} for the topic "${i.topic}" for a ${i.level || "Intermediate"} learner.
-
-Include:
-1. Key concepts
-2. Important definitions
-3. Example points
-4. Quick summary bullets
-5. Helpful memory tips
-
-Make the notes organized, concise, and revision-friendly.`;
-
-    case "ai-weak-topic-analyzer":
-      return `Analyze the weak areas for the subject/topic "${i.topic}" based on the following performance notes:
-
-${i.details}
-
-Provide:
-1. The main weak topics or recurring gaps
-2. Why they might be challenging
-3. A targeted study plan to improve them
-4. Suggested practice exercises
-
-Make the response practical and encouraging.`;
-
-    case "ai-study-planner":
-      return `Create a study plan for the goal "${i.topic}" with a target date of ${i.date || "soon"} and ${i.hours || "2 hours"} of daily study time.
-
-Include:
-1. A weekly study schedule
-2. Daily focus areas
-3. Revision checkpoints
-4. A realistic roadmap to reach the goal
-
-Make the plan balanced and manageable.`;
-
-    case "ai-previous-question-generator":
-      return `Generate ${i.count || "10"} exam-style questions on "${i.topic}" for ${i.exam || "the relevant exam"}.
-
-For each question provide:
-1. The question text
-2. A short answer key or marking note
-3. A brief explanation
-
-Make the questions realistic and exam-focused.`;
-
-    case "ai-performance-analytics":
-      return `Analyze the following study/performance data for "${i.topic}":
-
-${i.details}
-
-Provide:
-1. Overall strengths
-2. Weaknesses and recurring issues
-3. Suggested improvement priorities
-4. A short readiness summary
-
-Make it useful for planning the next study phase.`;
-
-    case "ai-pdf-practice-papers":
-      return `Create a printable practice paper for "${i.topic}" at ${i.level || "an intermediate level"} with ${i.count || "1"} paper version(s).
-
-Include:
-1. A clean question paper layout
-2. A short instructions section
-3. An answer key and marking notes
-4. A brief study tip section
-
-Format it so it can be copied into a PDF-ready document.`;
-
-    case "ai-daily-practice":
-      return `Create a daily practice routine for the topic "${i.topic}" with a goal of ${i.goal || "20 minutes"}. Difficulty: ${i.difficulty || "Moderate"}.
-
-Include:
-1. One short practice task
-2. One challenge question
-3. One revision reminder
-4. A motivational closing note
-
-Make it simple enough to follow every day.`;
-
-    case "ai-ticket-finder":
-      return `Recommend practical ways to find tickets for "${i.query}"${i.location ? ` in ${i.location}` : ""}${i.budget ? ` within a budget of ${i.budget}` : ""}. Do not invent live availability, prices, or ticket links. Explain what to compare and where the user should verify current inventory.`;
-    case "ai-event-search":
-      return `Help the user search for events matching "${i.query}"${i.location ? ` in ${i.location}` : ""}${i.date ? ` around ${i.date}` : ""}. Do not claim live event results. Provide search strategy, useful filters, and details to verify on official event pages.`;
-    case "ai-price-comparison":
-      return `Create a ticket price-comparison checklist for "${i.event}"${i.location ? ` in ${i.location}` : ""}${i.budget ? ` with a budget of ${i.budget}` : ""}. Do not fabricate current prices or sellers. Include fees, refund rules, seating, and verification steps.`;
-    case "ai-price-tracker":
-      return `Create a price-tracking plan for "${i.event}"${i.budget ? ` with a target budget of ${i.budget}` : ""}. Do not claim to monitor prices or send alerts. Recommend safe official sources, alert thresholds, and what information to record.`;
-    case "ai-ticket-alerts":
-      return `Design an alert setup for "${i.event}"${i.location ? ` in ${i.location}` : ""} with a ${i.frequency || "daily"} check frequency. Do not claim that alerts were created or that live availability is known. Provide criteria and official-source recommendations.`;
-    case "ai-artist-tour-finder":
-      return `Help find tour dates and ticket sources for the artist "${i.artist}"${i.location ? ` near ${i.location}` : ""}. Do not invent dates or ticket links. Explain how to verify dates through official artist, venue, and promoter pages.`;
-    case "ai-sports-tickets":
-      return `Help plan a safe ticket search for "${i.sport}"${i.location ? ` in ${i.location}` : ""}${i.date ? ` around ${i.date}` : ""}. Do not fabricate fixtures, prices, or availability. Include official sources and seating considerations.`;
-    case "ai-festival-finder":
-      return `Help discover festivals matching "${i.genre}"${i.location ? ` near ${i.location}` : ""}${i.date ? ` around ${i.date}` : ""}. Do not claim live festival listings. Provide search criteria and official verification steps.`;
-    case "ai-theatre-shows":
-      return `Help search for theatre and shows matching "${i.genre}"${i.location ? ` in ${i.location}` : ""}${i.budget ? ` within ${i.budget}` : ""}. Do not invent schedules, prices, or availability. Explain how to verify through official venues.`;
-    case "ai-nearby-events":
-      return `Suggest a process for finding events near ${i.location || "the user's location"}${i.interest ? ` related to ${i.interest}` : ""}${i.date ? ` around ${i.date}` : ""}. Do not fabricate live results. Include filters and safety/verification tips.`;
-    case "ai-seat-finder":
-      return `Create a seat-selection guide for "${i.event}" with preferences "${i.preference || "best value"}"${i.notes ? `. Additional notes: ${i.notes}` : ""}. Do not claim access to a venue map or current inventory. Explain sightline, accessibility, fees, and official checkout verification.`;
-    case "ai-event-trip-planner":
-      return `Plan a trip around "${i.event}"${i.location ? ` in ${i.location}` : ""}${i.budget ? ` with a budget of ${i.budget}` : ""}. Do not invent event details, ticket availability, or live prices. Structure transport, lodging, timing, and verification steps.`;
-
     case "ai-essay-generator":
-      return `Generate a polished essay draft about: "${i.topic}"\nStyle: ${i.style || "Academic"}\n\nInclude:\n1. Engaging introduction with thesis statement\n2. 3-4 well-developed body paragraphs with clear arguments\n3. Topic sentences and supporting evidence\n4. Smooth transitions between paragraphs\n5. Strong conclusion that reinforces the thesis\n\nMake it academic and well-structured for submission.`;
+      return `Write a ${(i.essay_type || "Expository").toLowerCase()} essay on the topic: "${i.topic}".\n\nTone: ${i.tone || "Academic"}\nLength: ${i.length || "Medium (~600 words)"}\n\nStructure the essay with a clear introduction (with a thesis statement), well-organized body paragraphs with supporting evidence/examples, and a strong conclusion. Use clear, well-structured prose.`;
 
     case "ai-story-writer":
-      return `Write a creative short story based on this prompt: "${i.prompt}"\nTone: ${i.tone || "Engaging"}\n\nInclude:\n1. An engaging opening that sets the scene\n2. Compelling characters and their motivations\n3. A clear conflict or tension\n4. Plot development with rising action\n5. A satisfying conclusion or twist\n\nMake it vivid, descriptive, and emotionally engaging.`;
+      return `Write a short story based on this premise:\n\n${i.premise}\n\nGenre: ${i.genre || "Drama"}\nTone: ${i.tone || "Emotional"}\nLength: ${i.length || "Medium (~800 words)"}\n\nInclude vivid descriptions, natural dialogue, and a satisfying narrative arc with a beginning, middle, and end.`;
 
     case "ai-book-outline-generator":
-      return `Create a detailed book structure for: "${i.topic}"\n\nProvide:\n1. A compelling book title and subtitle\n2. Target audience description\n3. Main theme/thesis\n4. Chapter-by-chapter outline (10-15 chapters)\n5. Key points under each chapter\n6. Estimated word count per chapter\n\nMake it comprehensive enough to serve as a writing roadmap.`;
+      return `Create a detailed chapter-by-chapter outline for a book${i.title ? ` titled "${i.title}"` : ""}.\n\nGenre: ${i.genre || "Fiction"}\nPremise/Synopsis: ${i.premise}\nNumber of chapters: ${i.chapters || "15"}\n\nFor each chapter, provide a chapter number, a short title, and 2-3 sentences summarizing the key events, character development, or ideas covered. Ensure the outline builds a coherent overall arc from beginning to end.`;
 
     case "ai-chapter-generator":
-      return `Draft a chapter for a book about: "${i.topic}"\nChapter title/theme: ${i.chapter || "not specified"}\n\nProvide:\n1. An engaging chapter introduction\n2. 3-4 major sections with clear subheadings\n3. Supporting details, examples, and explanations\n4. A chapter summary or conclusion\n\nMake it approximately 2,000-3,000 words and well-structured.`;
+      return `Write a full book chapter continuing this story.\n\nStory so far:\n${i.book_context}\n\nWhat should happen in this chapter:\n${i.chapter_focus}\n\nTone: ${i.tone || "Emotional"}\nLength: ${i.length || "Medium (~1000 words)"}\n\nWrite it as a complete, polished chapter with scene-setting, dialogue, and narrative prose consistent with the story so far. Give the chapter a short title.`;
 
     case "ai-speech-writer":
-      return `Write a compelling speech about: "${i.topic}"\nAudience: ${i.audience || "general audience"}\n\nInclude:\n1. A powerful opening hook\n2. Clear main points (2-3) with supporting examples\n3. Emotional connection or relatability\n4. Smooth transitions between ideas\n5. A memorable closing call-to-action or conclusion\n\nMake it engaging and suitable for public speaking.`;
+      return `Write a speech for the following occasion: ${i.occasion}.\n\n${i.speaker ? `Speaker: ${i.speaker}\n` : ""}Key points to include:\n${i.key_points}\n\nTone: ${i.tone || "Heartfelt"}\nLength: ${i.length || "Medium (~3 min)"}\n\nWrite it as a complete, ready-to-deliver speech with a strong opening, a clear flow through the key points, and a memorable closing line.`;
+
+    case "ai-script-writer":
+      return `Write a script scene in proper screenplay format.\n\nFormat: ${i.format || "Short Film"}\nPremise: ${i.premise}\n${i.characters ? `Characters: ${i.characters}\n` : ""}Tone: ${i.tone || "Dramatic"}\n\nUse standard script formatting: scene headings (INT./EXT. LOCATION - TIME), action lines, character names in caps before dialogue, and natural, character-driven dialogue.`;
+
+    case "ai-newsletter-writer":
+      return `Write an email newsletter about: ${i.topic}.\n\n${i.audience ? `Audience: ${i.audience}\n` : ""}Key points to cover:\n${i.key_points}\n\nTone: ${i.tone || "Friendly"}\n\nStructure it with a catchy subject line, a warm opening line, clearly organized sections for each key point (with short headers), and a closing call-to-action or sign-off.`;
+
+    case "ai-biography-generator":
+      return `Write a biography for ${i.name}.\n\nKey facts/background:\n${i.key_facts}\n\nPurpose: ${i.purpose || "Professional Bio"}\nTone: ${i.tone || "Confident"}\nLength: ${i.length || "Medium (~150 words)"}\n\nWrite polished, well-flowing prose (not a bullet list) suitable for the stated purpose, highlighting the most relevant achievements and background naturally.`;
+
+    case "ai-personal-statement-writer":
+      return `Write a personal statement for a ${i.purpose}.\n\nBackground:\n${i.background}\n\nGoals / why this opportunity:\n${i.goals}\n\nTarget length: ${i.word_limit || "~500 words"}\n\nWrite a compelling, authentic personal statement with a strong opening hook, a narrative that connects the background to the goals, and a confident closing. Use first-person voice.`;
+
+    case "ai-letter-writer":
+      return `Write a ${i.letter_type} letter.\n\n${i.recipient ? `Recipient: ${i.recipient}\n` : ""}Purpose/details:\n${i.purpose}\n\nTone: ${i.tone || "Formal"}\n\nFormat it as a complete, ready-to-send letter with an appropriate greeting, well-organized body paragraphs, and a fitting closing/signature line.`;
+
+    case "ai-homework-helper":
+      return `Act as a patient tutor helping a student with a ${i.subject || "general"} question.\n\nStudent level: ${i.grade_level || "SSS / High School"}\n\nQuestion:\n${i.question}\n\nProvide:\n1. **Concept Explanation** — clearly explain the key idea behind this question\n2. **Step-by-Step Solution** — walk through the answer methodically\n3. **Worked Example** — show a similar worked example if applicable\n4. **Key Tips** — common mistakes to avoid\n5. **Practice** — suggest 2 similar questions to reinforce learning\n\nUse simple, encouraging language appropriate for the student level.`;
+
+    case "ai-notes-summarizer":
+      return `Summarize the following class/lecture notes into ${i.format || "Bullet Points"} format for exam revision.${i.focus ? `\n\nFocus especially on: ${i.focus}.` : ""}\n\nNotes:\n${i.notes}\n\nYour summary should include:\n- Key concepts and definitions\n- Important formulas or rules (if any)\n- Main arguments or themes\n- 4–5 likely exam questions based on the material\n\nMake it concise, revision-ready, and easy to scan.`;
+
+    case "ai-essay-improver":
+      return `Improve the following student essay. Focus: ${i.focus || "Overall"}.\n\nEssay:\n${i.essay}\n\nProvide two sections:\n\n**1. Improved Essay**\nThe rewritten, improved version of the essay.\n\n**2. Changes Made**\nA clear bullet-point list of the key improvements and why each one strengthens the essay.\n\nKeep the student's original voice and ideas — only improve the quality, not replace the content.`;
+
+    case "ai-math-solver":
+      return `Solve the following math problem step by step, at a level appropriate for a ${i.grade_level || "SSS / High School"} student.\n\nProblem:\n${i.problem}\n\nProvide:\n1. **Problem Type** — identify the branch of math (algebra, geometry, calculus, etc.)\n2. **Key Formula / Theorem** — state relevant equations or rules\n3. **Step-by-Step Solution** — show every step clearly with explanation\n4. **Final Answer** — clearly labeled\n5. **Common Mistakes** — one or two pitfalls to watch out for\n\nMake it educational and easy to follow.`;
+
+    case "ai-jamb-cbt-practice":
+      return `Generate ${i.num_questions || "10"} JAMB CBT-style multiple-choice practice questions for ${i.subject}${i.topic ? `, focusing on the topic: ${i.topic}` : ""}.\n\nFor EACH question use this exact format:\n\n**Question [N]:** [Question text]\n\nA) [Option A]\nB) [Option B]\nC) [Option C]\nD) [Option D]\n\n✅ **Correct Answer:** [Letter]\n💡 **Explanation:** [Brief explanation of why this answer is correct]\n\n---\n\nVary the difficulty, cover different sub-topics, and make the questions realistic to actual JAMB exams. These are AI-generated practice questions for revision — not official JAMB questions.`;
+
+    case "waec-past-questions":
+      return `Generate ${i.num_questions || "10"} WAEC-style practice examination questions for ${i.subject}${i.topic ? `, focusing on: ${i.topic}` : ""}.\n\nMix objective (multiple-choice) and theory/essay questions as WAEC typically does.\n\nFor **objective questions**, use:\n**Question [N]:** [Question]\nA) B) C) D) ✅ Correct: [Letter] — [brief explanation]\n\nFor **theory questions**, use:\n**Question [N]:** [Question]\n📝 **Model Answer / Marking Guide:** [Clear model answer]\n\n---\n\nMake questions curriculum-aligned and realistic to WAEC exam style. These are AI-generated practice questions — not from WAEC's official past question bank.`;
+
+    case "ai-jamb-subject-combination":
+      return `A student wants to study **${i.course}**${i.institution ? ` at ${i.institution}` : " in a Nigerian university"} and needs to know the required JAMB UTME subject combination.\n\nProvide:\n1. **Required Subjects** — the standard 4-subject UTME combination typically required (including English Language)\n2. **Alternative Combinations** — if accepted by some institutions\n3. **O'Level Requirements** — typical SSCE/WAEC subjects needed for this course\n4. **Key Notes** — any special requirements (e.g. post-UTME, cut-off considerations)\n\nEnd with a clear disclaimer: subject combinations vary by institution and year — the student must confirm with the official JAMB brochure and their target institution's prospectus before making decisions.`;
+
+    case "ai-jamb-cutoff-checker":
+      return `A student wants to know about typical JAMB cut-off marks for **${i.course}**${i.institution ? ` at ${i.institution}` : " in Nigerian universities"}.\n\nProvide:\n1. **National Minimum** — JAMB's general national cut-off for this type of course\n2. **Competitive Range** — the typical score range competitive candidates achieve for this course\n3. **Factors That Affect Cut-offs** — institution prestige, candidate pool size, year-to-year variation\n4. **Strategy Tips** — what the student should aim for to be competitive\n\nEnd with a prominent disclaimer: official cut-off marks are released annually by JAMB and each institution, change every year, and the student MUST verify the current official cut-off on the JAMB website (jamb.gov.ng) and their target institution's admissions office before relying on this estimate.`;
+
+    case "ai-study-planner":
+      return `Create a personalized study plan for a student preparing for exams.\n\nSubjects: ${i.subjects}\nExam date / timeframe: ${i.exam_date}\nAvailable study time: ${i.hours_per_day || "2–4 hours/day"}\n${i.goals ? `Goals / weak areas: ${i.goals}\n` : ""}\nCreate a structured study schedule that:\n- Allocates study sessions across all subjects\n- Gives extra time to harder/weaker subjects\n- Includes regular revision and practice-test sessions\n- Builds in short daily breaks\n- Has clear weekly goals and milestones\n\nPresent it in a clear, scannable format (daily or weekly breakdown, depending on timeframe). Make it realistic and motivating.`;
+
+    case "ai-essay-writer":
+      return `Write a well-structured essay on the topic: "${i.topic}".\n\nTone: ${i.tone || "Academic"}\nLength: ${i.length || "Medium (~600 words)"}\n\nStructure the essay with a clear introduction (with a thesis statement), well-organized body paragraphs with supporting evidence and examples, and a strong conclusion. Use clear, well-structured academic prose.`;
+
+    case "ai-paraphrasing-tool":
+      return `Rewrite the following text in a ${i.style || "Standard"} style while preserving the original meaning.\n\nOriginal text:\n${i.text}\n\nProvide only the rewritten version without explanation.`;
+
+    case "ai-practice-questions":
+    case "ai-mock-exam-generator":
+    case "ai-tutor-chat":
+    case "ai-study-notes-generator":
+    case "ai-weak-topic-analyzer":
+    case "ai-previous-question-generator":
+    case "ai-performance-analytics":
+    case "ai-pdf-practice-papers":
+    case "ai-daily-practice":
+    case "ai-event-itinerary":
+    case "ai-event-checklist":
+    case "ai-event-invitation":
+    case "ai-ticket-finder":
+    case "ai-event-search":
+    case "ai-artist-tour-finder":
+    case "ai-sports-tickets":
+    case "ai-festival-finder":
+    case "ai-theatre-shows":
+    case "ai-nearby-events":
+    case "ai-seat-finder":
+    case "ai-event-trip-planner":
+      return `Create a useful, accurate response for the ${toolId.replace(/^ai-/, "").replace(/-/g, " ")} request below. Organize the answer clearly with headings, actionable details, and practical next steps. If the request concerns exam preparation, explain that the material is AI-generated practice content and should be checked against official sources.\n\n${Object.entries(i).map(([key, value]) => `${key}: ${value}`).join("\n\n")}`;
 
     default:
       return null;
@@ -690,44 +578,6 @@ function isRateLimitError(err: unknown): boolean {
   );
 }
 
-function getSafeStatus(err: unknown): number {
-  if (err && typeof err === "object") {
-    const status = (err as { status?: number }).status;
-    if (typeof status === "number" && Number.isInteger(status) && status >= 400 && status <= 599) return status;
-    const code = (err as { code?: number }).code;
-    if (typeof code === "number" && Number.isInteger(code) && code >= 400 && code <= 599) return code;
-  }
-
-  if (!(err instanceof Error)) return 500;
-
-  const m = err.message.toLowerCase();
-  if (m.includes("timed out") || m.includes("timeout")) return 504;
-  if (m.includes("api key") || m.includes("apikey") || m.includes("not set")) return 401;
-  if (m.includes("quota") || m.includes("resource_exhausted") || m.includes("rate_limit") || m.includes("rate limit") || m.includes("too many requests") || m.includes("429")) return 429;
-  if (m.includes("model") && (m.includes("not found") || m.includes("not_found"))) return 404;
-  if (m.includes("malformed") || m.includes("invalid") || m.includes("unknown tool")) return 400;
-  if (m.includes("safety") || m.includes("blocked")) return 422;
-  if (m.includes("network") || m.includes("connection") || m.includes("fetch failed") || m.includes("socket hang up") || m.includes("econnreset") || m.includes("econnrefused") || m.includes("etimedout")) return 503;
-  if (m.includes("empty response")) return 502;
-  return 500;
-}
-
-function getSafeClientMessage(err: unknown): string {
-  if (!(err instanceof Error)) return "Generation failed. Please try again.";
-
-  const m = err.message.toLowerCase();
-  if (m.includes("timed out") || m.includes("timeout")) return "AI request timed out.";
-  if (m.includes("unauthorized") || m.includes("forbidden") || m.includes("invalid key") || m.includes("invalid api key")) return "AI provider authentication failed. Please check the configured API key.";
-  if (m.includes("api key") || m.includes("apikey") || m.includes("not set")) return "The AI provider is not configured for this environment.";
-  if (m.includes("quota") || m.includes("resource_exhausted") || m.includes("rate_limit") || m.includes("rate limit") || m.includes("too many requests") || m.includes("429")) return "AI rate limit exceeded. Please try again later.";
-  if (m.includes("model") && (m.includes("not found") || m.includes("not_found"))) return `AI model/provider error: ${err.message}`;
-  if (m.includes("malformed") || m.includes("invalid") || m.includes("unknown tool")) return "The request payload is invalid.";
-  if (m.includes("safety") || m.includes("blocked")) return "The request was blocked by the provider safety policy.";
-  if (m.includes("network") || m.includes("connection") || m.includes("fetch failed") || m.includes("socket hang up") || m.includes("econnreset") || m.includes("econnrefused") || m.includes("etimedout")) return "The AI provider could not be reached. Please try again.";
-  if (m.includes("empty response")) return "The AI provider returned an empty response.";
-  return "Generation failed. Please try again.";
-}
-
 // ---------------------------------------------------------------------------
 // Route
 // ---------------------------------------------------------------------------
@@ -735,48 +585,34 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
   const requestId = String(req.id ?? Math.random().toString(36).slice(2, 8));
   const tRequestStart = nowMs();
   const timings: Record<string, number> = {};
-  let resolvedToolId: string | undefined;
-  let resolvedModel: string | undefined;
-
-  logger.info(
-    {
-      requestId,
-      method: req.method,
-      url: req.originalUrl,
-      ts: new Date().toISOString(),
-    },
-    `[ai/generate][${requestId}] request received`,
-  );
 
   try {
-    if (!req.body || typeof req.body !== "object") {
-      logger.warn({ requestId }, `[ai/generate][${requestId}] missing or malformed JSON body`);
-      res.status(400).json({ success: false, message: "Request body must be a JSON object." });
-      return;
-    }
-
     const { toolId, inputs } = req.body as {
       toolId: unknown;
       inputs: unknown;
     };
-    resolvedToolId = typeof toolId === "string" ? toolId.trim() : undefined;
+
+    logger.info(
+      { requestId, toolId, ts: new Date().toISOString() },
+      `[perf][ai/generate][${requestId}] request received`,
+    );
 
     // ---- Stage 1: validation ------------------------------------------------
     const tValidateStart = nowMs();
 
     // Basic shape validation
     if (typeof toolId !== "string" || !toolId.trim()) {
-      res.status(400).json({ success: false, message: "toolId is required." });
+      res.status(400).json({ error: "toolId is required." });
       return;
     }
     if (typeof inputs !== "object" || inputs === null || Array.isArray(inputs)) {
-      res.status(400).json({ success: false, message: "inputs must be an object." });
+      res.status(400).json({ error: "inputs must be an object." });
       return;
     }
 
     const schema = TOOL_SCHEMAS[toolId];
     if (!schema) {
-      res.status(400).json({ success: false, message: "Unknown tool." });
+      res.status(400).json({ error: "Unknown tool." });
       return;
     }
 
@@ -786,7 +622,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     for (const key of schema.required) {
       const val = safeInputs[key];
       if (typeof val !== "string" || !val.trim()) {
-        res.status(400).json({ success: false, message: `Missing required field: ${key}` });
+        res.status(400).json({ error: `Missing required field: ${key}` });
         return;
       }
     }
@@ -797,7 +633,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       const val = safeInputs[key];
       if (typeof val === "string") {
         if (val.length > maxLen) {
-          res.status(400).json({ success: false, message: `Input "${key}" exceeds maximum length of ${maxLen} characters.` });
+          res.status(400).json({ error: `Input "${key}" exceeds maximum length of ${maxLen} characters.` });
           return;
         }
         cleanInputs[key] = val;
@@ -811,49 +647,13 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     }
     timings.validateMs = nowMs() - tValidateStart;
 
-    logger.info(
-      {
-        requestId,
-        toolId,
-        inputKeys: Object.keys(cleanInputs),
-        pdfContext: cleanInputs.pdfDocumentId ? {
-          documentIds: cleanInputs.pdfDocumentId,
-          fileNames: cleanInputs.pdfDocumentName,
-          statuses: cleanInputs.pdfDocumentStatus,
-          contextAttached: Boolean(cleanInputs.pdfContext),
-        } : undefined,
-        timingMs: Number(timings.validateMs.toFixed(1)),
-        ts: new Date().toISOString(),
-      },
-      `[ai/generate][${requestId}] request validation complete`,
-    );
-
-    if (cleanInputs.pdfDocumentId) {
-      logger.info(
-        {
-          requestId,
-          documentIds: cleanInputs.pdfDocumentId,
-          fileNames: cleanInputs.pdfDocumentName,
-          processingStatus: cleanInputs.pdfDocumentStatus,
-          lookup: "client-extracted-text",
-          found: Boolean(cleanInputs.pdfContext),
-          payloadStructure: {
-            toolId: typeof toolId,
-            inputs: Object.keys(cleanInputs),
-            extractedTextInPrompt: Boolean(cleanInputs.pdfContext),
-          },
-        },
-        `[ai/generate][${requestId}] PDF context lookup completed`,
-      );
-    }
-
     // ---- Stage 2: prompt preparation ---------------------------------------
     const tPromptStart = nowMs();
     const prompt = compactPrompt(buildPrompt(toolId, cleanInputs) ?? "");
     timings.promptMs = nowMs() - tPromptStart;
 
     if (!prompt) {
-      res.status(400).json({ success: false, message: "Could not build prompt for this tool." });
+      res.status(400).json({ error: "Could not build prompt for this tool." });
       return;
     }
 
@@ -880,18 +680,6 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     // See lib/ai-service.ts for the full pipeline.
     const tAiStart = nowMs();
 
-    logger.info(
-      {
-        requestId,
-        toolId,
-        providerOrder: ["agentrouter", "gemini", "groq", "openrouter"],
-        isComplex,
-        selectedMaxOutputTokens,
-        ts: new Date().toISOString(),
-      },
-      `[ai/generate][${requestId}] provider chain selected`,
-    );
-
     const { result: aiResult, attempts: providerAttempts } = await generateText({
       prompt,
       toolId,
@@ -900,7 +688,6 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       requestId,
     });
 
-    resolvedModel = aiResult.model;
     const resultText   = aiResult.text;
     const finishReason = aiResult.finishReason;
     const providerUsed = aiResult.provider;
@@ -927,26 +714,13 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     // Gemini hits a safety filter or recitation block the text is empty but
     // no exception is thrown — without this check the client silently gets
     // an empty 200, with no indication that content was blocked.
-    //
-    // Normalise finish reasons across providers:
-    //   Gemini        → "STOP" | "MAX_TOKENS" | "SAFETY" | "RECITATION" …
-    //   OpenAI-compat → "stop" | "length" | "content_filter" …  (lowercase)
-    //
-    // Treat both the Gemini and OpenAI-compat success reasons as non-blocking
-    // so Groq / OpenRouter / AgentRouter responses are never mis-classified.
-    const normalizedFinishReason = typeof finishReason === "string"
-      ? finishReason.toUpperCase()
-      : finishReason;
-
-    const SUCCESS_FINISH_REASONS = new Set(["STOP", "MAX_TOKENS", "LENGTH"]);
-    if (normalizedFinishReason && !SUCCESS_FINISH_REASONS.has(normalizedFinishReason)) {
+    if (finishReason && finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
       logger.warn(
         { requestId, toolId, finishReason, ts: new Date().toISOString() },
         `[perf][ai/generate][${requestId}] generation blocked`,
       );
       res.status(422).json({
-        success: false,
-        message:
+        error:
           finishReason === "SAFETY"
             ? "The request was blocked by safety filters. Please rephrase your input."
             : "Generation was stopped before completing. Please try again.",
@@ -954,25 +728,12 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
-    if (!resultText.trim()) {
+    if (!resultText) {
       logger.warn(
         { requestId, toolId, provider: providerUsed },
         `[ai/generate][${requestId}] ${providerUsed} response was empty`,
       );
-      res.status(502).json({ success: false, message: "The AI provider returned an empty response. Please try again." });
-      return;
     }
-
-    logger.info(
-      {
-        requestId,
-        provider: providerUsed,
-        resultChars: resultText.length,
-        finishReason,
-        ts: new Date().toISOString(),
-      },
-      `[ai/generate][${requestId}] response parsed`,
-    );
 
     const payload = { result: resultText };
     timings.serializeMs = nowMs() - tSerializeStart;
@@ -997,43 +758,26 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         `${providerUsed}=${timings.aiMs.toFixed(1)}ms, serialize=${timings.serializeMs.toFixed(1)}ms)`,
     );
 
-    logger.info(
-      {
-        requestId,
-        provider: providerUsed,
-        payloadChars: resultText.length,
-        ts: new Date().toISOString(),
-      },
-      `[ai/generate][${requestId}] response returned`,
-    );
-
     res.json(payload);
   } catch (err) {
     timings.totalMs = nowMs() - tRequestStart;
-    const errorName = err instanceof Error ? err.name : undefined;
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    const errorCode = (err as { code?: unknown })?.code;
-    const errorStatus = (err as { status?: unknown })?.status;
-    const serverStatus = getSafeStatus(err);
-    const clientMessage = getSafeClientMessage(err);
-
     logger.error(
       {
         requestId,
-        toolId: resolvedToolId,
-        model: resolvedModel,
-        errorName,
-        message: errorMessage.slice(0, 240),
-        errorCode: typeof errorCode === "string" || typeof errorCode === "number" ? errorCode : undefined,
-        httpStatus: errorStatus ?? serverStatus,
+        err,
         totalServerMs: Number(timings.totalMs.toFixed(1)),
         stageReachedMs: timings,
         ts: new Date().toISOString(),
       },
-      `[ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms — ${errorName ?? "Error"}: ${errorMessage.slice(0, 200)}`,
+      `[perf][ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms`,
     );
-
-    res.status(serverStatus).json({ success: false, message: clientMessage });
+    // Don't leak internal/upstream error strings — log server-side, return generic message.
+    // isRateLimitError covers quota/429 signals from all three providers.
+    const isKnown = isRateLimitError(err);
+    const clientMessage = isKnown
+      ? "All AI providers are currently busy. Please try again in a moment."
+      : "Generation failed. Please try again.";
+    res.status(500).json({ error: clientMessage });
   }
 });
 

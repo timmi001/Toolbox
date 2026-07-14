@@ -190,43 +190,30 @@ const configs: Record<string, AiToolConfig> = {
       { key: "json", label: "JSON Input", type: "textarea", placeholder: "Paste your JSON here (valid or invalid)...", required: true, rows: 10 },
     ],
   },
-  "ai-essay-generator": {
-    toolId: "ai-essay-generator",
-    buttonLabel: "Generate Essay",
+  "ai-study-notes": {
+    toolId: "ai-study-notes",
+    buttonLabel: "Generate Study Notes",
     fields: [
-      { key: "topic", label: "Topic", type: "text", placeholder: "e.g. The importance of education", required: true },
-      { key: "style", label: "Style", type: "select", options: ["Professional", "Academic", "Simple", "Persuasive"] },
+      { key: "topic", label: "Topic", type: "text", placeholder: "e.g. Photosynthesis, World War II, Machine Learning", required: true },
+      { key: "level", label: "Level", type: "select", options: ["Beginner", "Intermediate", "Advanced", "Expert"] },
+      { key: "format", label: "Notes Format", type: "select", options: ["Detailed Notes", "Outline", "Summary"] },
     ],
   },
-  "ai-story-writer": {
-    toolId: "ai-story-writer",
-    buttonLabel: "Write Story",
+  "ai-quiz-generator": {
+    toolId: "ai-quiz-generator",
+    buttonLabel: "Generate Quiz",
     fields: [
-      { key: "prompt", label: "Story Prompt", type: "text", placeholder: "e.g. A mysterious forest at sunrise", required: true },
-      { key: "tone", label: "Tone", type: "select", options: ["Creative", "Emotional", "Inspirational", "Mystery"] },
+      { key: "topic", label: "Topic", type: "text", placeholder: "e.g. Ancient Rome, JavaScript Promises, Human Anatomy", required: true },
+      { key: "count", label: "Number of Questions", type: "select", options: ["5", "10", "15", "20"] },
+      { key: "difficulty", label: "Difficulty", type: "select", options: ["Easy", "Medium", "Hard", "Mixed"] },
     ],
   },
-  "ai-book-outline-generator": {
-    toolId: "ai-book-outline-generator",
-    buttonLabel: "Generate Outline",
+  "ai-flashcard-generator": {
+    toolId: "ai-flashcard-generator",
+    buttonLabel: "Generate Flashcards",
     fields: [
-      { key: "topic", label: "Book Topic", type: "text", placeholder: "e.g. Leadership for young professionals", required: true },
-    ],
-  },
-  "ai-chapter-generator": {
-    toolId: "ai-chapter-generator",
-    buttonLabel: "Draft Chapter",
-    fields: [
-      { key: "topic", label: "Book Topic", type: "text", placeholder: "e.g. investing basics", required: true },
-      { key: "chapter", label: "Chapter Title", type: "text", placeholder: "e.g. Building good habits" },
-    ],
-  },
-  "ai-speech-writer": {
-    toolId: "ai-speech-writer",
-    buttonLabel: "Write Speech",
-    fields: [
-      { key: "topic", label: "Speech Topic", type: "text", placeholder: "e.g. The value of discipline", required: true },
-      { key: "audience", label: "Audience", type: "text", placeholder: "e.g. Students, team, conference" },
+      { key: "topic", label: "Topic", type: "text", placeholder: "e.g. Spanish vocabulary, React hooks, Periodic table", required: true },
+      { key: "count", label: "Number of Cards", type: "select", options: ["10", "15", "20", "25", "30"] },
     ],
   },
   "ai-interview-questions": {
@@ -347,36 +334,6 @@ const configs: Record<string, AiToolConfig> = {
       { key: "offer", label: "Offer or Action", type: "text", placeholder: "e.g. start free trial, book a demo, download guide", required: true },
       { key: "audience", label: "Audience", type: "text", placeholder: "e.g. SaaS buyers, ecommerce shoppers" },
       { key: "tone", label: "Tone", type: "select", options: ["Urgent", "Friendly", "Confident", "Professional", "Playful"] },
-    ],
-  },
-  // ai-event-assistant config removed
-  "ai-event-itinerary": {
-    toolId: "ai-event-itinerary",
-    buttonLabel: "Build Itinerary",
-    fields: [
-      { key: "event_name", label: "Event Name", type: "text", placeholder: "e.g. Summer Launch Party", required: true },
-      { key: "duration", label: "Event Duration", type: "text", placeholder: "e.g. 4 hours" },
-      { key: "flow", label: "Flow / Agenda Notes", type: "textarea", placeholder: "Share your desired sequence, arrival time, speeches, dinner, games, or any key moments...", required: true, rows: 5 },
-      { key: "tone", label: "Tone", type: "select", options: ["Elegant", "Relaxed", "Energetic", "Formal", "Playful"] },
-    ],
-  },
-  "ai-event-checklist": {
-    toolId: "ai-event-checklist",
-    buttonLabel: "Generate Checklist",
-    fields: [
-      { key: "event_name", label: "Event Name", type: "text", placeholder: "e.g. Wedding Reception", required: true },
-      { key: "timeline", label: "Planning Timeline", type: "select", options: ["1 month", "2 months", "3 months", "6 months", "Flexible"], required: true },
-      { key: "details", label: "Specific Needs", type: "textarea", placeholder: "Mention vendors, decor, logistics, food, transport, or special requests...", rows: 4 } ,
-    ],
-  },
-  "ai-event-invitation": {
-    toolId: "ai-event-invitation",
-    buttonLabel: "Write Invitation",
-    fields: [
-      { key: "event_name", label: "Event Name", type: "text", placeholder: "e.g. Birthday Brunch", required: true },
-      { key: "audience", label: "Audience", type: "text", placeholder: "e.g. close friends, coworkers, family" },
-      { key: "tone", label: "Tone", type: "select", options: ["Warm", "Elegant", "Playful", "Formal", "Casual"], required: true },
-      { key: "details", label: "Event Details", type: "textarea", placeholder: "Add date, venue, dress code, RSVP notes, or any extra context...", rows: 4 },
     ],
   },
   "ai-mission-statement": {
@@ -628,229 +585,246 @@ const configs: Record<string, AiToolConfig> = {
       { key: "text", label: "Text to Proofread", type: "textarea", placeholder: "Paste your text here for a full proofreading pass...", required: true, rows: 8 },
     ],
   },
-  "ai-ghostwriting": {
-    toolId: "ai-ghostwriting",
-    buttonLabel: "Generate Content",
+  "ai-essay-generator": {
+    toolId: "ai-essay-generator",
+    buttonLabel: "Write Essay",
     fields: [
-      { key: "topic", label: "Topic or Brief", type: "textarea", placeholder: "Describe the article, speech, or piece you need ghostwritten...", required: true, rows: 5 },
-      { key: "type", label: "Content Type", type: "select", options: ["Blog Article", "Speech", "Personal Essay", "LinkedIn Post", "Social Bio", "Email Draft"] },
-      { key: "tone", label: "Voice & Tone", type: "select", options: ["Professional", "Conversational", "Inspiring", "Academic", "Casual"] },
+      { key: "topic", label: "Essay Topic / Prompt", type: "text", placeholder: "e.g. The impact of social media on teenagers", required: true },
+      { key: "essay_type", label: "Essay Type", type: "select", options: ["Argumentative", "Persuasive", "Narrative", "Expository", "Descriptive", "Compare & Contrast"] },
+      { key: "tone", label: "Tone", type: "select", options: ["Academic", "Casual", "Formal"] },
+      { key: "length", label: "Length", type: "select", options: ["Short (~300 words)", "Medium (~600 words)", "Long (~1000 words)"] },
     ],
   },
-  "ai-ticket-finder": {
-    toolId: "ai-ticket-finder",
-    buttonLabel: "Find Tickets",
+  "ai-story-writer": {
+    toolId: "ai-story-writer",
+    buttonLabel: "Write Story",
     fields: [
-      { key: "query", label: "Event or Artist", type: "text", placeholder: "e.g. Taylor Swift, comedy night, local festival", required: true },
-      { key: "location", label: "City or Region", type: "text", placeholder: "e.g. London, New York" },
-      { key: "budget", label: "Budget", type: "text", placeholder: "e.g. under $150" },
+      { key: "premise", label: "Story Premise", type: "textarea", placeholder: "Describe the premise, characters, or setting for your story...", required: true, rows: 5 },
+      { key: "genre", label: "Genre", type: "select", options: ["Fantasy", "Sci-Fi", "Romance", "Mystery", "Horror", "Drama", "Adventure", "Comedy"] },
+      { key: "tone", label: "Tone", type: "select", options: ["Lighthearted", "Dark", "Whimsical", "Suspenseful", "Emotional"] },
+      { key: "length", label: "Length", type: "select", options: ["Short (~400 words)", "Medium (~800 words)", "Long (~1500 words)"] },
     ],
   },
-  "ai-event-search": {
-    toolId: "ai-event-search",
-    buttonLabel: "Search Events",
+  "ai-book-outline-generator": {
+    toolId: "ai-book-outline-generator",
+    buttonLabel: "Generate Outline",
     fields: [
-      { key: "query", label: "What are you looking for?", type: "text", placeholder: "e.g. rooftop party, jazz night, family event", required: true },
-      { key: "location", label: "Location", type: "text", placeholder: "e.g. Chicago" },
-      { key: "date", label: "Preferred Date", type: "text", placeholder: "e.g. this weekend" },
+      { key: "title", label: "Working Title", type: "text", placeholder: "e.g. The Last Lighthouse" },
+      { key: "genre", label: "Genre", type: "select", options: ["Fantasy", "Sci-Fi", "Romance", "Mystery", "Thriller", "Non-Fiction", "Memoir", "Self-Help"] },
+      { key: "premise", label: "Premise / Synopsis", type: "textarea", placeholder: "Describe the core story, argument, or idea of your book...", required: true, rows: 5 },
+      { key: "chapters", label: "Number of Chapters", type: "select", options: ["10", "15", "20", "25", "30"] },
     ],
   },
-  "ai-price-comparison": {
-    toolId: "ai-price-comparison",
-    buttonLabel: "Compare Prices",
+  "ai-chapter-generator": {
+    toolId: "ai-chapter-generator",
+    buttonLabel: "Generate Chapter",
     fields: [
-      { key: "event", label: "Event Name", type: "text", placeholder: "e.g. NBA game", required: true },
-      { key: "location", label: "Venue or City", type: "text", placeholder: "e.g. Madison Square Garden" },
-      { key: "budget", label: "Budget", type: "text", placeholder: "e.g. $100-$250" },
+      { key: "book_context", label: "Story So Far", type: "textarea", placeholder: "Summarize the book/story context so far — characters, setting, plot...", required: true, rows: 5 },
+      { key: "chapter_focus", label: "What Should Happen in This Chapter", type: "textarea", placeholder: "Describe the key events, conflict, or turning point for this chapter...", required: true, rows: 4 },
+      { key: "tone", label: "Tone", type: "select", options: ["Lighthearted", "Dark", "Suspenseful", "Emotional", "Fast-paced"] },
+      { key: "length", label: "Length", type: "select", options: ["Short (~500 words)", "Medium (~1000 words)", "Long (~1800 words)"] },
     ],
   },
-  "ai-price-tracker": {
-    toolId: "ai-price-tracker",
-    buttonLabel: "Track Prices",
+  "ai-speech-writer": {
+    toolId: "ai-speech-writer",
+    buttonLabel: "Write Speech",
     fields: [
-      { key: "event", label: "Event Name", type: "text", placeholder: "e.g. festival pass", required: true },
-      { key: "budget", label: "Budget Target", type: "text", placeholder: "e.g. under $80" },
-      { key: "notes", label: "Notes", type: "textarea", placeholder: "Mention dates, seat preferences, or urgency...", rows: 4 }],
-  },
-  "ai-ticket-alerts": {
-    toolId: "ai-ticket-alerts",
-    buttonLabel: "Create Alerts",
-    fields: [
-      { key: "event", label: "Event or Artist", type: "text", placeholder: "e.g. football match", required: true },
-      { key: "location", label: "Location", type: "text", placeholder: "e.g. Los Angeles" },
-      { key: "frequency", label: "Alert Frequency", type: "select", options: ["Daily", "Weekly", "When prices drop"] },
+      { key: "occasion", label: "Occasion", type: "text", placeholder: "e.g. Wedding toast, graduation, retirement, keynote", required: true },
+      { key: "speaker", label: "Who's Speaking", type: "text", placeholder: "e.g. Best man, CEO, valedictorian" },
+      { key: "key_points", label: "Key Points to Include", type: "textarea", placeholder: "List the stories, points, or messages you want in the speech...", required: true, rows: 5 },
+      { key: "tone", label: "Tone", type: "select", options: ["Inspirational", "Humorous", "Formal", "Heartfelt"] },
+      { key: "length", label: "Length", type: "select", options: ["Short (~1 min)", "Medium (~3 min)", "Long (~5 min)"] },
     ],
   },
-  "ai-artist-tour-finder": {
-    toolId: "ai-artist-tour-finder",
-    buttonLabel: "Find Tour Dates",
+  "ai-script-writer": {
+    toolId: "ai-script-writer",
+    buttonLabel: "Write Script",
     fields: [
-      { key: "artist", label: "Artist or Band", type: "text", placeholder: "e.g. Dua Lipa", required: true },
-      { key: "location", label: "Preferred City", type: "text", placeholder: "e.g. Seattle" },
-      { key: "date", label: "Preferred Timeframe", type: "text", placeholder: "e.g. next 3 months" },
+      { key: "format", label: "Format", type: "select", options: ["Short Film", "TV Episode", "Stage Play", "YouTube Video", "Commercial"] },
+      { key: "premise", label: "Scene / Story Premise", type: "textarea", placeholder: "Describe the scene or story you want scripted...", required: true, rows: 5 },
+      { key: "characters", label: "Characters", type: "text", placeholder: "e.g. MAYA (30s, sharp-witted detective), JON (her partner)" },
+      { key: "tone", label: "Tone", type: "select", options: ["Dramatic", "Comedic", "Tense", "Lighthearted", "Dark"] },
     ],
   },
-  "ai-sports-tickets": {
-    toolId: "ai-sports-tickets",
-    buttonLabel: "Find Sports Tickets",
+  "ai-newsletter-writer": {
+    toolId: "ai-newsletter-writer",
+    buttonLabel: "Write Newsletter",
     fields: [
-      { key: "sport", label: "Sport or Team", type: "text", placeholder: "e.g. football, Lakers", required: true },
-      { key: "location", label: "City or Venue", type: "text", placeholder: "e.g. Miami" },
-      { key: "date", label: "Date or Upcoming Match", type: "text", placeholder: "e.g. this month" },
+      { key: "topic", label: "Newsletter Topic", type: "text", placeholder: "e.g. Monthly product updates, industry news roundup", required: true },
+      { key: "audience", label: "Audience", type: "text", placeholder: "e.g. SaaS customers, newsletter subscribers, investors" },
+      { key: "key_points", label: "Key Points to Cover", type: "textarea", placeholder: "List the updates, stories, or links you want included...", required: true, rows: 5 },
+      { key: "tone", label: "Tone", type: "select", options: ["Professional", "Casual", "Friendly", "Enthusiastic"] },
     ],
   },
-  "ai-festival-finder": {
-    toolId: "ai-festival-finder",
-    buttonLabel: "Find Festivals",
+  "ai-biography-generator": {
+    toolId: "ai-biography-generator",
+    buttonLabel: "Generate Biography",
     fields: [
-      { key: "genre", label: "Genre or Theme", type: "text", placeholder: "e.g. EDM, food, film", required: true },
-      { key: "location", label: "Location", type: "text", placeholder: "e.g. Austin" },
-      { key: "date", label: "Timeframe", type: "text", placeholder: "e.g. summer" },
+      { key: "name", label: "Full Name", type: "text", placeholder: "e.g. Jane Doe", required: true },
+      { key: "key_facts", label: "Key Facts / Background", type: "textarea", placeholder: "Career highlights, achievements, education, personal details...", required: true, rows: 5 },
+      { key: "purpose", label: "Purpose", type: "select", options: ["Professional Bio", "Author Bio", "Speaker Bio", "Personal / About Me"] },
+      { key: "tone", label: "Tone", type: "select", options: ["Formal", "Warm", "Confident", "Conversational"] },
+      { key: "length", label: "Length", type: "select", options: ["Short (~75 words)", "Medium (~150 words)", "Long (~300 words)"] },
     ],
   },
-  "ai-theatre-shows": {
-    toolId: "ai-theatre-shows",
-    buttonLabel: "Find Shows",
+  "ai-personal-statement-writer": {
+    toolId: "ai-personal-statement-writer",
+    buttonLabel: "Write Personal Statement",
     fields: [
-      { key: "genre", label: "Type of Show", type: "text", placeholder: "e.g. comedy, musical, drama", required: true },
-      { key: "location", label: "City", type: "text", placeholder: "e.g. Toronto" },
-      { key: "budget", label: "Budget", type: "text", placeholder: "e.g. under $100" },
+      { key: "purpose", label: "Purpose", type: "select", options: ["College Application", "Grad School", "Scholarship", "Job Application"], required: true },
+      { key: "background", label: "Your Background", type: "textarea", placeholder: "Relevant experiences, challenges overcome, education...", required: true, rows: 5 },
+      { key: "goals", label: "Goals / Why This Opportunity", type: "textarea", placeholder: "Why you're pursuing this and what you hope to achieve...", required: true, rows: 4 },
+      { key: "word_limit", label: "Word Limit", type: "select", options: ["~300 words", "~500 words", "~650 words", "~1000 words"] },
     ],
   },
-  "ai-nearby-events": {
-    toolId: "ai-nearby-events",
-    buttonLabel: "Find Nearby Events",
+  "ai-letter-writer": {
+    toolId: "ai-letter-writer",
+    buttonLabel: "Write Letter",
     fields: [
-      { key: "location", label: "Your Location", type: "text", placeholder: "e.g. downtown Seattle", required: true },
-      { key: "interest", label: "Interests", type: "text", placeholder: "e.g. live music, food, nightlife" },
-      { key: "date", label: "Date Range", type: "text", placeholder: "e.g. this weekend" },
+      { key: "letter_type", label: "Letter Type", type: "select", options: ["Formal", "Resignation", "Recommendation", "Complaint", "Apology", "Thank You", "Introduction"], required: true },
+      { key: "recipient", label: "Recipient", type: "text", placeholder: "e.g. Hiring Manager, Landlord, Customer Service" },
+      { key: "purpose", label: "Purpose / Details", type: "textarea", placeholder: "Describe what the letter needs to say...", required: true, rows: 5 },
+      { key: "tone", label: "Tone", type: "select", options: ["Formal", "Friendly", "Warm", "Direct"] },
     ],
   },
-  "ai-seat-finder": {
-    toolId: "ai-seat-finder",
-    buttonLabel: "Find Best Seats",
+  // AI Study & Exams tool configs
+  "ai-homework-helper": {
+    toolId: "ai-homework-helper",
+    buttonLabel: "Get Help",
     fields: [
-      { key: "event", label: "Event or Venue", type: "text", placeholder: "e.g. concert at Red Rocks", required: true },
-      { key: "preference", label: "Seat Preference", type: "text", placeholder: "e.g. close to stage, under $80" },
-      { key: "notes", label: "Notes", type: "textarea", placeholder: "Mention accessibility or view preferences...", rows: 4 }],
-  },
-  "ai-event-trip-planner": {
-    toolId: "ai-event-trip-planner",
-    buttonLabel: "Plan the Trip",
-    fields: [
-      { key: "event", label: "Event Name", type: "text", placeholder: "e.g. weekend festival", required: true },
-      { key: "location", label: "Destination", type: "text", placeholder: "e.g. Austin" },
-      { key: "budget", label: "Trip Budget", type: "text", placeholder: "e.g. $500" },
+      { key: "subject", label: "Subject", type: "select", options: ["Mathematics", "Physics", "Chemistry", "Biology", "English", "Economics", "Government", "Literature", "Commerce", "Geography", "History", "Other"] },
+      { key: "question", label: "Homework Question / Problem", type: "textarea", placeholder: "Type or paste your homework question here...", required: true, rows: 5 },
+      { key: "grade_level", label: "Level", type: "select", options: ["Primary", "JSS / Middle School", "SSS / High School", "University"] },
     ],
   },
-  "ai-practice-questions": {
-    toolId: "ai-practice-questions",
-    buttonLabel: "Generate Practice Questions",
+  "ai-notes-summarizer": {
+    toolId: "ai-notes-summarizer",
+    buttonLabel: "Summarize Notes",
     fields: [
-      { key: "topic", label: "Topic or Subject", type: "text", placeholder: "e.g. Algebra, World History, Biology", required: true },
-      { key: "exam", label: "Exam or Course", type: "text", placeholder: "e.g. GCSE, SAT, Medical School" },
-      { key: "difficulty", label: "Difficulty", type: "select", options: ["Beginner", "Intermediate", "Advanced", "Mixed"] },
-      { key: "count", label: "Number of Questions", type: "select", options: ["5", "10", "15", "20"] },
+      { key: "notes", label: "Your Notes", type: "textarea", placeholder: "Paste your lecture or class notes here...", required: true, rows: 9 },
+      { key: "format", label: "Summary Format", type: "select", options: ["Bullet Points", "Structured Outline", "Cornell Notes Style"] },
+      { key: "focus", label: "Focus Area (optional)", type: "text", placeholder: "e.g. key definitions, exam-focused, formulas only" },
     ],
   },
-  "ai-mock-exam-generator": {
-    toolId: "ai-mock-exam-generator",
-    buttonLabel: "Generate Mock Exam",
+  "ai-essay-improver": {
+    toolId: "ai-essay-improver",
+    buttonLabel: "Improve Essay",
     fields: [
-      { key: "topic", label: "Subject or Topic", type: "text", placeholder: "e.g. Physics, Economics, JavaScript", required: true },
-      { key: "duration", label: "Exam Duration", type: "text", placeholder: "e.g. 60 minutes" },
-      { key: "difficulty", label: "Difficulty", type: "select", options: ["Easy", "Moderate", "Hard", "Mixed"] },
-      { key: "count", label: "Question Count", type: "select", options: ["10", "15", "20", "25"] },
+      { key: "essay", label: "Your Essay Draft", type: "textarea", placeholder: "Paste your essay here for AI feedback and improvement...", required: true, rows: 9 },
+      { key: "focus", label: "Improvement Focus", type: "select", options: ["Overall", "Grammar & Spelling", "Clarity & Flow", "Structure & Argument", "Academic Tone"] },
     ],
   },
-  "ai-tutor-chat": {
-    toolId: "ai-tutor-chat",
-    buttonLabel: "Explain This Topic",
+  "ai-math-solver": {
+    toolId: "ai-math-solver",
+    buttonLabel: "Solve Problem",
     fields: [
-      { key: "topic", label: "Topic to Learn", type: "text", placeholder: "e.g. Photosynthesis, Calculus derivatives", required: true },
-      { key: "level", label: "Learner Level", type: "select", options: ["Beginner", "Intermediate", "Advanced"] },
-      { key: "question", label: "What do you want help with?", type: "textarea", placeholder: "Ask for examples, step-by-step help, or a quick explanation...", required: true, rows: 4 },
-    ],
-  },
-  "ai-flashcard-generator": {
-    toolId: "ai-flashcard-generator",
-    buttonLabel: "Generate Flashcards",
-    fields: [
-      { key: "topic", label: "Topic or Chapter", type: "text", placeholder: "e.g. Cell structure, World War II", required: true },
-      { key: "level", label: "Study Level", type: "select", options: ["Beginner", "Intermediate", "Advanced"] },
-      { key: "count", label: "Number of Flashcards", type: "select", options: ["10", "15", "20", "25"] },
-    ],
-  },
-  "ai-study-notes-generator": {
-    toolId: "ai-study-notes-generator",
-    buttonLabel: "Generate Study Notes",
-    fields: [
-      { key: "topic", label: "Topic or Subject", type: "text", placeholder: "e.g. Organic Chemistry, Machine Learning", required: true },
-      { key: "level", label: "Learner Level", type: "select", options: ["Beginner", "Intermediate", "Advanced"] },
-      { key: "format", label: "Notes Style", type: "select", options: ["Detailed Notes", "Revision Notes", "Formula Sheet", "Exam Summary"] },
-    ],
-  },
-  "ai-weak-topic-analyzer": {
-    toolId: "ai-weak-topic-analyzer",
-    buttonLabel: "Analyze Weak Topics",
-    fields: [
-      { key: "topic", label: "Subject / Topic Area", type: "text", placeholder: "e.g. Mathematics, Biology, Programming", required: true },
-      { key: "details", label: "Performance Notes", type: "textarea", placeholder: "Share past mistakes, low scores, or recurring problem areas...", required: true, rows: 5 },
-    ],
-  },
-  "ai-study-planner": {
-    toolId: "ai-study-planner",
-    buttonLabel: "Create Study Plan",
-    fields: [
-      { key: "topic", label: "Exam or Goal", type: "text", placeholder: "e.g. IELTS, CFA Level 1, Final exam", required: true },
-      { key: "date", label: "Target Date", type: "text", placeholder: "e.g. 4 weeks from now" },
-      { key: "hours", label: "Daily Study Hours", type: "text", placeholder: "e.g. 2 hours" },
-    ],
-  },
-  "ai-previous-question-generator": {
-    toolId: "ai-previous-question-generator",
-    buttonLabel: "Generate Exam-Style Questions",
-    fields: [
-      { key: "topic", label: "Subject or Topic", type: "text", placeholder: "e.g. Statistics, Literature, React", required: true },
-      { key: "exam", label: "Exam / Board", type: "text", placeholder: "e.g. JAMB, NEET, UPSC" },
-      { key: "count", label: "Number of Questions", type: "select", options: ["5", "10", "15"] },
-    ],
-  },
-  "ai-performance-analytics": {
-    toolId: "ai-performance-analytics",
-    buttonLabel: "Analyze Performance",
-    fields: [
-      { key: "topic", label: "Subject or Exam", type: "text", placeholder: "e.g. Biology, Mock Exam 1", required: true },
-      { key: "details", label: "Scores / Notes", type: "textarea", placeholder: "Paste your scores, accuracy, mistakes, and study history...", required: true, rows: 5 },
-    ],
-  },
-  "ai-pdf-practice-papers": {
-    toolId: "ai-pdf-practice-papers",
-    buttonLabel: "Create Practice Papers",
-    fields: [
-      { key: "topic", label: "Subject or Topic", type: "text", placeholder: "e.g. English Literature, Accounting", required: true },
-      { key: "level", label: "Level / Class", type: "text", placeholder: "e.g. Grade 10, Undergraduate" },
-      { key: "count", label: "Number of Papers", type: "select", options: ["1", "2", "3"] },
-    ],
-  },
-  "ai-daily-practice": {
-    toolId: "ai-daily-practice",
-    buttonLabel: "Generate Daily Practice",
-    fields: [
-      { key: "topic", label: "Subject or Topic", type: "text", placeholder: "e.g. Vocabulary, Calculus", required: true },
-      { key: "goal", label: "Daily Goal", type: "text", placeholder: "e.g. 20 minutes, 1 chapter" },
-      { key: "difficulty", label: "Difficulty", type: "select", options: ["Easy", "Moderate", "Challenging"] },
+      { key: "problem", label: "Math Problem", type: "textarea", placeholder: "e.g. Solve 2x + 5 = 15 for x, or Find the area of a circle with radius 7cm", required: true, rows: 5 },
+      { key: "grade_level", label: "Level", type: "select", options: ["Primary", "JSS / Middle School", "SSS / High School", "University"] },
     ],
   },
   "ai-jamb-cbt-practice": {
     toolId: "ai-jamb-cbt-practice",
     buttonLabel: "Generate Questions",
     fields: [
-      { key: "subject", label: "Subject", type: "text", placeholder: "e.g. English, Mathematics, Physics, Chemistry, Biology", required: true },
+      { key: "subject", label: "Subject", type: "select", options: ["English Language", "Mathematics", "Physics", "Chemistry", "Biology", "Government", "Economics", "Literature in English", "Commerce", "Geography", "Agricultural Science", "Accounting"], required: true },
+      { key: "topic", label: "Topic (optional)", type: "text", placeholder: "e.g. Organic Chemistry, Vectors, Comprehension" },
+      { key: "num_questions", label: "Number of Questions", type: "select", options: ["5", "10", "15", "20"] },
+    ],
+  },
+  "waec-past-questions": {
+    toolId: "waec-past-questions",
+    buttonLabel: "Generate Questions",
+    fields: [
+      { key: "subject", label: "Subject", type: "select", options: ["English Language", "Mathematics", "Physics", "Chemistry", "Biology", "Government", "Economics", "Literature in English", "Commerce", "Geography", "Agricultural Science", "Accounting", "Further Mathematics"], required: true },
+      { key: "topic", label: "Topic (optional)", type: "text", placeholder: "e.g. Genetics, Trigonometry, Essay Writing" },
+      { key: "num_questions", label: "Number of Questions", type: "select", options: ["5", "10", "15"] },
+    ],
+  },
+  "ai-jamb-subject-combination": {
+    toolId: "ai-jamb-subject-combination",
+    buttonLabel: "Check Combination",
+    fields: [
+      { key: "course", label: "Desired Course / Programme", type: "text", placeholder: "e.g. Medicine and Surgery, Computer Science, Law, Engineering", required: true },
+      { key: "institution", label: "Target University (optional)", type: "text", placeholder: "e.g. University of Lagos, OAU, UNILAG" },
+    ],
+  },
+  "ai-jamb-cutoff-checker": {
+    toolId: "ai-jamb-cutoff-checker",
+    buttonLabel: "Check Cut-off",
+    fields: [
+      { key: "course", label: "Desired Course / Programme", type: "text", placeholder: "e.g. Medicine and Surgery, Engineering, Law", required: true },
+      { key: "institution", label: "Target University (optional)", type: "text", placeholder: "e.g. University of Ibadan, LASU, UNIBEN" },
+    ],
+  },
+  "ai-study-planner": {
+    toolId: "ai-study-planner",
+    buttonLabel: "Create Study Plan",
+    fields: [
+      { key: "subjects", label: "Subjects to Study", type: "textarea", placeholder: "e.g. Mathematics, Physics, Chemistry, English Language", required: true, rows: 3 },
+      { key: "exam_date", label: "Exam Date / Timeframe", type: "text", placeholder: "e.g. 2026-09-15, or 'in 4 weeks'", required: true },
+      { key: "hours_per_day", label: "Available Study Time", type: "select", options: ["1–2 hours/day", "2–4 hours/day", "4–6 hours/day", "6+ hours/day"] },
+      { key: "goals", label: "Goals / Weak Areas (optional)", type: "textarea", placeholder: "e.g. I struggle with calculus and need more time on it", rows: 3 },
+    ],
+  },
+  "ai-essay-writer": {
+    toolId: "ai-essay-writer",
+    buttonLabel: "Write Essay",
+    fields: [
+      { key: "topic", label: "Essay Topic / Prompt", type: "text", placeholder: "e.g. The impact of social media on teenagers", required: true },
+      { key: "essay_type", label: "Essay Type", type: "select", options: ["Argumentative", "Persuasive", "Narrative", "Expository", "Descriptive", "Compare & Contrast"] },
+      { key: "tone", label: "Tone", type: "select", options: ["Academic", "Casual", "Formal"] },
+      { key: "length", label: "Length", type: "select", options: ["Short (~300 words)", "Medium (~600 words)", "Long (~1000 words)"] },
+    ],
+  },
+  "ai-paraphrasing-tool": {
+    toolId: "ai-paraphrasing-tool",
+    buttonLabel: "Paraphrase",
+    fields: [
+      { key: "text", label: "Text to Paraphrase", type: "textarea", placeholder: "Enter the text you want to paraphrase...", required: true, rows: 6 },
+      { key: "style", label: "Style", type: "select", options: ["Standard", "Formal", "Casual", "Creative", "Simpler"] },
     ],
   },
 };
 
+const genericStudyAndEventToolIds = new Set([
+  "ai-practice-questions",
+  "ai-mock-exam-generator",
+  "ai-tutor-chat",
+  "ai-study-notes-generator",
+  "ai-weak-topic-analyzer",
+  "ai-previous-question-generator",
+  "ai-performance-analytics",
+  "ai-pdf-practice-papers",
+  "ai-daily-practice",
+  "ai-event-itinerary",
+  "ai-event-checklist",
+  "ai-event-invitation",
+  "ai-ticket-finder",
+  "ai-event-search",
+  "ai-artist-tour-finder",
+  "ai-sports-tickets",
+  "ai-festival-finder",
+  "ai-theatre-shows",
+  "ai-nearby-events",
+  "ai-seat-finder",
+  "ai-event-trip-planner",
+]);
+
 export function getAiToolConfig(toolId: string): AiToolConfig | undefined {
-  return configs[toolId];
+  if (configs[toolId]) return configs[toolId];
+  if (!genericStudyAndEventToolIds.has(toolId)) return undefined;
+  return {
+    toolId,
+    buttonLabel: "Generate",
+    fields: [
+      {
+        key: "topic",
+        label: "What do you need help with?",
+        type: "textarea",
+        placeholder: "Describe the subject, event, goal, or details you want the AI to work with...",
+        required: true,
+        rows: 6,
+      },
+    ],
+  };
 }

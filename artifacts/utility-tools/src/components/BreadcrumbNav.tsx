@@ -13,6 +13,7 @@ const CATEGORY_NAMES: Record<ToolCategory, string> = {
   image: 'Image Tools',
   'file-conversion': 'File Conversion Tools',
   business: 'Business Tools',
+  pdf: 'PDF Tools',
   calculators: 'Calculators & Converters',
   ai: 'AI Tools',
   marketing: 'AI Marketing & Advertising',
@@ -23,7 +24,8 @@ const CATEGORY_NAMES: Record<ToolCategory, string> = {
   'ai-blogging-seo': 'AI Blogging & SEO Tools',
   'ai-email': 'AI Email Tools',
   'ai-grammar': 'AI Grammar & Writing Tools',
-  'ai-ghostwriting': 'AI Ghostwriting',
+  'ai-study-exams': 'AI Study & Exams',
+  'ai-ghostwriting': 'AI Ghostwriting Tools',
   'ai-events': 'AI Event Planning',
   'ai-study': 'AI Study & Exams',
 };
@@ -34,6 +36,7 @@ const CATEGORY_LINKS: Record<ToolCategory, string> = {
   image: '/image-tools',
   'file-conversion': '/file-conversion-tools',
   business: '/business-tools',
+  pdf: '/pdf-tools',
   calculators: '/calculators',
   ai: '/ai-tools',
   marketing: '/ai-marketing-advertising',
@@ -44,9 +47,10 @@ const CATEGORY_LINKS: Record<ToolCategory, string> = {
   'ai-blogging-seo': '/ai-blogging-seo-tools',
   'ai-email': '/ai-email-tools',
   'ai-grammar': '/ai-grammar-tools',
+  'ai-study-exams': '/ai-study-exams-tools',
   'ai-ghostwriting': '/ai-ghostwriting-tools',
   'ai-events': '/ai-event-tools',
-  'ai-study': '/ai-study-exams',
+  'ai-study': '/ai-study-tools',
 };
 
 export function BreadcrumbNav({ category, toolName }: BreadcrumbNavProps) {
