@@ -11,6 +11,10 @@ import CategoryPage from "@/pages/CategoryPage";
 import NotFound from "@/pages/not-found";
 import BlogIndex from "@/pages/blog/BlogIndex";
 import BlogPost from "@/pages/blog/BlogPost";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
+import AboutUs from "@/pages/AboutUs";
+import Contact from "@/pages/Contact";
 
 const Loading = () => <div className="p-8 text-center text-muted-foreground animate-pulse">Loading tool...</div>;
 const L = (imp: () => Promise<{ default: React.ComponentType }>) => {
@@ -295,6 +299,12 @@ function Router() {
         {/* Blog */}
         <Route path="/blog" component={BlogIndex} />
         <Route path="/blog/:slug" component={BlogPost} />
+
+        {/* Informational Pages */}
+        <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/terms" component={TermsOfService} />
+        <Route path="/about" component={AboutUs} />
+        <Route path="/contact" component={Contact} />
 
         {/* Text Tools */}
         <Route path="/tools/text/word-counter" component={WordCounter} />

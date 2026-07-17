@@ -52,9 +52,9 @@ export default function Home() {
 
       {/* Newsletter */}
       <section className="bg-primary/10 border border-primary/20 rounded-2xl p-8 md:p-12 text-center max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold mb-4 tracking-tight">Stay updated</h2>
+        <h2 className="text-3xl font-bold mb-4 tracking-tight">Feedback</h2>
         <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-          Get notified when we add new tools and features. No spam, we promise.
+          Share your thoughts, feature requests, or issues so we can keep improving toolboxx.
         </p>
         <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
           <Input 

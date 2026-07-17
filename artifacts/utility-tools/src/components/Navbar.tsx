@@ -26,7 +26,7 @@ export function Navbar() {
             alt="ToolKit logo"
             className="w-16 h-16 rounded-2xl object-cover shadow-md"
           />
-          <span className="font-black text-3xl tracking-tight text-foreground">ToolKit</span>
+          <span className="font-black text-3xl tracking-tight text-foreground">toolboxx</span>
         </Link>
 
         <div className="hidden md:flex flex-1 max-w-md mx-4">

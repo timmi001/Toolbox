@@ -7,12 +7,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4 group inline-flex">
-              <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-              </div>
-              <span className="font-bold text-lg text-foreground">ToolKit</span>
+              <img
+                src="/logo.jpg"
+                alt="toolboxx logo"
+                className="w-10 h-10 rounded-2xl object-cover shadow-md"
+              />
+              <span className="font-black text-xl tracking-tight text-foreground">toolboxx</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
               Your premium destination for free, fast, and secure online utility tools. No backend calls, 100% client-side.
@@ -51,7 +51,7 @@ export function Footer() {
         </div>
         
         <div className="pt-8 border-t border-border/50 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} ToolKit. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} toolboxx. All rights reserved.</p>
         </div>
       </div>
     </footer>
