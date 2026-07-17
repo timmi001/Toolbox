@@ -24,6 +24,8 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'ai-blogging-seo-tools': { title: 'AI Blogging & SEO Tools', desc: 'Write blog titles, outlines, articles, and SEO meta tags with AI.' },
   'ai-email-tools': { title: 'AI Email Tools', desc: 'Draft cold emails, sales emails, follow-ups, support replies, and thank-you notes.' },
   'ai-grammar-tools': { title: 'AI Grammar & Writing Tools', desc: 'Check grammar, improve tone, summarize, paraphrase, and proofread any text.' },
+  'ai-study-exams-tools': { title: 'AI Study & Exams', desc: 'Study notes, quizzes, flashcards, homework help, planners, and JAMB prep tools for smarter revision.' },
+  'ai-ghostwriting-tools': { title: 'AI Ghostwriting', desc: 'Create polished essays, stories, book outlines, chapters, and speeches with a guided writing workflow.' },
 };
 
 export default function CategoryPage() {
@@ -49,6 +51,8 @@ export default function CategoryPage() {
     categoryPath === 'ai-blogging-seo-tools' ? 'ai-blogging-seo' :
     categoryPath === 'ai-email-tools' ? 'ai-email' :
     categoryPath === 'ai-grammar-tools' ? 'ai-grammar' :
+    categoryPath === 'ai-study-exams-tools' ? 'ai-study-exams' :
+    categoryPath === 'ai-ghostwriting-tools' ? 'ai-ghostwriting' :
     'calculators';
 
   useSEO(

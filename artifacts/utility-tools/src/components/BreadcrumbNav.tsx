@@ -24,6 +24,8 @@ const CATEGORY_NAMES: Record<ToolCategory, string> = {
   'ai-blogging-seo': 'AI Blogging & SEO Tools',
   'ai-email': 'AI Email Tools',
   'ai-grammar': 'AI Grammar & Writing Tools',
+  'ai-study-exams': 'AI Study & Exams',
+  'ai-ghostwriting': 'AI Ghostwriting',
 };
 
 const CATEGORY_LINKS: Record<ToolCategory, string> = {
@@ -43,6 +45,8 @@ const CATEGORY_LINKS: Record<ToolCategory, string> = {
   'ai-blogging-seo': '/ai-blogging-seo-tools',
   'ai-email': '/ai-email-tools',
   'ai-grammar': '/ai-grammar-tools',
+  'ai-study-exams': '/ai-study-exams-tools',
+  'ai-ghostwriting': '/ai-ghostwriting-tools',
 };
 
 export function BreadcrumbNav({ category, toolName }: BreadcrumbNavProps) {
