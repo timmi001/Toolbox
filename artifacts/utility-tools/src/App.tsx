@@ -268,6 +268,21 @@ const AiToneChanger = L(() => import("@/pages/tools/ai/ai-tone-changer"));
 const AiExpandText = L(() => import("@/pages/tools/ai/ai-expand-text"));
 const AiShortenText = L(() => import("@/pages/tools/ai/ai-shorten-text"));
 const AiProofreader = L(() => import("@/pages/tools/ai/ai-proofreader"));
+const AiHomeworkHelper = L(() => import("@/pages/tools/ai/ai-homework-helper"));
+const AiEssayWriter = L(() => import("@/pages/tools/ai/ai-essay-writer"));
+const AiEssayImprover = L(() => import("@/pages/tools/ai/ai-essay-improver"));
+const AiEssayGenerator = L(() => import("@/pages/tools/ai/ai-essay-generator"));
+const AiParaphrasingTool = L(() => import("@/pages/tools/ai/ai-paraphrasing-tool"));
+const AiMathSolver = L(() => import("@/pages/tools/ai/ai-math-solver"));
+const AiStudyPlanner = L(() => import("@/pages/tools/ai/ai-study-planner"));
+const AiJambCbtPractice = L(() => import("@/pages/tools/ai/ai-jamb-cbt-practice"));
+const AiJambSubjectCombination = L(() => import("@/pages/tools/ai/ai-jamb-subject-combination"));
+const AiJambCutoffChecker = L(() => import("@/pages/tools/ai/ai-jamb-cutoff-checker"));
+const AiGhostwriting = L(() => import("@/pages/tools/ai/ai-ghostwriting"));
+const AiStoryWriter = L(() => import("@/pages/tools/ai/ai-story-writer"));
+const AiBookOutlineGenerator = L(() => import("@/pages/tools/ai/ai-book-outline-generator"));
+const AiChapterGenerator = L(() => import("@/pages/tools/ai/ai-chapter-generator"));
+const AiSpeechWriter = L(() => import("@/pages/tools/ai/ai-speech-writer"));
 
 const queryClient = new QueryClient();
 
@@ -526,6 +541,21 @@ function Router() {
         <Route path="/tools/ai/ai-expand-text" component={AiExpandText} />
         <Route path="/tools/ai/ai-shorten-text" component={AiShortenText} />
         <Route path="/tools/ai/ai-proofreader" component={AiProofreader} />
+        <Route path="/tools/ai/ai-homework-helper" component={AiHomeworkHelper} />
+        <Route path="/tools/ai/ai-essay-writer" component={AiEssayWriter} />
+        <Route path="/tools/ai/ai-essay-improver" component={AiEssayImprover} />
+        <Route path="/tools/ai/ai-essay-generator" component={AiEssayGenerator} />
+        <Route path="/tools/ai/ai-paraphrasing-tool" component={AiParaphrasingTool} />
+        <Route path="/tools/ai/ai-math-solver" component={AiMathSolver} />
+        <Route path="/tools/ai/ai-study-planner" component={AiStudyPlanner} />
+        <Route path="/tools/ai/ai-jamb-cbt-practice" component={AiJambCbtPractice} />
+        <Route path="/tools/ai/ai-jamb-subject-combination" component={AiJambSubjectCombination} />
+        <Route path="/tools/ai/ai-jamb-cutoff-checker" component={AiJambCutoffChecker} />
+        <Route path="/tools/ai/ai-ghostwriting" component={AiGhostwriting} />
+        <Route path="/tools/ai/ai-story-writer" component={AiStoryWriter} />
+        <Route path="/tools/ai/ai-book-outline-generator" component={AiBookOutlineGenerator} />
+        <Route path="/tools/ai/ai-chapter-generator" component={AiChapterGenerator} />
+        <Route path="/tools/ai/ai-speech-writer" component={AiSpeechWriter} />
 
         {/* Audio Tools */}
         <Route path="/tools/audio/mp3-converter" component={Mp3Converter} />

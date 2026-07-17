@@ -2,7 +2,6 @@ import path from 'path';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
-import Sitemap from 'vite-plugin-sitemap';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
@@ -35,12 +34,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    Sitemap({
-      hostname: process.env.SITE_URL || 'https://toolboxx.site',
-      changefreq: 'weekly',
-      priority: 0.7,
-      generateRobotsTxt: true,
-    }),
     runtimeErrorOverlay(),
     ...(process.env.NODE_ENV !== 'production' &&
     process.env.REPL_ID !== undefined
