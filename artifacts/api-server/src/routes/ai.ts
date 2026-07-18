@@ -430,7 +430,14 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
-      config: { maxOutputTokens: 8192 },
+      config: {
+        maxOutputTokens: 8192,
+        // Disable the model's internal reasoning/thinking pass. These tools
+        // are structured prompt→output tasks that don't need chain-of-thought,
+        // and the default thinking budget adds 3–10 s of latency before any
+        // output token is produced.
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     });
 
     timings.geminiMs = nowMs() - tGeminiStart;
