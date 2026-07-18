@@ -145,7 +145,7 @@ export function AiToolShell({ tool }: AiToolShellProps) {
   return (
     <ToolLayout
       tool={tool}
-      instructions={`Fill in the fields below and click "${config.buttonLabel ?? 'Generate'}" to get AI-powered results. Results are generated using Google Gemini.`}
+      instructions={`Fill in the fields below and click "${config.buttonLabel ?? 'Generate'}" to get AI-powered results.`}
     >
       {/* Input Fields */}
       <div className="space-y-5 mb-6">

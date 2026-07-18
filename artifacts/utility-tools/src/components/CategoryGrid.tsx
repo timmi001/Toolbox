@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { getToolsByCategory } from '@/lib/tools-data';
 
 const CATEGORIES = [
-  { id: 'ai', name: 'AI Tools', icon: Sparkles, path: '/ai-tools', desc: 'Write, summarize, generate code, and more — powered by Gemini.', highlight: true },
+  { id: 'ai', name: 'AI Tools', icon: Sparkles, path: '/ai-tools', desc: 'Write, summarize, generate code, and more with AI-powered tools.', highlight: true },
   { id: 'marketing', name: 'AI Marketing & Advertising', icon: Megaphone, path: '/ai-marketing-advertising', desc: 'Create ad copy, sales messaging, landing pages, and CTAs with AI.' },
   { id: 'ai-resume', name: 'AI Resume Tools', icon: FileBadge, path: '/ai-resume-tools', desc: 'Build resumes, cover letters, LinkedIn headlines, and professional bios with AI.' },
   { id: 'ai-social', name: 'AI Social Media Tools', icon: Share2, path: '/ai-social-media-tools', desc: 'Generate captions, posts, and descriptions for Instagram, X, TikTok, LinkedIn, and YouTube.' },

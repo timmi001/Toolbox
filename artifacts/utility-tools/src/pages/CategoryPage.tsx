@@ -15,7 +15,7 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'business-tools': { title: 'Business Tools', desc: 'Create invoices, receipts, labels, business names, and simple financial insights.' },
   'pdf-tools': { title: 'PDF Tools', desc: 'Merge, split, and manipulate PDF documents securely.' },
   'calculators': { title: 'Calculators & Converters', desc: 'Solve math problems, convert units, and calculate dates.' },
-  'ai-tools': { title: 'AI Tools', desc: 'Powered by Google Gemini — write, summarize, generate code, build resumes, create content, and more with AI.' },
+  'ai-tools': { title: 'AI Tools', desc: 'Write, summarize, generate code, build resumes, create content, and more with AI.' },
   'ai-marketing-advertising': { title: 'AI Marketing & Advertising', desc: 'Create ad copy, sales messaging, landing page content, and conversion-focused CTAs with AI-powered marketing tools.' },
   'audio-tools': { title: 'Audio Tools', desc: 'Record, trim, merge, convert, and enhance audio files entirely in your browser — no installs needed.' },
   'video-tools': { title: 'Video Tools', desc: 'Trim, merge, compress, rotate, subtitle, and convert videos with simple browser-based tools.' },
