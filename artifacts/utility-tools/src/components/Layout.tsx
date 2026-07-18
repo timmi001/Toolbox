@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
+import { FeedbackButton } from './FeedbackButton';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ export function Layout({ children }: LayoutProps) {
         {children}
       </main>
       <Footer />
+      <FeedbackButton />
     </div>
   );
 }
