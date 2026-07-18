@@ -69,6 +69,8 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-interview-questions":{ required: ["role"],       maxLengths: { role: 200 } },
   "ai-meeting-notes":      { required: ["transcript"], maxLengths: { transcript: 20000 } },
   "ai-interview-practice": { required: ["role", "question", "answer"], maxLengths: { role: 200, question: 2000, answer: 5000 } },
+  "ai-interview-start":    { required: ["role"], maxLengths: { role: 200 } },
+  "ai-interview-respond":  { required: ["role", "question", "answer"], maxLengths: { role: 200, question: 2000, answer: 5000 } },
   "ai-hashtag-generator":  { required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-youtube-title":      { required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-instagram-caption":  { required: ["topic"],      maxLengths: { topic: 300 } },
@@ -194,6 +196,12 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 
     case "ai-interview-practice":
       return `You are an expert interview coach. The candidate is practicing for a "${i.role}" position.\n\nInterview question: "${i.question}"\n\nCandidate's answer:\n"${i.answer}"\n\nEvaluate the answer and respond with:\n## Overall Score\n[X/10] with a one-line summary\n\n### Strengths\n[What the candidate did well — structure, specifics, relevance]\n\n### Areas to Improve\n[Concrete gaps — missing structure like STAR, vague claims, no metrics, etc.]\n\n### Improved Sample Answer\n[Rewrite the answer as a strong, concise model response for this role]\n\n### Follow-up Questions to Expect\n[2-3 likely follow-up questions an interviewer might ask next]\n\nBe direct, specific, and encouraging.`;
+
+    case "ai-interview-start":
+      return `You are about to conduct a ${i.type || "Mixed"} job interview for a ${i.level || "Mid"}-level ${i.role} position.\n\nGenerate exactly ${i.count || "8"} interview questions. Output ONLY a plain numbered list — no intro text, no commentary, no labels, nothing else.\n\nFormat strictly as:\n1. [question]\n2. [question]\n...\n\nMake the questions realistic, varied, and appropriate for the role and seniority. For Mixed type include both behavioral and technical questions. For Behavioral use STAR-eliciting questions. For Technical use specific role-relevant questions.`;
+
+    case "ai-interview-respond":
+      return `You are a professional interviewer conducting a live ${i.role} interview.\n\nYou just asked: "${i.question}"\n\nThe candidate answered:\n"${i.answer}"\n\nRespond as an interviewer would in a real interview debrief — 2 to 3 sentences only. Acknowledge what they got right (be specific), flag one thing that was weak or missing (be direct), and close with an encouraging line. Keep it natural and conversational, not a formal rubric.\n\nThen on a new line output exactly:\nScore: X/10\n\nNothing else after the score.`;
 
     case "ai-hashtag-generator":
       return `Generate ${i.count || "30"} highly relevant hashtags for the topic: "${i.topic}" optimized for ${i.platform || "Instagram"}.\n\nOrganize into:\n**High Reach (1M+ posts):** [5-8 hashtags]\n**Medium Reach (100K-1M posts):** [10-12 hashtags]\n**Niche/Low Competition (under 100K):** [8-10 hashtags]\n**Branded/Unique:** [3-5 hashtags]\n\nInclude strategy tips for best results on ${i.platform || "Instagram"}.`;
