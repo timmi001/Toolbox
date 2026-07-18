@@ -33,26 +33,6 @@ export default function Home() {
         <ToolFAQ faqs={HOME_FAQS} />
       </section>
 
-      {/* Feedback */}
-      <section className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold mb-2 tracking-tight">Feedback</h2>
-        <p className="text-muted-foreground mb-6">
-          Share your thoughts, feature requests, or issues so we can keep improving toolboxx.
-        </p>
-        <div className="rounded-2xl border overflow-hidden">
-          <iframe
-            src="https://docs.google.com/forms/d/e/1FAIpQLSfh9ojujTb3NPXJ2T42r6lmfuY7v_6oH38ql_UH-9kTE9OQXw/viewform?embedded=true"
-            width="100%"
-            height="1703"
-            frameBorder="0"
-            marginHeight={0}
-            marginWidth={0}
-            title="Feedback Form"
-          >
-            Loading…
-          </iframe>
-        </div>
-      </section>
     </div>
   );
 }
