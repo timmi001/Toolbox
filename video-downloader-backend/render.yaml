@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: video-downloader-backend
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: ALLOWED_ORIGINS
+        value: https://your-frontend-domain.vercel.app
+      - key: MAX_REQUEST_BODY_SIZE
+        value: 10mb

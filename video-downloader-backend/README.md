@@ -67,17 +67,37 @@ Content-Type: application/json
 
 ## Render Deployment
 
+### Option 1: Render Dashboard
+
 1. Create a new Web Service on Render.
 2. Connect this repository.
 3. Choose Docker as the environment.
-4. Set the start command to:
+4. Use the following start command:
    ```bash
    npm start
    ```
-5. Add environment variables:
+5. Add these environment variables:
    - PORT=3001
    - HOST=0.0.0.0
+   - NODE_ENV=production
    - ALLOWED_ORIGINS=https://your-frontend-domain.vercel.app
+   - MAX_REQUEST_BODY_SIZE=10mb
+
+### Option 2: Render Blueprint
+
+Render will also pick up the included [render.yaml](render.yaml) file.
+
+### Docker Commands
+
+Build locally:
+```bash
+docker build -t video-downloader-backend .
+```
+
+Run locally:
+```bash
+docker run -p 3001:3001 --env-file .env video-downloader-backend
+```
 
 ## Docker
 
