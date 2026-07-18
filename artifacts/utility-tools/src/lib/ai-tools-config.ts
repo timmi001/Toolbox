@@ -640,6 +640,15 @@ const configs: Record<string, AiToolConfig> = {
       { key: "text", label: "Text to Proofread", type: "textarea", placeholder: "Paste your text here for a full proofreading pass...", required: true, rows: 8 },
     ],
   },
+  "ai-ghostwriting": {
+    toolId: "ai-ghostwriting",
+    buttonLabel: "Generate Content",
+    fields: [
+      { key: "topic", label: "Topic or Brief", type: "textarea", placeholder: "Describe the article, speech, or piece you need ghostwritten...", required: true, rows: 5 },
+      { key: "type", label: "Content Type", type: "select", options: ["Blog Article", "Speech", "Personal Essay", "LinkedIn Post", "Social Bio", "Email Draft"] },
+      { key: "tone", label: "Voice & Tone", type: "select", options: ["Professional", "Conversational", "Inspiring", "Academic", "Casual"] },
+    ],
+  },
 };
 
 export function getAiToolConfig(toolId: string): AiToolConfig | undefined {

@@ -107,7 +107,8 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-tone-changer": { required: ["text"], maxLengths: {"text":8000} },
   "ai-expand-text": { required: ["text"], maxLengths: {"text":5000} },
   "ai-shorten-text": { required: ["text"], maxLengths: {"text":10000} },
-  "ai-proofreader": { required: ["text"], maxLengths: {"text":10000} },
+  "ai-proofreader":    { required: ["text"],  maxLengths: {"text":10000} },
+  "ai-ghostwriting":   { required: ["topic"], maxLengths: {"topic":3000} },
 };
 
 // ---------------------------------------------------------------------------
@@ -310,6 +311,9 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 
     case "ai-proofreader":
       return `Proofread the following text thoroughly. Check grammar, spelling, punctuation, clarity, tone consistency, and word choice.\n\nProvide:\n1. The fully corrected version\n2. A list of every change made with a brief explanation\n\nText:\n${i.text}`;
+
+    case "ai-ghostwriting":
+      return `Write a polished, ready-to-publish ${i.type || "Blog Article"} about the following topic/brief in a ${i.tone || "Professional"} voice:\n\n${i.topic}\n\nDeliver well-structured, engaging content that reads as if written by a seasoned human author. Match the content length and format appropriate for the selected type.`;
 
     default:
       return null;
