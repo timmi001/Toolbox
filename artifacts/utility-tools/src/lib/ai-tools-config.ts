@@ -199,6 +199,61 @@ const configs: Record<string, AiToolConfig> = {
       { key: "format", label: "Notes Format", type: "select", options: ["Detailed Notes", "Outline", "Summary"] },
     ],
   },
+  "ai-homework-helper": {
+    toolId: "ai-homework-helper",
+    buttonLabel: "Generate Help Plan",
+    fields: [
+      { key: "topic", label: "Homework Topic or Question", type: "textarea", placeholder: "e.g. Explain photosynthesis in simple terms", required: true, rows: 6 },
+      { key: "subject", label: "Subject", type: "text", placeholder: "e.g. Biology" },
+    ],
+  },
+  "ai-study-planner": {
+    toolId: "ai-study-planner",
+    buttonLabel: "Create Plan",
+    fields: [
+      { key: "topic", label: "Study Topic", type: "text", placeholder: "e.g. Biology revision", required: true },
+      { key: "days", label: "Number of Days", type: "select", options: ["3", "5", "7", "14"] },
+    ],
+  },
+  "ai-essay-generator": {
+    toolId: "ai-essay-generator",
+    buttonLabel: "Generate Essay",
+    fields: [
+      { key: "topic", label: "Topic", type: "text", placeholder: "e.g. The importance of education", required: true },
+      { key: "style", label: "Style", type: "select", options: ["Professional", "Academic", "Simple", "Persuasive"] },
+    ],
+  },
+  "ai-story-writer": {
+    toolId: "ai-story-writer",
+    buttonLabel: "Write Story",
+    fields: [
+      { key: "prompt", label: "Story Prompt", type: "text", placeholder: "e.g. A mysterious forest at sunrise", required: true },
+      { key: "tone", label: "Tone", type: "select", options: ["Creative", "Emotional", "Inspirational", "Mystery"] },
+    ],
+  },
+  "ai-book-outline-generator": {
+    toolId: "ai-book-outline-generator",
+    buttonLabel: "Generate Outline",
+    fields: [
+      { key: "topic", label: "Book Topic", type: "text", placeholder: "e.g. Leadership for young professionals", required: true },
+    ],
+  },
+  "ai-chapter-generator": {
+    toolId: "ai-chapter-generator",
+    buttonLabel: "Draft Chapter",
+    fields: [
+      { key: "topic", label: "Book Topic", type: "text", placeholder: "e.g. Personal finance basics", required: true },
+      { key: "chapter", label: "Chapter Title", type: "text", placeholder: "e.g. Building good habits" },
+    ],
+  },
+  "ai-speech-writer": {
+    toolId: "ai-speech-writer",
+    buttonLabel: "Write Speech",
+    fields: [
+      { key: "topic", label: "Speech Topic", type: "text", placeholder: "e.g. The value of discipline", required: true },
+      { key: "audience", label: "Audience", type: "text", placeholder: "e.g. Students, team, conference" },
+    ],
+  },
   "ai-quiz-generator": {
     toolId: "ai-quiz-generator",
     buttonLabel: "Generate Quiz",
