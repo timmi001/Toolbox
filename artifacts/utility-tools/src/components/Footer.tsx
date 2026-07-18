@@ -1,4 +1,5 @@
 import { Link } from 'wouter';
+import { openFeedbackForm } from './FeedbackButton';
 
 export function Footer() {
   return (
@@ -38,6 +39,15 @@ export function Footer() {
               <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
               <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+              <li>
+                <button
+                  onClick={openFeedbackForm}
+                  className="hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span aria-hidden="true">💬</span>
+                  Send Feedback
+                </button>
+              </li>
             </ul>
           </div>
 
