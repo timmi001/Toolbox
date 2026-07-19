@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: toolboxx-api
+    runtime: docker
+    # Docker context is the workspace root so pnpm can resolve lib/* packages
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: starter
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+      - key: GEMINI_API_KEY
+        sync: false   # set manually in Render dashboard
+      - key: ALLOWED_ORIGINS
+        sync: false   # set to your frontend domain, e.g. https://toolboxx.vercel.app
+      # Optional video timeout overrides (defaults are generous for most videos)
+      # - key: VIDEO_INFO_TIMEOUT_MS
+      #   value: "45000"
+      # - key: VIDEO_STREAM_MAX_DURATION_MS
+      #   value: "600000"

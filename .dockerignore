@@ -1,0 +1,39 @@
+# ── Version control ──────────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Frontend artifacts (not needed for the API server image) ─────────────────
+artifacts/utility-tools
+artifacts/mockup-sandbox
+
+# ── Node modules (re-installed inside Docker) ─────────────────────────────────
+**/node_modules
+
+# ── Build outputs (rebuilt inside Docker) ────────────────────────────────────
+artifacts/api-server/dist
+**/dist
+
+# ── Dev / local tooling ───────────────────────────────────────────────────────
+**/.env
+**/.env.*
+**/*.local
+.replit
+replit.nix
+.pythonlibs
+.config
+.cache
+
+# ── Logs & temp files ────────────────────────────────────────────────────────
+**/*.log
+**/tmp
+**/temp
+**/downloads
+
+# ── Old standalone backend (superseded by artifacts/api-server) ───────────────
+video-downloader-backend
+
+# ── OS / editor noise ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea
+.vscode
