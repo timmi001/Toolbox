@@ -6,6 +6,13 @@ import { logger } from "../lib/logger";
 const router = Router();
 
 // ---------------------------------------------------------------------------
+// Gemini client singleton — reused across requests to avoid allocating a new
+// HTTP connection pool on every call. Re-created only if the key changes.
+// ---------------------------------------------------------------------------
+let genAIClient: GoogleGenAI | null = null;
+let genAIClientKey: string | null = null;
+
+// ---------------------------------------------------------------------------
 // Performance diagnostics (read-only instrumentation — does not change
 // behavior or responses). Each stage is timed with a monotonic clock and
 // logged with wall-clock timestamps so stage durations can be correlated
@@ -433,7 +440,10 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
-    const apiKey = process.env["GEMINI_API_KEY"];
+    // GOOGLE_API_KEY is the canonical name used by the @google/genai SDK and
+    // by the Replit secret that stores it. Previously this was read as
+    // GEMINI_API_KEY (a mismatch) which caused all AI tools to return 503.
+    const apiKey = process.env["GOOGLE_API_KEY"];
     if (!apiKey) {
       res.status(503).json({ error: "AI service is not configured." });
       return;
@@ -454,7 +464,14 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     );
 
     // ---- Stage 3: Gemini API call (network send + model latency + receive) --
-    const ai = new GoogleGenAI({ apiKey });
+    // Lazy singleton: reuse the client across requests to avoid allocating a
+    // new HTTP pool on every call. Re-instantiated only when the key changes
+    // (which never happens in practice, but is cheap to check).
+    if (!genAIClient || genAIClientKey !== apiKey) {
+      genAIClient = new GoogleGenAI({ apiKey });
+      genAIClientKey = apiKey;
+    }
+    const ai = genAIClient;
     const tGeminiStart = nowMs();
     logger.info(
       { requestId, ts: new Date().toISOString() },
@@ -496,6 +513,26 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
 
     // ---- Stage 4: response processing/serialization ------------------------
     const tSerializeStart = nowMs();
+
+    // Check whether generation was blocked before reading the text. When
+    // Gemini hits a safety filter or recitation block the text is empty but
+    // no exception is thrown — without this check the client silently gets
+    // an empty 200, with no indication that content was blocked.
+    const finishReason = response.candidates?.[0]?.finishReason;
+    if (finishReason && finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
+      logger.warn(
+        { requestId, toolId, finishReason, ts: new Date().toISOString() },
+        `[perf][ai/generate][${requestId}] generation blocked`,
+      );
+      res.status(422).json({
+        error:
+          finishReason === "SAFETY"
+            ? "The request was blocked by safety filters. Please rephrase your input."
+            : "Generation was stopped before completing. Please try again.",
+      });
+      return;
+    }
+
     const resultText = response.text ?? "";
     const payload = { result: resultText };
     timings.serializeMs = nowMs() - tSerializeStart;
