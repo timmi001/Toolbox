@@ -323,6 +323,27 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
     case "ai-ghostwriting":
       return `Write a polished, ready-to-publish ${i.type || "Blog Article"} about the following topic/brief in a ${i.tone || "Professional"} voice:\n\n${i.topic}\n\nDeliver well-structured, engaging content that reads as if written by a seasoned human author. Match the content length and format appropriate for the selected type.`;
 
+    case "ai-homework-helper":
+      return `Help break down and provide guidance for this assignment or homework problem:\n\n${i.topic}\n\nProvide:\n1. Key concepts to understand\n2. Step-by-step approach to solving it\n3. Worked example showing the process\n4. Study tips and common mistakes to avoid\n\nFocus on teaching the method, not just giving answers.`;
+
+    case "ai-study-planner":
+      return `Create a practical ${i.days || "7"}-day study schedule for: "${i.topic}"\n\nProvide:\n1. Daily breakdown of topics to cover\n2. Estimated time per topic\n3. Review sessions scheduled\n4. Key milestones and checkpoints\n5. Tips for staying on track\n\nMake it realistic and achievable within the timeframe.`;
+
+    case "ai-essay-generator":
+      return `Generate a polished essay draft about: "${i.topic}"\nStyle: ${i.style || "Academic"}\n\nInclude:\n1. Engaging introduction with thesis statement\n2. 3-4 well-developed body paragraphs with clear arguments\n3. Topic sentences and supporting evidence\n4. Smooth transitions between paragraphs\n5. Strong conclusion that reinforces the thesis\n\nMake it academic and well-structured for submission.`;
+
+    case "ai-story-writer":
+      return `Write a creative short story based on this prompt: "${i.prompt}"\nTone: ${i.tone || "Engaging"}\n\nInclude:\n1. An engaging opening that sets the scene\n2. Compelling characters and their motivations\n3. A clear conflict or tension\n4. Plot development with rising action\n5. A satisfying conclusion or twist\n\nMake it vivid, descriptive, and emotionally engaging.`;
+
+    case "ai-book-outline-generator":
+      return `Create a detailed book structure for: "${i.topic}"\n\nProvide:\n1. A compelling book title and subtitle\n2. Target audience description\n3. Main theme/thesis\n4. Chapter-by-chapter outline (10-15 chapters)\n5. Key points under each chapter\n6. Estimated word count per chapter\n\nMake it comprehensive enough to serve as a writing roadmap.`;
+
+    case "ai-chapter-generator":
+      return `Draft a chapter for a book about: "${i.topic}"\nChapter title/theme: ${i.chapter || "not specified"}\n\nProvide:\n1. An engaging chapter introduction\n2. 3-4 major sections with clear subheadings\n3. Supporting details, examples, and explanations\n4. A chapter summary or conclusion\n\nMake it approximately 2,000-3,000 words and well-structured.`;
+
+    case "ai-speech-writer":
+      return `Write a compelling speech about: "${i.topic}"\nAudience: ${i.audience || "general audience"}\n\nInclude:\n1. A powerful opening hook\n2. Clear main points (2-3) with supporting examples\n3. Emotional connection or relatability\n4. Smooth transitions between ideas\n5. A memorable closing call-to-action or conclusion\n\nMake it engaging and suitable for public speaking.`;
+
     default:
       return null;
   }
