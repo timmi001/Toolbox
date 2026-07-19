@@ -31,11 +31,10 @@
       ]
     }
   ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "routes": [
-    { "handle": "filesystem" },
-    {
-      "src": "/(?!sitemap\\.xml|robots\\.txt|favicon\\.svg|logo\\.jpg|opengraph\\.jpg)(.*?)(?:\\.json|\\.xml|\\.txt)?/?$",
-      "dest": "/index.html"
-    }
+    { "handle": "filesystem" }
   ]
 }
