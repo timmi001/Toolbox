@@ -10,6 +10,7 @@ const fs = require('fs');
 const { errorHandler } = require('./middleware/errorHandler');
 const { rateLimiter } = require('./middleware/rateLimiter');
 const downloadRoutes = require('./routes/download');
+const { verifyDependencies } = require('./services/downloader');
 
 dotenv.config();
 
@@ -48,6 +49,13 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, HOST, () => {
+app.listen(PORT, HOST, async () => {
   console.log(`Server listening on http://${HOST}:${PORT}`);
+  
+  // Verify dependencies on startup
+  try {
+    await verifyDependencies();
+  } catch (error) {
+    console.error('Failed to verify dependencies:', error.message);
+  }
 });

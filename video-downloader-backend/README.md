@@ -13,6 +13,33 @@ A production-ready Node.js + Express backend for downloading videos and audio fr
 
 ## Local Development
 
+### Prerequisites
+
+Before running the server locally, ensure you have yt-dlp and FFmpeg installed:
+
+**macOS:**
+```bash
+brew install yt-dlp ffmpeg
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get update
+sudo apt-get install yt-dlp ffmpeg
+```
+
+**Windows:**
+Download and install:
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) (via Chocolatey: `choco install yt-dlp`)
+- [FFmpeg](https://ffmpeg.org/download.html)
+
+Or via Python:
+```bash
+pip install yt-dlp
+```
+
+### Setup
+
 1. Install dependencies:
    ```bash
    npm install
@@ -21,10 +48,17 @@ A production-ready Node.js + Express backend for downloading videos and audio fr
    ```bash
    cp .env.example .env
    ```
-3. Start the server:
+3. Verify dependencies are installed:
+   ```bash
+   yt-dlp --version
+   ffmpeg -version
+   ```
+4. Start the server:
    ```bash
    npm run dev
    ```
+
+The server will log a verification message confirming all dependencies are available.
 
 ## API Endpoints
 

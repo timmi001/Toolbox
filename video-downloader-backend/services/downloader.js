@@ -25,7 +25,17 @@ function runCommand(command, args, options = {}) {
       stderr += chunk.toString();
     });
 
-    child.on('error', reject);
+    child.on('error', (err) => {
+      if (err.code === 'ENOENT') {
+        const installMsg = command === 'yt-dlp' 
+          ? 'yt-dlp is not installed. Install it with: pip install yt-dlp'
+          : `${command} is not installed.`;
+        reject(new Error(`${installMsg} (${err.message})`));
+      } else {
+        reject(err);
+      }
+    });
+
     child.on('close', (code) => {
       if (code === 0) {
         resolve({ stdout, stderr });
@@ -108,9 +118,39 @@ async function cleanupTempFiles(files = []) {
   }
 }
 
+async function verifyDependencies() {
+  const deps = ['yt-dlp', 'ffmpeg'];
+  const missing = [];
+
+  for (const dep of deps) {
+    try {
+      await runCommand(dep, ['--version']);
+    } catch (error) {
+      if (error.message.includes('not installed') || error.message.includes('ENOENT')) {
+        missing.push(dep);
+      }
+    }
+  }
+
+  if (missing.length > 0) {
+    console.warn(`⚠️  Missing dependencies: ${missing.join(', ')}`);
+    if (missing.includes('yt-dlp')) {
+      console.warn('Install yt-dlp with: pip install yt-dlp');
+    }
+    if (missing.includes('ffmpeg')) {
+      console.warn('Install ffmpeg with: apt-get install ffmpeg (Linux) or brew install ffmpeg (macOS)');
+    }
+    return false;
+  }
+
+  console.log('✓ All dependencies (yt-dlp, ffmpeg) verified');
+  return true;
+}
+
 module.exports = {
   inspectUrl,
   downloadVideo,
   downloadAudio,
   cleanupTempFiles,
+  verifyDependencies,
 };
