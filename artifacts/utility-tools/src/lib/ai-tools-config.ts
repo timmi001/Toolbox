@@ -649,6 +649,20 @@ const configs: Record<string, AiToolConfig> = {
       { key: "tone", label: "Voice & Tone", type: "select", options: ["Professional", "Conversational", "Inspiring", "Academic", "Casual"] },
     ],
   },
+  "ai-math-solver": {
+    toolId: "ai-math-solver",
+    buttonLabel: "Solve Problem",
+    fields: [
+      { key: "problem", label: "Math Problem", type: "textarea", placeholder: "e.g. Solve 2x + 5 = 15 for x, or Find the derivative of x²+3x", required: true, rows: 6 },
+    ],
+  },
+  "ai-jamb-cbt-practice": {
+    toolId: "ai-jamb-cbt-practice",
+    buttonLabel: "Generate Questions",
+    fields: [
+      { key: "subject", label: "Subject", type: "text", placeholder: "e.g. English, Mathematics, Physics, Chemistry, Biology", required: true },
+    ],
+  },
 };
 
 export function getAiToolConfig(toolId: string): AiToolConfig | undefined {
