@@ -301,7 +301,6 @@ function Router() {
         <Route path="/business-tools" component={CategoryPage} />
         <Route path="/pdf-tools" component={CategoryPage} />
         <Route path="/calculators" component={CategoryPage} />
-        <Route path="/ai-tools" component={CategoryPage} />
         <Route path="/ai-marketing-advertising" component={CategoryPage} />
         <Route path="/ai-resume-tools" component={CategoryPage} />
         <Route path="/ai-social-media-tools" component={CategoryPage} />

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const NAV_LINKS = [
-  { name: 'AI Tools', href: '/ai-tools', highlight: true },
   { name: 'Audio Tools', href: '/audio-tools' },
   { name: 'Video Tools', href: '/video-tools' },
   { name: 'PDF Tools', href: '/pdf-tools' },
