@@ -331,9 +331,6 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
     case "ai-jamb-cbt-practice":
       return `Generate 10 realistic JAMB CBT practice questions for the subject: "${i.subject}".\n\nFor EACH question provide:\n\n**Question [N]:** [The question text]\n\n**A)** [Option A]\n**B)** [Option B]\n**C)** [Option C]\n**D)** [Option D]\n\n**Correct Answer:** [A/B/C/D]\n**Explanation:** [Why this is correct and why other options are wrong - helps learning]\n\n---\n\nMake questions realistic to actual JAMB exams, vary difficulty levels, and focus on core concepts covered in the curriculum.`;
 
-    default:
-      return null;
-
     case "ai-study-planner":
       return `Create a practical ${i.days || "7"}-day study schedule for: "${i.topic}"\n\nProvide:\n1. Daily breakdown of topics to cover\n2. Estimated time per topic\n3. Review sessions scheduled\n4. Key milestones and checkpoints\n5. Tips for staying on track\n\nMake it realistic and achievable within the timeframe.`;
 
