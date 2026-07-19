@@ -111,6 +111,8 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-shorten-text": { required: ["text"], maxLengths: {"text":10000} },
   "ai-proofreader":    { required: ["text"],  maxLengths: {"text":10000} },
   "ai-ghostwriting":   { required: ["topic"], maxLengths: {"topic":3000} },
+  "ai-math-solver":    { required: ["problem"], maxLengths: {"problem": 1000} },
+  "ai-jamb-cbt-practice": { required: ["subject"], maxLengths: {"subject": 100} },
 };
 
 // ---------------------------------------------------------------------------
@@ -323,8 +325,14 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
     case "ai-ghostwriting":
       return `Write a polished, ready-to-publish ${i.type || "Blog Article"} about the following topic/brief in a ${i.tone || "Professional"} voice:\n\n${i.topic}\n\nDeliver well-structured, engaging content that reads as if written by a seasoned human author. Match the content length and format appropriate for the selected type.`;
 
-    case "ai-homework-helper":
-      return `Help break down and provide guidance for this assignment or homework problem:\n\n${i.topic}\n\nProvide:\n1. Key concepts to understand\n2. Step-by-step approach to solving it\n3. Worked example showing the process\n4. Study tips and common mistakes to avoid\n\nFocus on teaching the method, not just giving answers.`;
+    case "ai-math-solver":
+      return `Solve the following math problem step by step with clear explanations.\n\nProblem:\n${i.problem}\n\nProvide:\n1. **Identify the problem type** — what branch of math this belongs to (algebra, geometry, calculus, etc.)\n2. **List key formulas** — relevant equations or theorems\n3. **Step-by-step solution** — show all working clearly\n4. **Final answer** — clearly state the result\n5. **Explanation** — why each step works, common mistakes to avoid\n\nMake it educational and easy to follow for a student.`;
+
+    case "ai-jamb-cbt-practice":
+      return `Generate 10 realistic JAMB CBT practice questions for the subject: "${i.subject}".\n\nFor EACH question provide:\n\n**Question [N]:** [The question text]\n\n**A)** [Option A]\n**B)** [Option B]\n**C)** [Option C]\n**D)** [Option D]\n\n**Correct Answer:** [A/B/C/D]\n**Explanation:** [Why this is correct and why other options are wrong - helps learning]\n\n---\n\nMake questions realistic to actual JAMB exams, vary difficulty levels, and focus on core concepts covered in the curriculum.`;
+
+    default:
+      return null;
 
     case "ai-study-planner":
       return `Create a practical ${i.days || "7"}-day study schedule for: "${i.topic}"\n\nProvide:\n1. Daily breakdown of topics to cover\n2. Estimated time per topic\n3. Review sessions scheduled\n4. Key milestones and checkpoints\n5. Tips for staying on track\n\nMake it realistic and achievable within the timeframe.`;
