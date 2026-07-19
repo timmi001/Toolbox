@@ -440,10 +440,10 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
-    // GOOGLE_API_KEY is the canonical name used by the @google/genai SDK and
+    // GEMINI_API_KEY is the secret name used in this project.
     // by the Replit secret that stores it. Previously this was read as
     // GEMINI_API_KEY (a mismatch) which caused all AI tools to return 503.
-    const apiKey = process.env["GOOGLE_API_KEY"];
+    const apiKey = process.env["GEMINI_API_KEY"];
     if (!apiKey) {
       res.status(503).json({ error: "AI service is not configured." });
       return;
