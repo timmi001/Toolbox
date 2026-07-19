@@ -768,4 +768,209 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// POST /video/audio — extract and stream the best audio track from any
+// supported video URL.  Uses yt-dlp's -x flag with ffmpeg post-processing
+// to produce a proper audio file (m4a preferred, mp3 fallback).
+//
+// Ported from video-downloader-backend/services/downloader.js and rewritten
+// to use the same streaming pipeline as /video/stream (no temp files on disk).
+// ---------------------------------------------------------------------------
+const audioLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many audio requests. Please wait a moment before trying again." },
+});
+
+/** Pick the best audio-only format from a yt-dlp info object. */
+function selectBestAudioFormat(info: YtDlpInfo): YtDlpFormat | null {
+  const audioOnly = (info.formats ?? []).filter((f) => {
+    if (!f.url) return false;
+    const proto = f.protocol ?? "";
+    if (proto.includes("m3u8") || proto.includes("dash") || proto.includes("f4m")) return false;
+    // Audio-only: has audio codec, explicitly no video codec
+    return f.acodec && f.acodec !== "none" && f.vcodec === "none";
+  });
+
+  if (audioOnly.length === 0) return null;
+
+  // Prefer m4a (AAC, widely compatible), then webm/opus, then anything else.
+  return (
+    audioOnly.find((f) => f.ext === "m4a") ??
+    audioOnly.find((f) => f.ext === "webm") ??
+    audioOnly[0]
+  );
+}
+
+router.get("/video/audio", audioLimiter, async (req, res) => {
+  const requestId = nextRequestId();
+  const startedAt = Date.now();
+  // Accept same query-param shape as /video/stream so the browser can
+  // trigger a download directly via <a href> without a JS fetch call.
+  const { src: url, platform } = req.query as { src?: unknown; platform?: unknown };
+
+  if (!isValidPlatform(platform)) {
+    res.status(400).json({ error: "Unsupported or unknown platform." });
+    return;
+  }
+
+  const validation = validateVideoUrl(url, platform);
+  if (!validation.ok) {
+    res.status(400).json({ error: validation.error });
+    return;
+  }
+
+  const targetUrl = validation.url.toString();
+  logger.info({ requestId, platform }, "[video/audio] request received");
+
+  if (IS_SERVERLESS) {
+    res.status(501).json({
+      error: "Audio extraction is not available in this environment — yt-dlp and ffmpeg are not installed.",
+    });
+    return;
+  }
+
+  try {
+    // ── Step 1: get format list ─────────────────────────────────────────────
+    const { command, baseArgs } = ytDlpCommand();
+    const infoArgs = [
+      ...baseArgs,
+      "-j",
+      "--no-warnings",
+      "--no-playlist",
+      "--socket-timeout", String(INFO_SOCKET_TIMEOUT_S),
+      ...extractorArgsFor(platform),
+      targetUrl,
+    ];
+
+    logger.info({ requestId, platform, step: "extract_info" }, "[video/audio] fetching format list");
+
+    let stdout: string;
+    let attempt = 0;
+    for (;;) {
+      attempt += 1;
+      try {
+        ({ stdout } = await execFileAsync(command, infoArgs, {
+          timeout: INFO_TIMEOUT_MS,
+          maxBuffer: 25 * 1024 * 1024,
+        }));
+        break;
+      } catch (err) {
+        const stderr = extractStderr(err);
+        if (/empty media response/i.test(stderr) && attempt < TRANSIENT_RETRY_ATTEMPTS) {
+          await sleep(TRANSIENT_RETRY_DELAY_MS);
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    let info: YtDlpInfo;
+    try {
+      info = JSON.parse(stdout) as YtDlpInfo;
+    } catch {
+      res.status(502).json({ error: "Unexpected response from the video source." });
+      return;
+    }
+
+    // ── Step 2: pick best audio format ──────────────────────────────────────
+    const audioFmt = selectBestAudioFormat(info);
+
+    // If no audio-only stream, fall back to the best combined format (yt-dlp
+    // will still extract audio via -x + ffmpeg)
+    const formatArg = audioFmt ? audioFmt.format_id : "bestaudio/best";
+    const ext = audioFmt?.ext ?? "m4a";
+    const mimeType = ext === "mp3" ? "audio/mpeg" : ext === "webm" ? "audio/webm" : "audio/mp4";
+    const safeTitle = (info.title ?? "audio").replace(/[^a-z0-9 _-]/gi, "").trim().slice(0, 80) || "audio";
+
+    logger.info(
+      { requestId, platform, formatArg, ext, step: "stream_audio", stage: "start" },
+      "[video/audio] starting yt-dlp audio stream",
+    );
+
+    // ── Step 3: stream ──────────────────────────────────────────────────────
+    const child = spawn(
+      command,
+      [
+        ...baseArgs,
+        "-f", formatArg,
+        "--no-warnings",
+        "--no-part",
+        "--socket-timeout", String(STREAM_SOCKET_TIMEOUT_S),
+        ...extractorArgsFor(platform),
+        "-o", "-",
+        targetUrl,
+      ],
+      { stdio: ["ignore", "pipe", "pipe"] },
+    );
+
+    let stderrBuf = "";
+    child.stderr?.on("data", (chunk: Buffer) => {
+      stderrBuf += chunk.toString();
+      if (stderrBuf.length > 8000) stderrBuf = stderrBuf.slice(-8000);
+    });
+
+    const killTimer = setTimeout(() => {
+      logger.warn({ requestId, platform }, "[video/audio] exceeded max duration — killing");
+      child.kill("SIGKILL");
+    }, STREAM_MAX_DURATION_MS);
+
+    let started = false;
+    let bytesWritten = 0;
+    let clientDisconnected = false;
+
+    req.on("close", () => {
+      clientDisconnected = true;
+      if (!res.writableEnded) child.kill("SIGKILL");
+    });
+
+    child.stdout?.on("data", (chunk: Buffer) => {
+      if (!started) {
+        started = true;
+        res.status(200);
+        res.setHeader("Content-Type", mimeType);
+        res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}.${ext}"`);
+        res.setHeader("Cache-Control", "no-store");
+      }
+      bytesWritten += chunk.length;
+      const canContinue = res.write(chunk);
+      if (!canContinue) child.stdout?.pause();
+    });
+
+    res.on("drain", () => child.stdout?.resume());
+
+    child.on("error", (err) => {
+      clearTimeout(killTimer);
+      logger.error({ requestId, platform, err: err.message }, "[video/audio] spawn error");
+      if (!started && !res.headersSent) {
+        res.status(isMissingBinaryError(err) ? 500 : 502).json({ error: "Failed to start audio extraction." });
+      } else if (!res.writableEnded) {
+        res.end();
+      }
+    });
+
+    child.on("close", (code, signal) => {
+      clearTimeout(killTimer);
+      const ms = Date.now() - startedAt;
+      if (!started) {
+        const simulatedErr = signal === "SIGKILL" ? { killed: true } : new Error(stderrBuf || `yt-dlp exited ${code}`);
+        const { status, body } = buildErrorBody(simulatedErr, stderrBuf);
+        logger.error({ requestId, platform, code, signal, ms, stderr: stderrBuf || undefined }, "[video/audio] no output");
+        if (!res.headersSent) res.status(status).json(body);
+      } else {
+        logger.info({ requestId, platform, bytesWritten, ms, clientDisconnected }, "[video/audio] DONE");
+      }
+      if (!res.writableEnded) res.end();
+    });
+
+  } catch (err) {
+    const stderr = extractStderr(err);
+    const { status, body } = buildErrorBody(err, stderr);
+    logger.error({ requestId, platform, err, stderr: stderr || undefined }, "[video/audio] failed");
+    if (!res.headersSent) res.status(status).json(body);
+  }
+});
+
 export default router;

@@ -233,6 +233,24 @@ export const videoDownload = {
     });
     return `${API_BASE}/video/stream?${params.toString()}`;
   },
+
+  /**
+   * Build the URL for the audio-only extraction endpoint.
+   * Returns a GET URL so the browser can trigger a download directly via
+   * an <a href> — no JS blob dance required.
+   */
+  buildAudioUrl: (opts: {
+    sourceUrl: string;
+    platform: VideoPlatform;
+    title: string;
+  }) => {
+    const params = new URLSearchParams({
+      src: opts.sourceUrl,
+      platform: opts.platform,
+      title: opts.title,
+    });
+    return `${API_BASE}/video/audio?${params.toString()}`;
+  },
 };
 
 // ─── Add more endpoint groups here as the app grows ────────────────────────

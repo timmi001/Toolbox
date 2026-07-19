@@ -1,5 +1,7 @@
 import express, { type Express } from "express";
 import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -9,6 +11,11 @@ const app: Express = express();
 // Replit's shared proxy sits in front of this server and sets X-Forwarded-For,
 // so express-rate-limit needs to trust it to key rate limits by real client IP.
 app.set("trust proxy", 1);
+
+// Security headers (helmet) and gzip compression — ported from the
+// standalone video-downloader-backend and applied globally.
+app.use(helmet());
+app.use(compression());
 
 app.use(
   pinoHttp({
