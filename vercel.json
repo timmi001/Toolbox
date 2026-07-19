@@ -1,6 +1,41 @@
 {
+  "version": 2,
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm --filter @workspace/utility-tools run build",
   "outputDirectory": "artifacts/utility-tools/dist/public",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, s-maxage=86400"
+        }
+      ]
+    }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    {
+      "src": "/(?!sitemap\\.xml|robots\\.txt|favicon\\.svg|logo\\.jpg|opengraph\\.jpg)(.*?)(?:\\.json|\\.xml|\\.txt)?/?$",
+      "dest": "/index.html"
+    }
+  ]
 }
