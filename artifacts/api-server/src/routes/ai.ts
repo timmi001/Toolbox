@@ -331,9 +331,6 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
     case "ai-jamb-cbt-practice":
       return `Generate 10 realistic JAMB CBT practice questions for the subject: "${i.subject}".\n\nFor EACH question provide:\n\n**Question [N]:** [The question text]\n\n**A)** [Option A]\n**B)** [Option B]\n**C)** [Option C]\n**D)** [Option D]\n\n**Correct Answer:** [A/B/C/D]\n**Explanation:** [Why this is correct and why other options are wrong - helps learning]\n\n---\n\nMake questions realistic to actual JAMB exams, vary difficulty levels, and focus on core concepts covered in the curriculum.`;
 
-    default:
-      return null;
-
     case "ai-study-planner":
       return `Create a practical ${i.days || "7"}-day study schedule for: "${i.topic}"\n\nProvide:\n1. Daily breakdown of topics to cover\n2. Estimated time per topic\n3. Review sessions scheduled\n4. Key milestones and checkpoints\n5. Tips for staying on track\n\nMake it realistic and achievable within the timeframe.`;
 
@@ -499,7 +496,35 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
 
     // ---- Stage 4: response processing/serialization ------------------------
     const tSerializeStart = nowMs();
-    const resultText = response.text ?? "";
+    
+    // Defensive response handling: validate Gemini response structure
+    let resultText = "";
+    if (response && typeof response === 'object') {
+      if (response.text && typeof response.text === 'string') {
+        resultText = response.text;
+      } else if (response.candidates && Array.isArray(response.candidates)) {
+        const firstCandidate = response.candidates[0];
+        if (firstCandidate?.content?.parts?.[0]?.text) {
+          resultText = firstCandidate.content.parts[0].text;
+        } else {
+          logger.warn(
+            { requestId, toolId },
+            `[ai/generate][${requestId}] Gemini response missing expected text path`
+          );
+        }
+      } else {
+        logger.warn(
+          { requestId, toolId },
+          `[ai/generate][${requestId}] Unexpected Gemini response structure`
+        );
+      }
+    } else {
+      logger.error(
+        { requestId, toolId },
+        `[ai/generate][${requestId}] Invalid response from Gemini: ${typeof response}`
+      );
+    }
+    
     const payload = { result: resultText };
     timings.serializeMs = nowMs() - tSerializeStart;
 
