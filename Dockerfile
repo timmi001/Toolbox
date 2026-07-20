@@ -90,8 +90,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install yt-dlp in an isolated venv — keeps it upgradeable and away from
 # system Python packages. The venv is put on PATH so Node can spawn "yt-dlp".
+#
+# yt-dlp[default] extras included:
+#   brotli         — brotli content-encoding (YouTube uses this heavily)
+#   pycryptodomex  — AES decryption for some DRM-lite streams
+#   mutagen        — audio metadata tagging
+#   certifi        — up-to-date Mozilla CA bundle (avoids stale system certs)
+#   requests       — HTTP with proxy support
+#   websockets     — live-stream support
+#
+# "--upgrade pip" first: the Debian bookworm-slim pip is often months old and
+# can't resolve newer wheel metadata correctly.
+# "--upgrade yt-dlp[default]" ensures every Docker build gets the latest
+# release — yt-dlp pushes extractor fixes weekly, so pinning to a version
+# means broken extractors within days of a YouTube change.
 RUN python3 -m venv /opt/venv \
-    && /opt/venv/bin/pip install --no-cache-dir yt-dlp
+    && /opt/venv/bin/pip install --no-cache-dir --upgrade pip \
+    && /opt/venv/bin/pip install --no-cache-dir --upgrade "yt-dlp[default]"
 
 ENV PATH="/opt/venv/bin:$PATH"
 

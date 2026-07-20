@@ -99,9 +99,36 @@ const INFO_TIMEOUT_MS = Number(process.env["VIDEO_INFO_TIMEOUT_MS"] ?? 45_000);
 const INFO_SOCKET_TIMEOUT_S = Number(process.env["VIDEO_INFO_SOCKET_TIMEOUT_S"] ?? 25);
 const STREAM_SOCKET_TIMEOUT_S = Number(process.env["VIDEO_STREAM_SOCKET_TIMEOUT_S"] ?? 25);
 const STREAM_MAX_DURATION_MS = Number(process.env["VIDEO_STREAM_MAX_DURATION_MS"] ?? 10 * 60 * 1000);
+// ---------------------------------------------------------------------------
+// Retry configuration.
+//
+// Only genuinely transient errors are retried at the application level.
+// YouTube bot-checks (sign-in prompt, HTTP 429, Precondition check failed)
+// are NOT retried because the same server IP will fail identically on the
+// very next attempt — the only real fix for those is the multi-client
+// player_client list in extractorArgsFor(), which lets yt-dlp try a
+// different YouTube client internally without a round-trip wait.
+// ---------------------------------------------------------------------------
 const TRANSIENT_RETRY_ATTEMPTS = 3;
-const TRANSIENT_RETRY_DELAY_MS = 1500;
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const RETRY_BASE_DELAY_MS = 2_000; // 2 s → 4 s → 8 s (exponential)
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/** Returns the backoff delay for a given attempt number (1-based). */
+function backoffDelay(attempt: number): number {
+  return Math.min(RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1), 10_000);
+}
+
+/**
+ * Returns true when the error is a transient upstream hiccup worth retrying
+ * at the application level (short network blip, empty upstream response, etc.).
+ * Does NOT include systematic YouTube bot-checks — those don't benefit from
+ * an immediate same-IP retry.
+ */
+function isRetryableStderr(stderr: string): boolean {
+  return /empty media response|HTTP Error 503|503: Service Unavailable|connection reset|temporarily unavailable/i.test(
+    stderr,
+  );
+}
 
 let requestCounter = 0;
 function nextRequestId(): number {
@@ -175,11 +202,25 @@ function validateVideoUrl(
 }
 
 // Extra yt-dlp CLI args needed per platform to reliably resolve/stream formats.
-// YouTube's default web client is frequently blocked without auth; the android
-// client player API avoids that for public videos.
+//
+// YouTube anti-bot background:
+//   Render (and most cloud providers) run containers on data-center IP ranges
+//   that YouTube fingerprints and challenges with bot-checks. The "web" player
+//   client is the most frequently challenged. yt-dlp supports a comma-separated
+//   fallback list: it tries each client in order and stops at the first that
+//   returns a usable response.
+//
+//   Client selection rationale (as of mid-2025):
+//     ios   — Apple's YouTube app client; currently the least scrutinized from
+//             server IPs and reliably returns formats without a sign-in nag.
+//     android — Google's Android app client; good fallback, occasionally
+//               challenged on heavily flagged IPs.
+//   mweb and the "web" clients are intentionally omitted from the fallback list
+//   because they are the most aggressively challenged by YouTube's bot detection
+//   on non-residential IPs.
 function extractorArgsFor(platform: Platform): string[] {
   if (platform === "youtube") {
-    return ["--extractor-args", "youtube:player_client=android"];
+    return ["--extractor-args", "youtube:player_client=ios,android"];
   }
   return [];
 }
@@ -216,6 +257,7 @@ type FailureReason =
   | "bot_check"
   | "blocked_or_rate_limited"
   | "auth_required"
+  | "geo_restricted"
   | "unsupported_url"
   | "not_found"
   | "unavailable"
@@ -288,34 +330,65 @@ function classifyFailure(
       reason: "timeout",
     };
   }
-  // YouTube frequently challenges requests from data-center/server IPs with
-  // a bot-check, even for ordinary public videos — this is unrelated to the
-  // video's actual privacy and shouldn't be reported as "private/login
-  // required", which misleads users into thinking the video itself is
-  // restricted.
-  if (/sign in to confirm you.?re not a bot/i.test(stderr)) {
+
+  // ── YouTube bot-check / IP challenge ──────────────────────────────────────
+  // YouTube challenges requests from data-center IPs even for ordinary public
+  // videos. "Precondition check failed" is another variant of the same
+  // challenge. These are unrelated to the video's privacy and must NOT be
+  // reported as "login required" — that misleads users into thinking the video
+  // itself is restricted.
+  if (
+    /sign in to confirm you.?re not a bot|Precondition check failed|Please sign in to confirm your age/i.test(stderr)
+  ) {
     return {
       status: 429,
       message:
-        "The source platform is challenging this server's requests as a bot right now. This isn't specific to your video — please try again in a few minutes.",
+        "The source platform is challenging this server's requests as a bot right now. " +
+        "This isn't specific to your video — please try again in a few minutes.",
       reason: "bot_check",
     };
   }
-  if (/HTTP Error 403|Forbidden|blocked|HTTP Error 429|rate.?limit|too many requests/i.test(stderr)) {
+
+  // ── IP block / upstream rate-limit ────────────────────────────────────────
+  // HTTP 429 in yt-dlp stderr means YouTube (or another platform) returned
+  // 429 to yt-dlp's HTTP client — not our Express rate-limiter.
+  // HTTP 403/Forbidden covers CDN-level IP blocks.
+  if (
+    /HTTP Error 429|HTTP Error 403|Forbidden|rate.?limit|too many requests|Your IP has been blocked/i.test(stderr)
+  ) {
     return {
       status: 429,
-      message: "The platform is blocking or rate-limiting requests right now. Please try again shortly.",
+      message: "The platform is rate-limiting this server right now. Please try again in a few minutes.",
       reason: "blocked_or_rate_limited",
     };
   }
-  if (/private|sign.?in|log.?in required|authentication|cookies/i.test(stderr)) {
+
+  // ── Geo-restriction ───────────────────────────────────────────────────────
+  if (
+    /not available in your country|geo.?restrict|not available in your region|uploader has not made this video available in your country/i.test(
+      stderr,
+    )
+  ) {
+    return {
+      status: 422,
+      message: "This video isn't available in this server's region.",
+      reason: "geo_restricted",
+    };
+  }
+
+  // ── Login / age-gate ──────────────────────────────────────────────────────
+  // Must come AFTER the bot-check test, because YouTube's sign-in challenge
+  // also contains the word "sign in" — the bot-check variant is more specific.
+  if (/private video|sign.?in|log.?in required|authentication required|This video is age-restricted|cookies/i.test(stderr)) {
     return {
       status: 422,
       message: "This video is private, age-restricted, or requires login — it can't be downloaded here.",
       reason: "auth_required",
     };
   }
-  if (/unsupported url|no extractor/i.test(stderr)) {
+
+  // ── Link / extractor problems ─────────────────────────────────────────────
+  if (/unsupported url|no extractor found/i.test(stderr)) {
     return { status: 422, message: "This link isn't supported yet.", reason: "unsupported_url" };
   }
   if (/no video could be found|HTTP Error 404|404: not found/i.test(stderr)) {
@@ -325,7 +398,7 @@ function classifyFailure(
       reason: "not_found",
     };
   }
-  if (/unavailable|not available|removed|has been deleted/i.test(stderr)) {
+  if (/video unavailable|not available|has been removed|has been deleted/i.test(stderr)) {
     return {
       status: 422,
       message: "This video is unavailable or may have been removed.",
@@ -458,11 +531,13 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
       "[video/download] extracting video info via yt-dlp",
     );
 
-    // Instagram in particular intermittently returns a transient "empty
-    // media response" for genuinely public, accessible posts — a flaky
-    // upstream hiccup rather than a real auth wall. A short retry clears it
-    // most of the time, so don't surface it to the user as a hard failure
-    // on the first occurrence.
+    // Retry loop with exponential backoff for transient upstream errors.
+    // Only errors that isRetryableStderr() classifies as transient are retried
+    // (empty upstream response, HTTP 503, connection reset). Systematic errors
+    // like YouTube bot-checks are NOT retried here because the multi-client
+    // player_client list in extractorArgsFor() already handles that internally
+    // within yt-dlp — an immediate same-IP application-level retry would just
+    // hit the same challenge again.
     let stdout: string;
     let attempt = 0;
     for (;;) {
@@ -475,13 +550,13 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
         break;
       } catch (attemptErr) {
         const stderr = extractStderr(attemptErr);
-        const isTransientEmptyResponse = /empty media response/i.test(stderr);
-        if (isTransientEmptyResponse && attempt < TRANSIENT_RETRY_ATTEMPTS) {
+        if (isRetryableStderr(stderr) && attempt < TRANSIENT_RETRY_ATTEMPTS) {
+          const delay = backoffDelay(attempt);
           logger.warn(
-            { requestId, platform, attempt },
-            "[video/download] transient empty media response, retrying",
+            { requestId, platform, attempt, delayMs: delay, stderrSnippet: stderr.slice(0, 200) },
+            "[video/download] transient error, retrying with backoff",
           );
-          await sleep(TRANSIENT_RETRY_DELAY_MS);
+          await sleep(delay);
           continue;
         }
         throw attemptErr;
@@ -559,6 +634,11 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
       },
       "[video/download] failed",
     );
+    // Tell the client how long to wait before retrying when the failure is a
+    // rate-limit or bot-check from the upstream platform (NOT our Express
+    // limiter — those use a different message). 120 seconds is conservative
+    // enough for YouTube's cooldown without stranding the user forever.
+    if (status === 429) res.setHeader("Retry-After", "120");
     res.status(status).json(body);
   }
 });
@@ -847,6 +927,9 @@ router.get("/video/audio", audioLimiter, async (req, res) => {
 
     logger.info({ requestId, platform, step: "extract_info" }, "[video/audio] fetching format list");
 
+    // Same retry-with-backoff logic as /video/download — see that route for
+    // the detailed reasoning. isRetryableStderr() skips bot-check errors
+    // because player_client fallback handles those internally.
     let stdout: string;
     let attempt = 0;
     for (;;) {
@@ -859,8 +942,13 @@ router.get("/video/audio", audioLimiter, async (req, res) => {
         break;
       } catch (err) {
         const stderr = extractStderr(err);
-        if (/empty media response/i.test(stderr) && attempt < TRANSIENT_RETRY_ATTEMPTS) {
-          await sleep(TRANSIENT_RETRY_DELAY_MS);
+        if (isRetryableStderr(stderr) && attempt < TRANSIENT_RETRY_ATTEMPTS) {
+          const delay = backoffDelay(attempt);
+          logger.warn(
+            { requestId, platform, attempt, delayMs: delay, stderrSnippet: stderr.slice(0, 200) },
+            "[video/audio] transient error, retrying with backoff",
+          );
+          await sleep(delay);
           continue;
         }
         throw err;
@@ -968,8 +1056,15 @@ router.get("/video/audio", audioLimiter, async (req, res) => {
   } catch (err) {
     const stderr = extractStderr(err);
     const { status, body } = buildErrorBody(err, stderr);
-    logger.error({ requestId, platform, err, stderr: stderr || undefined }, "[video/audio] failed");
-    if (!res.headersSent) res.status(status).json(body);
+    const rawError = err instanceof Error ? err : new Error(stderr || String(err));
+    logger.error(
+      { requestId, platform, err: rawError.message, stack: rawError.stack, stderr: stderr || undefined },
+      "[video/audio] failed",
+    );
+    if (!res.headersSent) {
+      if (status === 429) res.setHeader("Retry-After", "120");
+      res.status(status).json(body);
+    }
   }
 });
 
