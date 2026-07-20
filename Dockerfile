@@ -72,9 +72,22 @@ RUN npm install -g pnpm@10
 # Copy compiled bundle from builder — this is the only thing we need at runtime
 COPY --from=builder /workspace/artifacts/api-server/dist ./dist
 
-# Copy production node_modules (pnpm's store is linked, copy the full structure)
-COPY --from=builder /workspace/node_modules            ./node_modules
+# Copy the full workspace package tree so runtime resolution works for workspace
+# dependencies such as @workspace/api-zod, @workspace/db, and installed packages
+# like @google/genai.
+COPY --from=builder /workspace/package.json ./package.json
+COPY --from=builder /workspace/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder /workspace/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /workspace/node_modules ./node_modules
+COPY --from=builder /workspace/artifacts ./artifacts
+COPY --from=builder /workspace/lib ./lib
+COPY --from=builder /workspace/scripts ./scripts
+
+# Preserve the API server package's own node_modules tree. This is where
+# pnpm places package installations for workspace packages such as
+# @google/genai, and it's the path Node resolves from the built bundle.
 COPY --from=builder /workspace/artifacts/api-server/node_modules ./artifacts/api-server/node_modules
+COPY --from=builder /workspace/artifacts/api-server/package.json ./artifacts/api-server/package.json
 
 # Runtime configuration
 ENV NODE_ENV=production
