@@ -91,7 +91,15 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Mount the router at /api for the Replit dev environment, where the shared
+// proxy routes /<artifact-slug>/* so multiple services share one domain.
+// Also mount at / (root) for standalone deployments such as Render, where
+// the api-server is the only service and there is no proxy prefix — the
+// frontend there sends to https://toolbox-iph5.onrender.com/ai/generate
+// (no /api segment). Both mounts share the same router instance; Express
+// matches routes in registration order and stops at the first hit.
 app.use("/api", router);
+app.use("/", router);
 
 // ---------------------------------------------------------------------------
 // 404 — no route matched. Without this Express returns its built-in HTML
