@@ -37,19 +37,56 @@ app.use(
   }),
 );
 
-// CORS: allow same-origin and, in development, the Vite dev server.
-// A wildcard '*' was the previous config — it allowed any website to trigger
-// cross-origin requests against /video/stream (binary data) and the AI routes.
-const ALLOWED_ORIGINS = process.env["ALLOWED_ORIGINS"]
-  ? process.env["ALLOWED_ORIGINS"].split(",").map((o) => o.trim())
-  : [/^https?:\/\/localhost(:\d+)?$/, /\.replit\.dev$/, /\.repl\.co$/];
+// ---------------------------------------------------------------------------
+// CORS
+//
+// Why the browser was blocking requests:
+//   The default ALLOWED_ORIGINS list only contained localhost and *.replit.dev
+//   patterns. The production frontend (https://www.toolboxx.site) was not in
+//   that list, so Express never added an Access-Control-Allow-Origin header to
+//   responses. Browsers enforce CORS strictly: a missing header is treated the
+//   same as an explicit rejection.
+//
+// Fix:
+//   1. Add toolboxx.site (www + apex) to the hard-coded default list so the
+//      production frontend works without any environment variable being set.
+//   2. Expose ALLOWED_ORIGINS as an env var so operators can add more origins
+//      (e.g. staging domains) without a code change.
+//   3. Explicitly declare methods and allowedHeaders so preflight OPTIONS
+//      requests receive a correct 204 response with all required headers.
+//   4. Call app.options("*", cors(...)) BEFORE routes so Express handles
+//      preflight before any route middleware can interfere.
+// ---------------------------------------------------------------------------
 
-app.use(
-  cors({
-    origin: ALLOWED_ORIGINS,
-    credentials: true,
-  }),
-);
+const PRODUCTION_ORIGINS = [
+  "https://www.toolboxx.site",
+  "https://toolboxx.site",
+];
+
+const DEV_ORIGINS: (string | RegExp)[] = [
+  /^https?:\/\/localhost(:\d+)?$/,
+  /\.replit\.dev$/,
+  /\.repl\.co$/,
+];
+
+const ALLOWED_ORIGINS: (string | RegExp)[] = process.env["ALLOWED_ORIGINS"]
+  ? process.env["ALLOWED_ORIGINS"].split(",").map((o) => o.trim())
+  : [...PRODUCTION_ORIGINS, ...DEV_ORIGINS];
+
+const corsOptions: cors.CorsOptions = {
+  origin: ALLOWED_ORIGINS,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  optionsSuccessStatus: 204, // IE11 chokes on 200 for OPTIONS
+};
+
+// Handle preflight (OPTIONS) for every route before any other middleware runs.
+// Express 5 uses path-to-regexp v8 which rejects bare "*" — use a named wildcard.
+app.options("/{*path}", cors(corsOptions));
+
+// Apply CORS headers to all actual requests.
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
