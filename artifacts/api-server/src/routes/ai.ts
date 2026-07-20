@@ -338,6 +338,10 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
     case "ai-jamb-cbt-practice":
       return `Generate 10 realistic JAMB CBT practice questions for the subject: "${i.subject}".\n\nFor EACH question provide:\n\n**Question [N]:** [The question text]\n\n**A)** [Option A]\n**B)** [Option B]\n**C)** [Option C]\n**D)** [Option D]\n\n**Correct Answer:** [A/B/C/D]\n**Explanation:** [Why this is correct and why other options are wrong - helps learning]\n\n---\n\nMake questions realistic to actual JAMB exams, vary difficulty levels, and focus on core concepts covered in the curriculum.`;
 
+    case "ai-homework-helper":
+      return `Help with homework for the topic: "${i.topic}"${i.subject ? ` (${i.subject})` : ""}\n\nProvide:\n1. **Concept Explanation** — clear explanation of the key concept\n2. **Step-by-Step Solution** — break down how to solve similar problems\n3. **Real Examples** — provide 2-3 worked examples with full working\n4. **Key Tips** — common mistakes to avoid and study strategies\n5. **Practice Questions** — suggest 3 similar questions for practice\n\nMake it educational and suitable for a student learning this topic.`;
+
+
     case "ai-study-planner":
       return `Create a practical ${i.days || "7"}-day study schedule for: "${i.topic}"\n\nProvide:\n1. Daily breakdown of topics to cover\n2. Estimated time per topic\n3. Review sessions scheduled\n4. Key milestones and checkpoints\n5. Tips for staying on track\n\nMake it realistic and achievable within the timeframe.`;
 
@@ -533,7 +537,35 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
-    const resultText = response.text ?? "";
+    // Defensive response handling: validate Gemini response structure
+    let resultText = "";
+    if (response && typeof response === "object") {
+      if (response.text && typeof response.text === "string") {
+        resultText = response.text;
+      } else if (response.candidates && Array.isArray(response.candidates)) {
+        const firstCandidate = response.candidates[0];
+        if (firstCandidate?.content?.parts?.[0]?.text) {
+          resultText = firstCandidate.content.parts[0].text;
+        } else {
+          logger.warn(
+            { requestId, toolId },
+            `[ai/generate][${requestId}] Gemini response missing expected text path`,
+          );
+        }
+      } else {
+        logger.warn(
+          { requestId, toolId },
+          `[ai/generate][${requestId}] Unexpected Gemini response structure`,
+        );
+      }
+    } else {
+      logger.error(
+        { requestId, toolId },
+        `[ai/generate][${requestId}] Invalid response from Gemini: ${typeof response}`,
+      );
+    }
+
+
     const payload = { result: resultText };
     timings.serializeMs = nowMs() - tSerializeStart;
 

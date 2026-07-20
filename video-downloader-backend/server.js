@@ -51,11 +51,12 @@ app.use(errorHandler);
 
 app.listen(PORT, HOST, async () => {
   console.log(`Server listening on http://${HOST}:${PORT}`);
-  
-  // Verify dependencies on startup
+
   try {
-    await verifyDependencies();
+    await verifyDependencies({ log: true, throwOnMissing: true });
   } catch (error) {
-    console.error('Failed to verify dependencies:', error.message);
+    console.error('Dependency verification failed. The server will not serve downloads until the missing binary is installed.');
+    console.error(error.message);
+    process.exit(1);
   }
 });

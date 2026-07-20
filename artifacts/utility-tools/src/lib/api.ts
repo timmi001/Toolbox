@@ -75,7 +75,9 @@ async function request<T>(path: string, options: RequestOptionsWithTimeout = {})
     } else {
       data = await response.text();
     }
-  } catch {
+  } catch (parseErr) {
+    // Log parse errors instead of silently failing
+    console.error(`[api] Failed to parse ${contentType} response for ${path}:`, parseErr);
     data = undefined;
   }
 

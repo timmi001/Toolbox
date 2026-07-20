@@ -21,6 +21,9 @@ RUN npm install -g pnpm@10
 # Copy workspace manifests — cached layer, only re-runs on lockfile changes
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
+# Copy repository scripts that may be needed by workspace tooling/runtime steps
+COPY scripts/ ./scripts/
+
 # Copy every package.json needed for workspace resolution
 # (only api-server and the lib packages it imports at build time)
 COPY lib/api-zod/package.json       ./lib/api-zod/
@@ -72,9 +75,24 @@ RUN npm install -g pnpm@10
 # Copy compiled bundle from builder — this is the only thing we need at runtime
 COPY --from=builder /workspace/artifacts/api-server/dist ./dist
 
-# Copy production node_modules (pnpm's store is linked, copy the full structure)
-COPY --from=builder /workspace/node_modules            ./node_modules
+# Copy the full workspace package tree so runtime resolution works for workspace
+# dependencies such as @workspace/api-zod, @workspace/db, and installed packages
+# like @google/genai.
+COPY --from=builder /workspace/package.json ./package.json
+COPY --from=builder /workspace/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder /workspace/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /workspace/node_modules ./node_modules
+COPY --from=builder /workspace/artifacts ./artifacts
+COPY --from=builder /workspace/lib ./lib
+COPY --from=builder /workspace/scripts ./scripts
+
+# Preserve the API server package's own node_modules tree. This is where pnpm
+# installs workspace dependencies such as @google/genai for the built package.
+# The built bundle resolves modules relative to /app/dist/index.mjs, so the
+# package-private node_modules directory must be copied into the runtime image.
 COPY --from=builder /workspace/artifacts/api-server/node_modules ./artifacts/api-server/node_modules
+COPY --from=builder /workspace/artifacts/api-server/package.json ./artifacts/api-server/package.json
+COPY --from=builder /workspace/artifacts/api-server/dist ./dist
 
 # Runtime configuration
 ENV NODE_ENV=production
