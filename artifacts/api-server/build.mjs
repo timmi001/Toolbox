@@ -63,8 +63,12 @@ async function buildAll() {
       "@aws-sdk/*",
       "@azure/*",
       "@opentelemetry/*",
+      // "@google-cloud/*" is kept external because those packages load sibling
+      // .proto files via relative paths at runtime — esbuild cannot bundle them.
+      // "@google/genai" is intentionally NOT listed here: it is pure JS/ESM
+      // with no native addons or proto files, so esbuild bundles it inline and
+      // no runtime node_modules entry is needed for it.
       "@google-cloud/*",
-      "@google/*",
       "googleapis",
       "firebase-admin",
       "@parcel/watcher",
