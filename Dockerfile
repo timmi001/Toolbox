@@ -86,11 +86,13 @@ COPY --from=builder /workspace/artifacts ./artifacts
 COPY --from=builder /workspace/lib ./lib
 COPY --from=builder /workspace/scripts ./scripts
 
-# Preserve the API server package's own node_modules tree. This is where
-# pnpm places package installations for workspace packages such as
-# @google/genai, and it's the path Node resolves from the built bundle.
+# Preserve the API server package's own node_modules tree. This is where pnpm
+# installs workspace dependencies such as @google/genai for the built package.
+# The built bundle resolves modules relative to /app/dist/index.mjs, so the
+# package-private node_modules directory must be copied into the runtime image.
 COPY --from=builder /workspace/artifacts/api-server/node_modules ./artifacts/api-server/node_modules
 COPY --from=builder /workspace/artifacts/api-server/package.json ./artifacts/api-server/package.json
+COPY --from=builder /workspace/artifacts/api-server/dist ./dist
 
 # Runtime configuration
 ENV NODE_ENV=production
