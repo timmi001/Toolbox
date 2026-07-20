@@ -21,6 +21,9 @@ RUN npm install -g pnpm@10
 # Copy workspace manifests — cached layer, only re-runs on lockfile changes
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
+# Copy repository scripts that may be needed by workspace tooling/runtime steps
+COPY scripts/ ./scripts/
+
 # Copy every package.json needed for workspace resolution
 # (only api-server and the lib packages it imports at build time)
 COPY lib/api-zod/package.json       ./lib/api-zod/
