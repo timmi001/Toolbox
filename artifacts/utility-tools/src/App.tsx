@@ -12,6 +12,7 @@ import BlogIndex from "@/pages/blog/BlogIndex";
 import BlogPost from "@/pages/blog/BlogPost";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import DmcaPolicy from "@/pages/DmcaPolicy";
 import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
 
@@ -361,6 +362,7 @@ function Router() {
         {/* Informational Pages */}
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={TermsOfService} />
+        <Route path="/copyright-policy" component={DmcaPolicy} />
         <Route path="/about" component={AboutUs} />
         <Route path="/contact" component={Contact} />
 
