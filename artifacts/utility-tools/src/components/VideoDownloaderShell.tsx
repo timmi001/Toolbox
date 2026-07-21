@@ -72,19 +72,47 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
     }
   }
 
-  function downloadFile(format: VideoFormat) {
+  async function downloadFile(format: VideoFormat) {
     if (!result || !sourceUrl) return;
-    const a = document.createElement('a');
-    a.href = videoDownload.buildStreamUrl({
+
+    const downloadUrl = videoDownload.buildStreamUrl({
       sourceUrl,
       platform: config.platform,
       format,
       title: result.title,
     });
-    a.download = `${result.title}.${format.ext}`;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.click();
+
+    try {
+      const response = await fetch(downloadUrl, {
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let message = `Download failed with status ${response.status}`;
+        try {
+          const parsed = JSON.parse(errorText);
+          if (parsed?.error) message = parsed.error;
+        } catch {
+          // Ignore JSON parse errors and fall back to the default message.
+        }
+        throw new Error(message);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${result.title}.${format.ext}`;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to download the file.');
+    }
   }
 
   return (
