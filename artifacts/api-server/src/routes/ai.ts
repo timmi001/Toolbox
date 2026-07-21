@@ -29,6 +29,138 @@ function nowMs(): number {
 }
 
 // ---------------------------------------------------------------------------
+// Lightweight performance helpers.
+// ---------------------------------------------------------------------------
+const DEFAULT_MAX_OUTPUT_TOKENS = 1000;
+const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
+  "ai-grammar-checker": 300,
+  "ai-email-writer": 700,
+  "ai-resume-builder": 1200,
+  "ai-cover-letter": 1000,
+  "ai-essay-generator": 2500,
+  "ai-writer": 1500,
+  "ai-summarizer": 900,
+  "ai-paraphraser": 900,
+  "ai-humanizer": 900,
+  "ai-title": 400,
+  "ai-seo-title": 400,
+  "ai-meta-description": 400,
+  "ai-blog-title": 400,
+  "ai-twitter-post": 500,
+  "ai-linkedin-post": 500,
+  "ai-instagram-caption": 500,
+  "ai-youtube-title": 400,
+  "ai-ad-copy-generator": 700,
+  "ai-sales-copy-generator": 700,
+  "ai-landing-page-copy-generator": 700,
+  "ai-cta-generator": 400,
+  "ai-resume-summary": 700,
+  "ai-linkedin-headline": 400,
+  "ai-professional-bio": 500,
+  "ai-blog-introduction": 700,
+  "ai-blog-conclusion": 700,
+  "ai-article-rewriter": 900,
+  "ai-paragraph-rewriter": 700,
+  "ai-sentence-rewriter": 600,
+  "ai-cold-email": 600,
+  "ai-sales-email": 600,
+  "ai-followup-email": 600,
+  "ai-support-reply": 600,
+  "ai-thank-you-email": 600,
+  "ai-text-improver": 900,
+  "ai-tone-changer": 800,
+  "ai-expand-text": 900,
+  "ai-shorten-text": 700,
+  "ai-proofreader": 700,
+  "ai-study-notes": 1100,
+  "ai-homework-helper": 1000,
+  "ai-study-planner": 800,
+  "ai-story-writer": 1400,
+  "ai-book-outline-generator": 1200,
+  "ai-chapter-generator": 1800,
+  "ai-speech-writer": 1000,
+  "ai-quiz-generator": 900,
+  "ai-flashcard-generator": 800,
+  "ai-interview-questions": 1200,
+  "ai-meeting-notes": 1000,
+  "ai-interview-practice": 1100,
+  "ai-interview-start": 700,
+  "ai-interview-respond": 500,
+  "ai-hashtag-generator": 500,
+  "ai-youtube-description": 700,
+  "ai-blog-outline": 900,
+  "ai-mission-statement": 600,
+  "ai-vision-statement": 600,
+  "ai-company-bio": 800,
+  "ai-brand-story": 800,
+  "ai-sql-generator": 900,
+  "ai-regex-generator": 800,
+  "ai-code-explainer": 800,
+  "ai-code-reviewer": 900,
+  "ai-bug-finder": 900,
+  "ai-json-formatter": 800,
+  "ai-math-solver": 900,
+  "ai-jamb-cbt-practice": 1000,
+};
+
+const COMPLEX_TOOL_IDS = new Set([
+  "ai-resume-builder",
+  "ai-cover-letter",
+  "ai-essay-generator",
+  "ai-study-notes",
+  "ai-homework-helper",
+  "ai-study-planner",
+  "ai-story-writer",
+  "ai-book-outline-generator",
+  "ai-chapter-generator",
+  "ai-speech-writer",
+  "ai-interview-questions",
+  "ai-interview-practice",
+  "ai-resume-summary",
+  "ai-resume-bullet-points",
+  "ai-jamb-cbt-practice",
+  "ai-math-solver",
+]);
+
+function getOutputTokenBudget(toolId: string): number {
+  return TOOL_MAX_OUTPUT_TOKENS[toolId] ?? DEFAULT_MAX_OUTPUT_TOKENS;
+}
+
+function getModelForTool(toolId: string): string {
+  return COMPLEX_TOOL_IDS.has(toolId) ? "gemini-2.5-flash" : "gemini-2.5-flash-lite";
+}
+
+function compactPrompt(prompt: string): string {
+  return prompt.replace(/\n{3,}/g, "\n\n").trim();
+}
+
+type GeminiResponseLike = {
+  text?: unknown;
+  candidates?: Array<{
+    finishReason?: string;
+    content?: {
+      parts?: Array<{ text?: unknown }>;
+    };
+  }>;
+};
+
+function extractTextFromGeminiResponse(response: GeminiResponseLike): string {
+  if (typeof response.text === "string") {
+    return response.text;
+  }
+
+  const parts = response.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) {
+    return "";
+  }
+
+  return parts
+    .map((part) => (typeof part.text === "string" ? part.text : ""))
+    .filter(Boolean)
+    .join("");
+}
+
+// ---------------------------------------------------------------------------
 // Rate limiting — 20 requests per minute per IP
 // ---------------------------------------------------------------------------
 const aiLimiter = rateLimit({
@@ -436,7 +568,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
 
     // ---- Stage 2: prompt preparation ---------------------------------------
     const tPromptStart = nowMs();
-    const prompt = buildPrompt(toolId, cleanInputs);
+    const prompt = compactPrompt(buildPrompt(toolId, cleanInputs) ?? "");
     timings.promptMs = nowMs() - tPromptStart;
 
     if (!prompt) {
@@ -453,15 +585,19 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
+    const promptTokensEst = Math.ceil(prompt.length / 4);
+    const selectedModel = getModelForTool(toolId);
+    const selectedMaxOutputTokens = getOutputTokenBudget(toolId);
+
     logger.info(
       {
         requestId,
         toolId,
         promptChars: prompt.length,
-        // Rough token estimate (~4 chars/token for English) — useful to spot
-        // oversized prompts without pulling in a real tokenizer.
-        promptTokensEst: Math.ceil(prompt.length / 4),
-        maxOutputTokens: 8192,
+        promptTokensEst,
+        selectedModel,
+        selectedMaxOutputTokens,
+        thinkingBudget: 0,
         ts: new Date().toISOString(),
       },
       `[perf][ai/generate][${requestId}] prompt ready (validate=${timings.validateMs.toFixed(1)}ms, build=${timings.promptMs.toFixed(1)}ms)`,
@@ -469,8 +605,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
 
     // ---- Stage 3: Gemini API call (network send + model latency + receive) --
     // Lazy singleton: reuse the client across requests to avoid allocating a
-    // new HTTP pool on every call. Re-instantiated only when the key changes
-    // (which never happens in practice, but is cheap to check).
+    // new HTTP pool on every call. Re-instantiated only when the key changes.
     if (!genAIClient || genAIClientKey !== apiKey) {
       genAIClient = new GoogleGenAI({ apiKey });
       genAIClientKey = apiKey;
@@ -478,38 +613,44 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     const ai = genAIClient;
     const tGeminiStart = nowMs();
     logger.info(
-      { requestId, ts: new Date().toISOString() },
-      `[perf][ai/generate][${requestId}] → sending request to Gemini (gemini-2.5-flash)`,
+      { requestId, toolId, selectedModel, selectedMaxOutputTokens, ts: new Date().toISOString() },
+      `[perf][ai/generate][${requestId}] → sending request to Gemini (${selectedModel})`,
     );
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+    const stream = await ai.models.generateContentStream({
+      model: selectedModel,
       contents: prompt,
       config: {
-        maxOutputTokens: 8192,
+        maxOutputTokens: selectedMaxOutputTokens,
         // Disable the model's internal reasoning/thinking pass. These tools
-        // are structured prompt→output tasks that don't need chain-of-thought,
-        // and the default thinking budget adds 3–10 s of latency before any
-        // output token is produced.
+        // are structured prompt→output tasks that do not need chain-of-thought,
+        // and the default thinking budget adds unnecessary latency before any
+        // visible output is produced.
         thinkingConfig: { thinkingBudget: 0 },
       },
     });
 
+    let resultText = "";
+    let finishReason: string | undefined;
+    for await (const chunk of stream) {
+      const chunkText = extractTextFromGeminiResponse(chunk as GeminiResponseLike);
+      if (chunkText) {
+        resultText += chunkText;
+      }
+      const chunkFinishReason = chunk.candidates?.[0]?.finishReason;
+      if (chunkFinishReason) {
+        finishReason = chunkFinishReason;
+      }
+    }
+
     timings.geminiMs = nowMs() - tGeminiStart;
-    const usage = response.usageMetadata;
     logger.info(
       {
         requestId,
         geminiMs: Number(timings.geminiMs.toFixed(1)),
-        promptTokens: usage?.promptTokenCount,
-        outputTokens: usage?.candidatesTokenCount,
-        // gemini-2.5-flash has "thinking" enabled by default — these are
-        // internal reasoning tokens the model generates (and is billed/timed
-        // for) before producing the visible output. No thinkingConfig is set
-        // in this route, so the model uses its default thinking budget even
-        // for simple template-fill tools that don't need reasoning.
-        thinkingTokens: usage?.thoughtsTokenCount,
-        totalTokens: usage?.totalTokenCount,
+        selectedModel,
+        selectedMaxOutputTokens,
+        outputChars: resultText.length,
         ts: new Date().toISOString(),
       },
       `[perf][ai/generate][${requestId}] ← Gemini responded in ${timings.geminiMs.toFixed(1)}ms`,
@@ -522,7 +663,6 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     // Gemini hits a safety filter or recitation block the text is empty but
     // no exception is thrown — without this check the client silently gets
     // an empty 200, with no indication that content was blocked.
-    const finishReason = response.candidates?.[0]?.finishReason;
     if (finishReason && finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
       logger.warn(
         { requestId, toolId, finishReason, ts: new Date().toISOString() },
@@ -537,34 +677,12 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
-    // Defensive response handling: validate Gemini response structure
-    let resultText = "";
-    if (response && typeof response === "object") {
-      if (response.text && typeof response.text === "string") {
-        resultText = response.text;
-      } else if (response.candidates && Array.isArray(response.candidates)) {
-        const firstCandidate = response.candidates[0];
-        if (firstCandidate?.content?.parts?.[0]?.text) {
-          resultText = firstCandidate.content.parts[0].text;
-        } else {
-          logger.warn(
-            { requestId, toolId },
-            `[ai/generate][${requestId}] Gemini response missing expected text path`,
-          );
-        }
-      } else {
-        logger.warn(
-          { requestId, toolId },
-          `[ai/generate][${requestId}] Unexpected Gemini response structure`,
-        );
-      }
-    } else {
-      logger.error(
+    if (!resultText) {
+      logger.warn(
         { requestId, toolId },
-        `[ai/generate][${requestId}] Invalid response from Gemini: ${typeof response}`,
+        `[ai/generate][${requestId}] Gemini response missing expected text path`,
       );
     }
-
 
     const payload = { result: resultText };
     timings.serializeMs = nowMs() - tSerializeStart;
