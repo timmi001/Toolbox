@@ -6,8 +6,13 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-1">
-            <Link href="/" className="mb-4 group inline-flex">
-              <span className="font-black text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#4285F4] via-[#34A853] via-[#FBBC05] to-[#EA4335] bg-[length:200%_100%] transition-all duration-300 ease-out">toolboxx</span>
+            <Link href="/" className="flex items-center gap-2 mb-4 group inline-flex">
+              <img
+                src="/logo.jpg"
+                alt="toolboxx logo"
+                className="w-10 h-10 rounded-2xl object-cover shadow-md"
+              />
+              <span className="font-black text-xl tracking-tight text-foreground">toolboxx</span>
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
               Your premium destination for free, fast, and secure online utility tools. No backend calls, 100% client-side.
