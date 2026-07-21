@@ -1,3 +1,16 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+  <defs>
+    <linearGradient id="tbx-gradient" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4285F4" />
+      <stop offset="0.35" stop-color="#34A853" />
+      <stop offset="0.7" stop-color="#FBBC05" />
+      <stop offset="1" stop-color="#EA4335" />
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="36" fill="white"/>
+  <rect x="14" y="14" width="62" height="62" rx="18" fill="url(#tbx-gradient)" />
+  <rect x="104" y="14" width="62" height="62" rx="18" fill="url(#tbx-gradient)" />
+  <rect x="14" y="104" width="62" height="62" rx="18" fill="url(#tbx-gradient)" />
+  <rect x="104" y="104" width="62" height="62" rx="18" fill="url(#tbx-gradient)" />
+  <path d="M45 45L135 135M135 45L45 135" stroke="white" stroke-width="12" stroke-linecap="round" opacity="0.82" />
 </svg>

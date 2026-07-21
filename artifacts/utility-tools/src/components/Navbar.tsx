@@ -3,6 +3,7 @@ import { Menu } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { BrandLogo } from './BrandLogo';
 
 const NAV_LINKS = [
   { name: 'Audio Tools', href: '/audio-tools' },
@@ -19,13 +20,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
-          <img
-            src="/logo.jpg"
-            alt="ToolKit logo"
-            className="w-16 h-16 rounded-2xl object-cover shadow-md"
-          />
-          <span className="font-black text-3xl tracking-tight text-foreground">toolboxx</span>
+        <Link href="/" className="flex-shrink-0 group">
+          <BrandLogo className="" showText={true} textClassName="text-3xl" iconClassName="" />
         </Link>
 
         <div className="hidden md:flex flex-1 max-w-md mx-4">
