@@ -1,8 +1,21 @@
 # ============================================================================
 # ToolboxX API Server — Docker image for Render deployment
 #
-# Build context: workspace root (required — api-server depends on workspace
-# lib packages lib/api-zod and lib/db which esbuild bundles at build time).
+# Root cause of ERR_MODULE_NOT_FOUND for @google/genai (now fixed):
+#   build.mjs had "@google/*" in the esbuild external list, which blocked
+#   @google/genai from being bundled into dist/index.mjs. The runner stage
+#   then had no node_modules path that Node could resolve it from.
+#   Fix: "@google/*" removed from externals. "@google-cloud/*" stays external
+#   because those packages load sibling .proto files at runtime.
+#   @google/genai is now inlined into dist/index.mjs by esbuild.
+#
+# Architecture:
+#   All JS dependencies (Express, pino, drizzle, @google/genai, workspace libs)
+#   are bundled into dist/ by esbuild. The runner image needs zero node_modules.
+#   Only system binaries (ffmpeg, yt-dlp) need to be installed separately.
+#
+# Build context: workspace root — api-server depends on lib/* workspace packages
+#   that esbuild resolves and inlines at compile time.
 #
 # Render settings:
 #   Root Directory:   . (workspace root)
@@ -10,49 +23,64 @@
 #   Health Check:     /api/healthz
 # ============================================================================
 
-# ── Stage 1: builder ─────────────────────────────────────────────────────────
-FROM node:20-bookworm-slim AS builder
+# ── Stage 1: install workspace dependencies ──────────────────────────────────
+FROM node:20-bookworm-slim AS deps
 
 WORKDIR /workspace
 
-# Install pnpm
+# Install pnpm (same major version as local toolchain)
 RUN npm install -g pnpm@10
 
-# Copy workspace manifests — cached layer, only re-runs on lockfile changes
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+# Copy workspace manifests for layer caching — re-runs only on lockfile changes
+COPY .npmrc pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
-# Copy repository scripts that may be needed by workspace tooling/runtime steps
-COPY scripts/ ./scripts/
+# Copy every package.json that pnpm needs to resolve the workspace graph.
+# pnpm reads these to understand which workspace packages exist before
+# installing anything. Missing entries cause "workspace package not found" errors.
+COPY scripts/package.json                  ./scripts/
+COPY lib/api-zod/package.json              ./lib/api-zod/
+COPY lib/api-spec/package.json             ./lib/api-spec/
+COPY lib/db/package.json                   ./lib/db/
+COPY lib/api-client-react/package.json     ./lib/api-client-react/
+COPY artifacts/api-server/package.json     ./artifacts/api-server/
 
-# Copy every package.json needed for workspace resolution
-# (only api-server and the lib packages it imports at build time)
-COPY lib/api-zod/package.json       ./lib/api-zod/
-COPY lib/api-spec/package.json      ./lib/api-spec/
-COPY lib/db/package.json            ./lib/db/
-COPY lib/api-client-react/package.json ./lib/api-client-react/
-COPY artifacts/api-server/package.json ./artifacts/api-server/
-
-# Install deps for api-server and all its workspace dependencies
-# --filter @workspace/api-server... means "this package + all its deps"
+# Install only what api-server and its transitive workspace deps need.
+# "--filter @workspace/api-server..." means: this package + all workspace deps.
 RUN pnpm install --filter @workspace/api-server... --frozen-lockfile
 
-# Copy source for the lib packages esbuild needs to bundle
-COPY lib/ ./lib/
+# ── Stage 2: build ────────────────────────────────────────────────────────────
+FROM deps AS builder
 
-# Copy api-server source + build script
+WORKDIR /workspace
+
+# Copy source for workspace lib packages — esbuild resolves these from source
+# (they use "exports": "./src/index.ts" so no pre-compilation step is needed)
+COPY lib/       ./lib/
+COPY scripts/   ./scripts/
+
+# Copy api-server source and build tooling
 COPY artifacts/api-server/ ./artifacts/api-server/
 
-# Compile TypeScript → dist/index.mjs (esbuild bundles workspace libs inline)
+# esbuild bundles everything into dist/index.mjs:
+#   - all Express middleware, pino, drizzle-orm, zod, pg
+#   - @google/genai (no longer external — pure ESM, safe to bundle)
+#   - @workspace/api-zod and @workspace/db (workspace libs, inlined from source)
+#   - pino transports get separate worker files via esbuild-plugin-pino
+# Result: dist/ is self-contained; no runtime node_modules needed.
 RUN pnpm --filter @workspace/api-server run build
 
-# ── Stage 2: runner ───────────────────────────────────────────────────────────
+# ── Stage 3: runner ───────────────────────────────────────────────────────────
+# The dist/ bundle is completely self-contained — all JS deps are inlined by
+# esbuild. No node_modules are needed at runtime. Only system binaries (ffmpeg,
+# yt-dlp) that the API shells out to need to be installed separately.
 FROM node:20-bookworm-slim AS runner
 
 WORKDIR /app
 
-# System dependencies
-#   ffmpeg   — required by yt-dlp for audio extraction (-x) and format muxing
-#   python3 + pip — needed to install and run yt-dlp
+# System dependencies:
+#   ffmpeg   — audio extraction (-x flag) and container muxing for yt-dlp
+#   python3 + venv — runtime for yt-dlp (venv avoids Debian's pip isolation
+#                    policy on Bookworm which blocks system-wide pip installs)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg \
         python3 \
@@ -60,47 +88,38 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-# Install yt-dlp into an isolated venv (avoids Debian's pip isolation policy
-# on Bookworm and keeps yt-dlp upgradeable without touching system Python)
+# Install yt-dlp in an isolated venv — keeps it upgradeable and away from
+# system Python packages. The venv is put on PATH so Node can spawn "yt-dlp".
+#
+# yt-dlp[default] extras included:
+#   brotli         — brotli content-encoding (YouTube uses this heavily)
+#   pycryptodomex  — AES decryption for some DRM-lite streams
+#   mutagen        — audio metadata tagging
+#   certifi        — up-to-date Mozilla CA bundle (avoids stale system certs)
+#   requests       — HTTP with proxy support
+#   websockets     — live-stream support
+#
+# "--upgrade pip" first: the Debian bookworm-slim pip is often months old and
+# can't resolve newer wheel metadata correctly.
+# "--upgrade yt-dlp[default]" ensures every Docker build gets the latest
+# release — yt-dlp pushes extractor fixes weekly, so pinning to a version
+# means broken extractors within days of a YouTube change.
 RUN python3 -m venv /opt/venv \
-    && /opt/venv/bin/pip install --no-cache-dir yt-dlp
+    && /opt/venv/bin/pip install --no-cache-dir --upgrade pip \
+    && /opt/venv/bin/pip install --no-cache-dir --upgrade "yt-dlp[default]"
 
-# Put the venv on PATH so `yt-dlp` is resolvable by the Node process
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install pnpm (needed to run the start script via pnpm if desired;
-# also keeps the node_modules symlink structure intact)
-RUN npm install -g pnpm@10
-
-# Copy compiled bundle from builder — this is the only thing we need at runtime
+# Copy the compiled bundle from the builder stage.
+# This is the ONLY thing needed at runtime — dist/ contains everything.
 COPY --from=builder /workspace/artifacts/api-server/dist ./dist
 
-# Copy the full workspace package tree so runtime resolution works for workspace
-# dependencies such as @workspace/api-zod, @workspace/db, and installed packages
-# like @google/genai.
-COPY --from=builder /workspace/package.json ./package.json
-COPY --from=builder /workspace/pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --from=builder /workspace/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /workspace/node_modules ./node_modules
-COPY --from=builder /workspace/artifacts ./artifacts
-COPY --from=builder /workspace/lib ./lib
-COPY --from=builder /workspace/scripts ./scripts
-
-# Preserve the API server package's own node_modules tree. This is where pnpm
-# installs workspace dependencies such as @google/genai for the built package.
-# The built bundle resolves modules relative to /app/dist/index.mjs, so the
-# package-private node_modules directory must be copied into the runtime image.
-COPY --from=builder /workspace/artifacts/api-server/node_modules ./artifacts/api-server/node_modules
-COPY --from=builder /workspace/artifacts/api-server/package.json ./artifacts/api-server/package.json
-COPY --from=builder /workspace/artifacts/api-server/dist ./dist
-
-# Runtime configuration
 ENV NODE_ENV=production
 ENV PORT=8080
 
 EXPOSE 8080
 
-# Health check — Render will also poll /api/healthz via render.yaml
+# Health check — Render also polls /api/healthz via render.yaml
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD node -e "fetch('http://localhost:8080/api/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 

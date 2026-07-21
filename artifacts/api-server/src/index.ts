@@ -15,11 +15,16 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
-  if (err) {
-    logger.error({ err }, "Error listening on port");
-    process.exit(1);
-  }
-
+// In Node.js, the listen() callback fires on the 'listening' event and NEVER
+// receives an error argument — port-in-use / bind failures are emitted as
+// 'error' events on the server object. Attaching a listener for that event
+// prevents Node's uncaughtException default (which logs nothing useful) and
+// ensures startup failures are captured in the Pino log before process exit.
+const server = app.listen(port, () => {
   logger.info({ port }, "Server listening");
+});
+
+server.on("error", (err) => {
+  logger.error({ err }, "Failed to bind server — exiting");
+  process.exit(1);
 });

@@ -6,6 +6,13 @@ import { logger } from "../lib/logger";
 const router = Router();
 
 // ---------------------------------------------------------------------------
+// Gemini client singleton — reused across requests to avoid allocating a new
+// HTTP connection pool on every call. Re-created only if the key changes.
+// ---------------------------------------------------------------------------
+let genAIClient: GoogleGenAI | null = null;
+let genAIClientKey: string | null = null;
+
+// ---------------------------------------------------------------------------
 // Performance diagnostics (read-only instrumentation — does not change
 // behavior or responses). Each stage is timed with a monotonic clock and
 // logged with wall-clock timestamps so stage durations can be correlated
@@ -334,6 +341,7 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
     case "ai-homework-helper":
       return `Help with homework for the topic: "${i.topic}"${i.subject ? ` (${i.subject})` : ""}\n\nProvide:\n1. **Concept Explanation** — clear explanation of the key concept\n2. **Step-by-Step Solution** — break down how to solve similar problems\n3. **Real Examples** — provide 2-3 worked examples with full working\n4. **Key Tips** — common mistakes to avoid and study strategies\n5. **Practice Questions** — suggest 3 similar questions for practice\n\nMake it educational and suitable for a student learning this topic.`;
 
+
     case "ai-study-planner":
       return `Create a practical ${i.days || "7"}-day study schedule for: "${i.topic}"\n\nProvide:\n1. Daily breakdown of topics to cover\n2. Estimated time per topic\n3. Review sessions scheduled\n4. Key milestones and checkpoints\n5. Tips for staying on track\n\nMake it realistic and achievable within the timeframe.`;
 
@@ -436,6 +444,9 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
+    // GEMINI_API_KEY is the secret name used in this project.
+    // by the Replit secret that stores it. Previously this was read as
+    // GEMINI_API_KEY (a mismatch) which caused all AI tools to return 503.
     const apiKey = process.env["GEMINI_API_KEY"];
     if (!apiKey) {
       res.status(503).json({ error: "AI service is not configured." });
@@ -457,7 +468,14 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     );
 
     // ---- Stage 3: Gemini API call (network send + model latency + receive) --
-    const ai = new GoogleGenAI({ apiKey });
+    // Lazy singleton: reuse the client across requests to avoid allocating a
+    // new HTTP pool on every call. Re-instantiated only when the key changes
+    // (which never happens in practice, but is cheap to check).
+    if (!genAIClient || genAIClientKey !== apiKey) {
+      genAIClient = new GoogleGenAI({ apiKey });
+      genAIClientKey = apiKey;
+    }
+    const ai = genAIClient;
     const tGeminiStart = nowMs();
     logger.info(
       { requestId, ts: new Date().toISOString() },
@@ -499,11 +517,30 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
 
     // ---- Stage 4: response processing/serialization ------------------------
     const tSerializeStart = nowMs();
-    
+
+    // Check whether generation was blocked before reading the text. When
+    // Gemini hits a safety filter or recitation block the text is empty but
+    // no exception is thrown — without this check the client silently gets
+    // an empty 200, with no indication that content was blocked.
+    const finishReason = response.candidates?.[0]?.finishReason;
+    if (finishReason && finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
+      logger.warn(
+        { requestId, toolId, finishReason, ts: new Date().toISOString() },
+        `[perf][ai/generate][${requestId}] generation blocked`,
+      );
+      res.status(422).json({
+        error:
+          finishReason === "SAFETY"
+            ? "The request was blocked by safety filters. Please rephrase your input."
+            : "Generation was stopped before completing. Please try again.",
+      });
+      return;
+    }
+
     // Defensive response handling: validate Gemini response structure
     let resultText = "";
-    if (response && typeof response === 'object') {
-      if (response.text && typeof response.text === 'string') {
+    if (response && typeof response === "object") {
+      if (response.text && typeof response.text === "string") {
         resultText = response.text;
       } else if (response.candidates && Array.isArray(response.candidates)) {
         const firstCandidate = response.candidates[0];
@@ -512,22 +549,23 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         } else {
           logger.warn(
             { requestId, toolId },
-            `[ai/generate][${requestId}] Gemini response missing expected text path`
+            `[ai/generate][${requestId}] Gemini response missing expected text path`,
           );
         }
       } else {
         logger.warn(
           { requestId, toolId },
-          `[ai/generate][${requestId}] Unexpected Gemini response structure`
+          `[ai/generate][${requestId}] Unexpected Gemini response structure`,
         );
       }
     } else {
       logger.error(
         { requestId, toolId },
-        `[ai/generate][${requestId}] Invalid response from Gemini: ${typeof response}`
+        `[ai/generate][${requestId}] Invalid response from Gemini: ${typeof response}`,
       );
     }
-    
+
+
     const payload = { result: resultText };
     timings.serializeMs = nowMs() - tSerializeStart;
 

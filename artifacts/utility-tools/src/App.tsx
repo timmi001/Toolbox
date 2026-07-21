@@ -4,8 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
 import { CurrencyPreferenceProvider } from "@/contexts/CurrencyPreferenceContext";
-import React, { Suspense } from "react";
-
+import React, { Suspense, Component, type ErrorInfo, type ReactNode } from "react";
 import Home from "@/pages/Home";
 import CategoryPage from "@/pages/CategoryPage";
 import NotFound from "@/pages/not-found";
@@ -15,6 +14,51 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
+
+// ---------------------------------------------------------------------------
+// Error Boundary — catches render-phase exceptions from any lazy-loaded tool
+// page and shows a recoverable error UI instead of whitescreening the whole
+// app. Without this, a single thrown error in any of the 300+ routes unmounts
+// the entire React tree (QueryClientProvider, Layout, Toaster — everything).
+// ---------------------------------------------------------------------------
+interface ErrorBoundaryState { hasError: boolean; message: string }
+
+class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, message: "" };
+  }
+
+  static getDerivedStateFromError(err: unknown): ErrorBoundaryState {
+    return {
+      hasError: true,
+      message: err instanceof Error ? err.message : "An unexpected error occurred.",
+    };
+  }
+
+  componentDidCatch(err: Error, info: ErrorInfo) {
+    // Log to console in dev; a real app would send to an error-tracking service
+    console.error("[ErrorBoundary]", err, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 p-8 text-center">
+          <p className="text-lg font-semibold text-destructive">Something went wrong</p>
+          <p className="text-sm text-muted-foreground max-w-md">{this.state.message}</p>
+          <button
+            className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            onClick={() => this.setState({ hasError: false, message: "" })}
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const Loading = () => <div className="p-8 text-center text-muted-foreground animate-pulse">Loading tool...</div>;
 const L = (imp: () => Promise<{ default: React.ComponentType }>) => {
@@ -592,7 +636,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
+          <ErrorBoundary>
+            <Router />
+          </ErrorBoundary>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>
