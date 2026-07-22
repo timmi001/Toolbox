@@ -1,8 +1,15 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import type { HistoryEntry, HistoryExportFormat } from '@/types/history';
 
-const STORAGE_KEY = 'toolboxx-ai-history-v1';
 const MAX_HISTORY_ITEMS = 200;
+
+function getStorageKey() {
+  const origin = typeof window !== 'undefined' && typeof window.location?.origin === 'string'
+    ? window.location.origin
+    : 'toolboxx-local';
+
+  return `toolboxx-ai-history:${origin}`;
+}
 
 function isValidHistoryEntry(value: unknown): value is HistoryEntry {
   if (!value || typeof value !== 'object') return false;
@@ -21,8 +28,10 @@ function isValidHistoryEntry(value: unknown): value is HistoryEntry {
 }
 
 function safeStorageGet(): HistoryEntry[] {
+  if (typeof window === 'undefined' || !window.localStorage) return [];
+
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(getStorageKey());
     if (!raw) return [];
 
     const parsed = JSON.parse(raw) as unknown;
@@ -35,8 +44,10 @@ function safeStorageGet(): HistoryEntry[] {
 }
 
 function safeStorageSet(entries: HistoryEntry[]) {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    window.localStorage.setItem(getStorageKey(), JSON.stringify(entries));
   } catch {
     // Gracefully ignore Local Storage quota issues.
   }

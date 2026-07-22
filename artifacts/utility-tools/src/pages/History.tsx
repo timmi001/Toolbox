@@ -39,7 +39,7 @@ export default function HistoryPage() {
             AI History
           </div>
           <h1 className="text-3xl font-semibold tracking-tight">Your local AI generation history</h1>
-          <p className="text-sm text-muted-foreground">Browse, search, favorite, and export your ToolboxX AI runs entirely on this device.</p>
+          <p className="text-sm text-muted-foreground">Browse, search, favorite, and export your ToolboxX AI runs entirely on this device. History stays in your browser only and is never sent to the server.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="rounded-full bg-emerald-500/10 text-emerald-600">
