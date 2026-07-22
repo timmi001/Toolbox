@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { name: 'Calculators', href: '/calculators' },
   { name: 'Developer Tools', href: '/developer-tools' },
   { name: 'Text Tools', href: '/text-tools' },
+  { name: 'History', href: '/history' },
   { name: 'Blog', href: '/blog' },
 ];
 

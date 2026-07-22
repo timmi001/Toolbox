@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { getAiToolConfig } from '@/lib/ai-tools-config';
 import { ai } from '@/lib/api';
+import { useHistory } from '@/hooks/useHistory';
 
 interface AiToolShellProps {
   tool: Tool;
@@ -68,6 +69,7 @@ export function AiToolShell({ tool }: AiToolShellProps) {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
+  const { addEntry } = useHistory();
 
   if (!config) {
     return (
@@ -122,7 +124,27 @@ export function AiToolShell({ tool }: AiToolShellProps) {
       );
 
       const tProcessStart = performance.now();
-      setResult(data.result ?? '');
+      const nextResult = data.result ?? '';
+      setResult(nextResult);
+
+      const promptText = Object.values(inputs)
+        .filter(Boolean)
+        .join('\n\n')
+        .trim();
+
+      if (nextResult.trim()) {
+        addEntry({
+          toolSlug: tool.slug,
+          toolName: tool.name,
+          toolCategory: tool.category,
+          prompt: promptText || 'AI generation',
+          response: nextResult,
+          createdAt: new Date().toISOString(),
+          characterCount: nextResult.length,
+          favorite: false,
+        });
+      }
+
       const tProcessEnd = performance.now();
 
       // Rendering happens asynchronously after this React state update is
