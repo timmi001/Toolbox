@@ -1,15 +1,46 @@
 import { useState, useRef } from 'react';
 import { Sparkles, Copy, Download, RotateCcw, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { Tool } from '@/lib/tools-data';
 import { ToolLayout } from '@/components/ToolLayout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { getAiToolConfig } from '@/lib/ai-tools-config';
-import { ai, stripMarkdown } from '@/lib/api';
+import { ai } from '@/lib/api';
 
 interface AiToolShellProps {
   tool: Tool;
+}
+
+function ResultMarkdown({ markdown }: { markdown: string }) {
+  try {
+    return (
+      <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-table:my-3 prose-th:font-semibold prose-code:before:content-none prose-code:after:content-none">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm, remarkMath]}
+          rehypePlugins={[rehypeKatex]}
+          skipHtml
+          components={{
+            code({ className, children, ...props }) {
+              return (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            },
+          }}
+        >
+          {markdown}
+        </ReactMarkdown>
+      </div>
+    );
+  } catch {
+    return <>{markdown}</>;
+  }
 }
 
 export function AiToolShell({ tool }: AiToolShellProps) {
@@ -91,7 +122,7 @@ export function AiToolShell({ tool }: AiToolShellProps) {
       );
 
       const tProcessStart = performance.now();
-      setResult(stripMarkdown(data.result ?? ''));
+      setResult(data.result ?? '');
       const tProcessEnd = performance.now();
 
       // Rendering happens asynchronously after this React state update is
@@ -237,8 +268,8 @@ export function AiToolShell({ tool }: AiToolShellProps) {
               </Button>
             </div>
           </div>
-          <div className="bg-muted/30 border border-border rounded-lg p-4 text-sm text-foreground whitespace-pre-wrap leading-relaxed max-h-[600px] overflow-y-auto font-sans">
-            {result}
+          <div className="bg-muted/30 border border-border rounded-lg p-4 text-sm text-foreground max-h-[600px] overflow-y-auto font-sans">
+            <ResultMarkdown markdown={result} />
           </div>
         </div>
       )}
