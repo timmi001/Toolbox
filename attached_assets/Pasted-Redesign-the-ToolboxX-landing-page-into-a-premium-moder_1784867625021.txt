@@ -1,0 +1,257 @@
+Redesign the ToolboxX landing page into a premium, modern SaaS-style productivity platform.
+
+The design should feel like Linear, Vercel, Notion AI, Stripe and Raycast combined.
+
+Use a clean layout with lots of white space, smooth gradients, rounded corners (20-24px), soft shadows, glassmorphism where appropriate, subtle animations and premium typography.
+
+Color Palette
+- AI Theme: Purple (#7C3AED)
+- Utility Theme: Emerald Green (#10B981)
+- Background: #F8FAFC
+- Surface: White
+- Primary Text: #111827
+- Secondary Text: #6B7280
+
+Everything must be fully responsive.
+
+------------------------------------------------
+
+NAVIGATION
+
+Logo: ToolboxX
+
+Navigation
+
+Home
+AI Tools
+Utility Tools
+Collections
+History
+Pricing
+
+Right side
+
+Dark Mode Toggle
+Sign In button
+
+Sticky navigation with blur background while scrolling.
+
+------------------------------------------------
+
+HERO SECTION
+
+Large heading
+
+AI That Works.
+Utility Tools That Save Time.
+
+Subheading
+
+200+ free AI and utility tools for creators, students, developers and businesses.
+
+Buttons
+
+Explore AI Tools
+Browse Utility Tools
+
+Include a subtle animated gradient background behind the hero.
+
+------------------------------------------------
+
+FEATURED SECTION
+
+Immediately below the hero create two premium feature cards.
+
+Card 1
+
+🤖 AI Tools
+
+Description
+
+Powerful AI tools for writing, coding, studying, business and productivity.
+
+Popular AI tools
+
+• AI Chat
+• AI Resume Builder
+• AI Marketing
+• AI Email Generator
+
+Button
+
+Explore AI Tools →
+
+Purple gradient background.
+
+------------------------------------------------
+
+Card 2
+
+🛠 Utility Tools
+
+Description
+
+Everyday tools for PDFs, files, developers, media and calculations.
+
+Popular
+
+• PDF Merge
+• QR Generator
+• Image Converter
+• Calculator
+
+Button
+
+Explore Utility Tools →
+
+Green gradient background.
+
+------------------------------------------------
+
+TRENDING TOOLS SECTION
+
+Horizontal cards with icons.
+
+AI Chat
+Image Generator
+PDF Merge
+QR Generator
+Text Summarizer
+Image Compressor
+Password Generator
+JSON Formatter
+
+Each card should have hover animation.
+
+------------------------------------------------
+
+CONTINUE WORKING
+
+Show history cards.
+
+Resume Builder
+Yesterday
+
+Background Remover
+2 hours ago
+
+JSON Formatter
+Today
+
+Display only when history exists.
+
+------------------------------------------------
+
+POPULAR COLLECTIONS
+
+Create beautiful category cards.
+
+📄 PDF Tools
+
+🖼 Image Tools
+
+🎥 Video Tools
+
+🎵 Audio Tools
+
+💻 Developer Tools
+
+✍ Text Tools
+
+🧮 Calculators
+
+📁 File Conversion
+
+Each card shows total number of tools.
+
+------------------------------------------------
+
+WHY TOOLBOXX
+
+Display five premium features.
+
+AI + Utility Tools
+Save Tool History
+Fast Processing
+Mobile Friendly
+Privacy First
+
+------------------------------------------------
+
+FOOTER
+
+Explore
+
+AI Tools
+
+Utility Tools
+
+Collections
+
+History
+
+Resources
+
+Blog
+
+API
+
+Status
+
+Company
+
+About
+
+Contact
+
+Privacy
+
+Terms
+
+------------------------------------------------
+
+ANIMATIONS
+
+Use Framer Motion.
+
+Fade up on scroll.
+
+Cards slightly lift on hover.
+
+Buttons scale slightly.
+
+Gradient glow behind hero.
+
+Smooth page transitions.
+
+------------------------------------------------
+
+COMPONENTS
+
+Everything should be componentized.
+
+Hero.tsx
+
+FeatureCards.tsx
+
+TrendingTools.tsx
+
+HistorySection.tsx
+
+Collections.tsx
+
+Footer.tsx
+
+Navbar.tsx
+
+------------------------------------------------
+
+TECH
+
+React
+TypeScript
+TailwindCSS
+Framer Motion
+Lucide React Icons
+
+Use reusable components and clean code.
