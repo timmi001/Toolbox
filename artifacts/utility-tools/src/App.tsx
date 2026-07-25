@@ -6,6 +6,8 @@ import { Layout } from "@/components/Layout";
 import { CurrencyPreferenceProvider } from "@/contexts/CurrencyPreferenceContext";
 import React, { Suspense, Component, type ErrorInfo, type ReactNode } from "react";
 import Home from "@/pages/Home";
+import AiTools from "@/pages/AiTools";
+import UtilityTools from "@/pages/UtilityTools";
 import CategoryPage from "@/pages/CategoryPage";
 import HistoryPage from "@/pages/History";
 import NotFound from "@/pages/not-found";
@@ -341,6 +343,8 @@ function Router() {
       <Layout>
         <Switch>
         <Route path="/" component={Home} />
+        <Route path="/ai-tools" component={AiTools} />
+        <Route path="/utility-tools" component={UtilityTools} />
 
         {/* Categories */}
         <Route path="/text-tools" component={CategoryPage} />

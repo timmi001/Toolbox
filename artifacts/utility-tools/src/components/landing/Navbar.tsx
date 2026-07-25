@@ -6,11 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_LINKS = [
   { label: 'Home',          href: '/' },
-  { label: 'AI Tools',      href: '/ai-grammar-tools' },
-  { label: 'Utility Tools', href: '/text-tools' },
-  { label: 'Collections',   href: '/categories' },
+  { label: 'AI Tools',      href: '/ai-tools' },
+  { label: 'Utility Tools', href: '/utility-tools' },
   { label: 'History',       href: '/history' },
-  { label: 'Pricing',       href: '/pricing' },
+  { label: 'Blog',          href: '/blog' },
+  { label: 'About',         href: '/about' },
 ];
 
 export function Navbar() {

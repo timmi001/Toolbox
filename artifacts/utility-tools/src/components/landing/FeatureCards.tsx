@@ -48,7 +48,7 @@ export function FeatureCards() {
                 </li>
               ))}
             </ul>
-            <Link href="/ai-grammar-tools">
+            <Link href="/ai-tools">
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
@@ -92,7 +92,7 @@ export function FeatureCards() {
                 </li>
               ))}
             </ul>
-            <Link href="/text-tools">
+            <Link href="/utility-tools">
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}

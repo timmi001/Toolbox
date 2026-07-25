@@ -79,7 +79,7 @@ export function Hero() {
           {...fadeUp(0.3)}
           className="mt-8 flex flex-wrap items-center justify-center gap-3"
         >
-          <Link href="/ai-grammar-tools">
+          <Link href="/ai-tools">
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
@@ -89,7 +89,7 @@ export function Hero() {
               <ArrowRight className="h-4 w-4" />
             </motion.button>
           </Link>
-          <Link href="/text-tools">
+          <Link href="/utility-tools">
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
