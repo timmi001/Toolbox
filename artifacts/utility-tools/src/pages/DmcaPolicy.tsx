@@ -1,6 +1,5 @@
 import { Link } from 'wouter';
-import { ArrowLeft } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
 
 export default function DmcaPolicy() {
   return (
@@ -10,40 +9,81 @@ export default function DmcaPolicy() {
         Back to home
       </Link>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold">DMCA & Copyright Policy</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6 text-sm text-muted-foreground leading-7">
-          <p>
-            toolboxx respects the intellectual property rights of others and expects users to do the same.
-          </p>
-          <div>
-            <h3 className="font-semibold text-foreground mb-2">Reporting copyright infringement</h3>
-            <p>
-              If you believe that content on our site infringes your copyright, please contact us at hello@toolboxx.com with a detailed notice that includes the location of the material, your contact information, and a statement that the use is unauthorized.
-            </p>
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#4B0082]/10">
+            <ShieldCheck className="h-6 w-6 text-[#4B0082]" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground mb-2">Review process</h3>
-            <p>
-              We review all valid notices promptly and may remove or disable access to material that appears to violate copyright law.
-            </p>
+            <h1 className="text-3xl font-bold text-foreground">DMCA &amp; Copyright Policy</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Effective date: January 1, 2025 · Last updated: July 2025</p>
           </div>
-          <div>
-            <h3 className="font-semibold text-foreground mb-2">Counter-notice</h3>
-            <p>
-              If you believe content was removed in error, you may submit a counter-notice with your contact information and a statement under penalty of perjury that the material was removed by mistake or misidentification.
-            </p>
+        </div>
+
+        <p className="text-sm leading-7 text-muted-foreground">
+          ToolboXX ("<strong className="text-foreground">we</strong>", "<strong className="text-foreground">us</strong>", or "<strong className="text-foreground">our</strong>") respects the intellectual property rights of others and expects our users to do the same. In accordance with the Digital Millennium Copyright Act of 1998 (17 U.S.C. § 512, the "<strong className="text-foreground">DMCA</strong>"), we will respond expeditiously to claims of copyright infringement that are reported to our designated copyright agent.
+        </p>
+
+        {/* Sections */}
+        {[
+          {
+            title: '1. Reporting Copyright Infringement',
+            body: `If you believe that material available on toolboxx.app infringes one or more of your copyrights, please notify our Copyright Agent by submitting a written notice that includes all of the following:
+
+• A physical or electronic signature of the copyright owner or a person authorised to act on their behalf.
+• Identification of the copyrighted work(s) claimed to have been infringed.
+• Identification of the material that is claimed to be infringing or to be the subject of infringing activity, and information reasonably sufficient to permit us to locate the material (e.g., URL).
+• Your contact information, including name, mailing address, telephone number, and email address.
+• A statement that you have a good faith belief that the use of the material in the manner complained of is not authorised by the copyright owner, its agent, or the law.
+• A statement that the information in the notification is accurate, and, under penalty of perjury, that you are authorised to act on behalf of the copyright owner.
+
+Send your notice to: hello@toolboxx.app`,
+          },
+          {
+            title: '2. Counter-Notice Procedure',
+            body: `If you believe that material you posted was removed or access to it was disabled by mistake or misidentification, you may submit a counter-notice. A valid counter-notice must include:
+
+• Your physical or electronic signature.
+• Identification of the material that was removed or disabled and the location where it appeared before removal.
+• A statement under penalty of perjury that you have a good faith belief that the material was removed or disabled as a result of mistake or misidentification.
+• Your name, address, telephone number, email address, and a statement consenting to the jurisdiction of the relevant federal district court.
+
+Upon receipt of a valid counter-notice we may reinstate the material within 10–14 business days unless the original complainant files a court action.`,
+          },
+          {
+            title: '3. Repeat Infringer Policy',
+            body: `In accordance with the DMCA and other applicable law, ToolboXX has adopted a policy of terminating, in appropriate circumstances and at our sole discretion, the accounts of users who are deemed to be repeat infringers. We may also, at our sole discretion, limit access to the site and/or terminate the accounts of any users who infringe any intellectual property rights of others.`,
+          },
+          {
+            title: '4. User-Generated Content',
+            body: `ToolboXX processes inputs provided by users (text, documents, URLs) to deliver AI-powered results. We do not host or distribute third-party copyrighted works. Any output generated by our AI tools is derived from the user's own input and publicly licensed model weights. If you believe specific AI-generated output infringes your copyright, please submit a notice as described in Section 1.`,
+          },
+          {
+            title: '5. No Legal Advice',
+            body: `Nothing in this policy constitutes legal advice. If you are uncertain whether material you wish to report infringes your copyright, you should consult a qualified attorney before submitting a DMCA notice, as submitting false claims can result in liability.`,
+          },
+          {
+            title: '6. Contact',
+            body: `Copyright Agent
+ToolboXX
+Email: hello@toolboxx.app
+
+We aim to acknowledge all valid DMCA notices within 2 business days and to act on them within 5 business days.`,
+          },
+        ].map(({ title, body }) => (
+          <div key={title} className="rounded-2xl border border-border/60 bg-card/50 p-6">
+            <h2 className="mb-3 text-base font-semibold text-foreground">{title}</h2>
+            <div className="space-y-2">
+              {body.split('\n').map((line, i) => (
+                <p key={i} className={`text-sm leading-7 text-muted-foreground ${line.startsWith('•') ? 'pl-4' : ''}`}>
+                  {line}
+                </p>
+              ))}
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-foreground mb-2">Contact</h3>
-            <p>
-              For any questions about this policy, please reach out to hello@toolboxx.com.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
     </div>
   );
 }

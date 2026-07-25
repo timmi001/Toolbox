@@ -1,5 +1,4 @@
 import { Link } from 'wouter';
-import { Sparkles } from 'lucide-react';
 
 const LINKS = {
   Explore: [
@@ -58,9 +57,7 @@ export function Footer() {
           {/* Brand column — takes 2 of 5 cols on large screens */}
           <div className="md:col-span-2">
             <Link href="/" className="mb-6 inline-flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#7C3AED]/20 text-[#a78bfa]">
-                <Sparkles className="h-4 w-4" />
-              </div>
+              <img src="/logo.png" alt="ToolboXX logo" className="h-9 w-9 object-contain" />
               <span className="text-base font-bold text-white">ToolboxX</span>
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-gray-400">

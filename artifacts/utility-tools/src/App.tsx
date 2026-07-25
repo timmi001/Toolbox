@@ -374,6 +374,7 @@ function Router() {
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={TermsOfService} />
         <Route path="/copyright-policy" component={DmcaPolicy} />
+        <Route path="/dmca" component={DmcaPolicy} />
         <Route path="/about" component={AboutUs} />
         <Route path="/contact" component={Contact} />
 

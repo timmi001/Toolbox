@@ -22,9 +22,9 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
           <img
-            src="/logo.jpg"
-            alt="ToolKit logo"
-            className="w-16 h-16 rounded-2xl object-cover shadow-md"
+            src="/logo.png"
+            alt="ToolboXX logo"
+            className="h-9 w-9 object-contain"
           />
           <span className="font-black text-3xl tracking-tight text-foreground">toolboxx</span>
         </Link>
