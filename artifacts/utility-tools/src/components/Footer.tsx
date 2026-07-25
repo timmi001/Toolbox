@@ -52,8 +52,8 @@ function GmailIcon() {
 export function Footer() {
   return (
     <footer className="bg-[#111827] text-white">
-      <div className="mx-auto max-w-[1400px] px-4 pt-16 pb-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-5">
+      <div className="mx-auto max-w-[1400px] px-4 pt-10 pb-6 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-7 md:grid-cols-5">
 
           {/* Brand column — takes 2 of 5 cols on large screens */}
           <div className="md:col-span-2">
@@ -118,7 +118,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 sm:flex-row">
           <p className="text-sm text-gray-500">
             ToolboxX © {new Date().getFullYear()} · All rights reserved.
           </p>

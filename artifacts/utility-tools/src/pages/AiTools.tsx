@@ -137,7 +137,7 @@ export default function AiTools() {
   return (
     <div className="pb-20">
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden px-4 py-16 text-center">
+      <section className="relative overflow-hidden px-4 py-8 text-center">
         {/* Background gradient */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute left-1/2 top-0 h-[500px] w-[800px] -translate-x-1/2 rounded-full"
@@ -151,7 +151,7 @@ export default function AiTools() {
             </span>
           </motion.div>
           <motion.h1 {...fadeUp(0.06)}
-            className="mt-3 text-4xl font-extrabold tracking-tight text-[#111827] dark:text-white sm:text-5xl lg:text-6xl">
+            className="mt-3 text-3xl font-extrabold tracking-tight text-[#111827] dark:text-white sm:text-4xl">
             Powerful AI Tools,{' '}
             <span className="bg-gradient-to-r from-[#7C3AED] to-[#9F67FF] bg-clip-text text-transparent">
               One Place
@@ -185,12 +185,12 @@ export default function AiTools() {
       </section>
 
       {/* ── Category Grid ─────────────────────────────────────── */}
-      <section className="px-4 pb-16">
+      <section className="px-4 pb-10">
         <div className="mx-auto max-w-[1400px]">
           {visibleCategories.length === 0 ? (
-            <p className="py-20 text-center text-[#6B7280]">No categories match "{search}"</p>
+            <p className="py-16 text-center text-[#6B7280]">No categories match "{search}"</p>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {visibleCategories.map((cat, i) => {
                 const count = toolsData.filter(t => (cat.filterCategories as readonly string[]).includes(t.category)).length;
                 return (
@@ -225,13 +225,13 @@ export default function AiTools() {
       </section>
 
       {/* ── Featured AI Tools ─────────────────────────────────── */}
-      <section className="px-4 pb-16">
+      <section className="px-4 pb-10">
         <div className="mx-auto max-w-[1400px]">
-          <motion.div {...fadeUp(0)} className="mb-7">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-[#7C3AED]">Popular</p>
-            <h2 className="text-2xl font-bold text-[#111827] dark:text-white">Most-used AI Tools</h2>
+          <motion.div {...fadeUp(0)} className="mb-5">
+            <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-[#7C3AED]">Popular</p>
+            <h2 className="text-xl font-bold text-[#111827] dark:text-white">Most-used AI Tools</h2>
           </motion.div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
             {featuredTools.map((tool, i) => (
               <motion.div key={tool.slug} {...fadeUp(i * 0.04)} whileHover={{ y: -4 }}>
                 <Link href={`/tools/ai/${tool.slug}`}>

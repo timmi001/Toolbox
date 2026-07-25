@@ -1,18 +1,8 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toolsData } from '@/lib/tools-data';
 
-interface Collection {
-  emoji: string;
-  name: string;
-  href: string;
-  categories: string[];
-  gradient: string;
-  accent: string;
-}
-
-const ALL_COLLECTIONS: Collection[] = [
+const ALL_COLLECTIONS = [
   {
     emoji: '📄',
     name: 'PDF Tools',
@@ -79,103 +69,54 @@ const ALL_COLLECTIONS: Collection[] = [
   },
 ];
 
-const ROTATION_INTERVAL_MS = 60_000;
-const VISIBLE_COUNT = 3;
-
 export function Collections() {
-  const [offset, setOffset] = useState(0);
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setDirection(1);
-      setOffset((prev) => (prev + VISIBLE_COUNT) % ALL_COLLECTIONS.length);
-    }, ROTATION_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, []);
-
-  const visible = Array.from({ length: VISIBLE_COUNT }, (_, i) =>
-    ALL_COLLECTIONS[(offset + i) % ALL_COLLECTIONS.length]
-  );
-
   return (
-    <section className="px-4 py-16">
+    <section className="px-4 py-7 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1400px]">
-        {/* Section header */}
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-10"
+          transition={{ duration: 0.4 }}
+          className="mb-4"
         >
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#4B0082]">Collections</p>
-          <div className="flex items-end justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">Discover Tools</h2>
-            {/* Dot indicators */}
-            <div className="flex gap-1.5">
-              {Array.from({ length: Math.ceil(ALL_COLLECTIONS.length / VISIBLE_COUNT) }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setDirection(i * VISIBLE_COUNT > offset ? 1 : -1); setOffset(i * VISIBLE_COUNT); }}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    Math.floor(offset / VISIBLE_COUNT) === i ? 'w-6 bg-[#4B0082]' : 'w-1.5 bg-gray-300'
-                  }`}
-                  aria-label={`Go to page ${i + 1}`}
-                />
-              ))}
-            </div>
-          </div>
+          <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-[#4B0082]">Browse</p>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Tool Categories</h2>
         </motion.div>
 
-        {/* Cards row */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-          <AnimatePresence mode="wait">
-            {visible.map((col) => {
-              const count = toolsData.filter((t) => col.categories.includes(t.category)).length;
-              return (
-                <motion.div
-                  key={col.name + offset}
-                  initial={{ opacity: 0, y: 20 * direction }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 * direction }}
-                  transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-                  whileHover={{ y: -6 }}
-                >
-                  <Link href={col.href}>
-                    <div
-                      className="group relative cursor-pointer overflow-hidden rounded-[24px] p-6 transition-all duration-300 hover:shadow-[0_20px_56px_rgba(0,0,0,0.12)]"
-                      style={{ background: col.gradient }}
-                    >
-                      {/* "Discover Tools" label */}
-                      <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-500">
-                        Discover Tools
-                      </p>
-
-                      {/* Large icon */}
-                      <div className="mb-4 text-5xl transition-transform duration-300 group-hover:scale-110">
-                        {col.emoji}
-                      </div>
-
-                      {/* Title */}
-                      <h3 className="mb-1 text-xl font-bold text-gray-900">{col.name}</h3>
-
-                      {/* Slightly wrong count phrasing — as specified */}
-                      <p className="mb-6 text-sm text-gray-600">
-                        {count} {col.name} Tools
-                      </p>
-
-                      {/* Explore button */}
-                      <div className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-all group-hover:bg-[#4B0082]">
-                        Explore
-                        <span style={{ color: col.accent }}>→</span>
-                      </div>
+        {/* 4 cols on sm+, 8 cols on lg+ — compact icon-chip style */}
+        <div className="grid grid-cols-4 gap-2.5 sm:grid-cols-4 lg:grid-cols-8">
+          {ALL_COLLECTIONS.map((col, i) => {
+            const count = toolsData.filter((t) => col.categories.includes(t.category)).length;
+            return (
+              <motion.div
+                key={col.name}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: i * 0.035 }}
+                whileHover={{ y: -3 }}
+              >
+                <Link href={col.href}>
+                  <div
+                    className="group cursor-pointer overflow-hidden rounded-xl p-2.5 text-center transition-all duration-200 hover:shadow-[0_6px_20px_rgba(0,0,0,0.09)]"
+                    style={{ background: col.gradient }}
+                  >
+                    <div className="mb-1 text-2xl transition-transform duration-200 group-hover:scale-110 leading-none">
+                      {col.emoji}
                     </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                    <p className="text-[11px] font-bold leading-tight text-gray-900 dark:text-gray-800">
+                      {col.name}
+                    </p>
+                    <p className="mt-0.5 text-[10px] font-medium" style={{ color: col.accent }}>
+                      {count} tools
+                    </p>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
