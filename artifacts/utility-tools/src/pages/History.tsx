@@ -27,39 +27,18 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4 rounded-2xl border border-border/60 bg-card/50 p-4 shadow-sm">
-        <SearchBar value={query} onChange={setQuery} />
-        <FilterBar
-          category={category}
-          setCategory={setCategory}
-          sort={sort}
-          setSort={setSort}
-          categories={categories}
-        />
-        <HistoryToolbar
-          onImportClick={onImportClick}
-          onExportJson={() => exportHistory('json', 'toolboxx-ai-history.json')}
-          onExportTxt={() => exportHistory('txt', 'toolboxx-ai-history.txt')}
-          onExportPdf={() => exportHistory('pdf', 'toolboxx-ai-history.pdf')}
-          onClear={() => {
-            if (window.confirm('Clear all local AI history? This cannot be undone.')) {
-              clearAllHistory();
-            }
-          }}
-        />
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="application/json,.json"
-          className="hidden"
-          onChange={async event => {
-            const file = event.target.files?.[0];
-            if (!file) return;
-            await importHistory(file);
-            event.currentTarget.value = '';
-          }}
-        />
-      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={async event => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          await importHistory(file);
+          event.currentTarget.value = '';
+        }}
+      />
 
       {loading ? (
         <div className="rounded-2xl border border-border/60 bg-card/50 p-8 text-sm text-muted-foreground animate-pulse">Loading history…</div>

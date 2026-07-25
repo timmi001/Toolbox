@@ -20,11 +20,11 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
+        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
           <img
             src="/logo.png"
             alt="ToolboXX logo"
-            className="h-9 w-9 object-contain"
+            className="h-10 w-10 object-contain drop-shadow-sm"
           />
           <span className="font-black text-3xl tracking-tight text-foreground">toolboxx</span>
         </Link>
