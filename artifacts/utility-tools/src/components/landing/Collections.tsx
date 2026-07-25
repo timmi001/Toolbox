@@ -1,94 +1,103 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toolsData } from '@/lib/tools-data';
 
 interface Collection {
   emoji: string;
   name: string;
-  description: string;
   href: string;
   categories: string[];
+  gradient: string;
   accent: string;
-  bg: string;
 }
 
-const COLLECTIONS: Collection[] = [
+const ALL_COLLECTIONS: Collection[] = [
   {
     emoji: '📄',
     name: 'PDF Tools',
-    description: 'Merge, split, compress and convert PDFs',
     href: '/pdf-tools',
     categories: ['pdf'],
+    gradient: 'linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%)',
     accent: '#EF4444',
-    bg: '#FEF2F2',
   },
   {
     emoji: '🖼',
     name: 'Image Tools',
-    description: 'Resize, compress and convert images',
     href: '/image-tools',
     categories: ['image'],
+    gradient: 'linear-gradient(135deg, #FFFBEB 0%, #FDE68A 100%)',
     accent: '#F59E0B',
-    bg: '#FFFBEB',
   },
   {
     emoji: '🎥',
     name: 'Video Tools',
-    description: 'Trim, convert and compress videos',
     href: '/video-tools',
     categories: ['video'],
-    accent: '#8B5CF6',
-    bg: '#F5F3FF',
+    gradient: 'linear-gradient(135deg, #F5F3FF 0%, #DDD6FE 100%)',
+    accent: '#7C3AED',
   },
   {
     emoji: '🎵',
     name: 'Audio Tools',
-    description: 'Merge, trim and convert audio files',
     href: '/audio-tools',
     categories: ['audio'],
+    gradient: 'linear-gradient(135deg, #FDF2F8 0%, #FBCFE8 100%)',
     accent: '#EC4899',
-    bg: '#FDF2F8',
   },
   {
     emoji: '💻',
     name: 'Developer Tools',
-    description: 'JSON, regex, hashing and code helpers',
     href: '/developer-tools',
     categories: ['developer'],
+    gradient: 'linear-gradient(135deg, #ECFDF5 0%, #A7F3D0 100%)',
     accent: '#10B981',
-    bg: '#ECFDF5',
   },
   {
     emoji: '✍',
     name: 'Text Tools',
-    description: 'Word counter, case converter and more',
     href: '/text-tools',
     categories: ['text'],
+    gradient: 'linear-gradient(135deg, #EFF6FF 0%, #BFDBFE 100%)',
     accent: '#3B82F6',
-    bg: '#EFF6FF',
   },
   {
     emoji: '🧮',
     name: 'Calculators',
-    description: 'Finance, health, math and unit tools',
     href: '/calculators',
     categories: ['calculators'],
+    gradient: 'linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%)',
     accent: '#F97316',
-    bg: '#FFF7ED',
   },
   {
     emoji: '📁',
     name: 'File Conversion',
-    description: 'Convert between any file format',
     href: '/file-conversion-tools',
     categories: ['file-conversion'],
+    gradient: 'linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%)',
     accent: '#6B7280',
-    bg: '#F9FAFB',
   },
 ];
 
+const ROTATION_INTERVAL_MS = 60_000;
+const VISIBLE_COUNT = 3;
+
 export function Collections() {
+  const [offset, setOffset] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setDirection(1);
+      setOffset((prev) => (prev + VISIBLE_COUNT) % ALL_COLLECTIONS.length);
+    }, ROTATION_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  const visible = Array.from({ length: VISIBLE_COUNT }, (_, i) =>
+    ALL_COLLECTIONS[(offset + i) % ALL_COLLECTIONS.length]
+  );
+
   return (
     <section className="px-4 py-16">
       <div className="mx-auto max-w-[1400px]">
@@ -98,62 +107,75 @@ export function Collections() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-10 text-center"
+          className="mb-10"
         >
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#7C3AED]">Collections</p>
-          <h2 className="text-3xl font-bold text-[#111827] dark:text-white">Popular Collections</h2>
-          <p className="mt-3 text-[#6B7280] dark:text-neutral-400">Everything you need, organised by category</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#4B0082]">Collections</p>
+          <div className="flex items-end justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Discover Tools</h2>
+            {/* Dot indicators */}
+            <div className="flex gap-1.5">
+              {Array.from({ length: Math.ceil(ALL_COLLECTIONS.length / VISIBLE_COUNT) }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setDirection(i * VISIBLE_COUNT > offset ? 1 : -1); setOffset(i * VISIBLE_COUNT); }}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    Math.floor(offset / VISIBLE_COUNT) === i ? 'w-6 bg-[#4B0082]' : 'w-1.5 bg-gray-300'
+                  }`}
+                  aria-label={`Go to page ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {COLLECTIONS.map((col, i) => {
-            const count = toolsData.filter((t) => (col.categories as string[]).includes(t.category)).length;
-            return (
-              <motion.div
-                key={col.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-                whileHover={{ y: -6 }}
-              >
-                <Link href={col.href}>
-                  <div className="group relative cursor-pointer overflow-hidden rounded-[22px] border border-border/60 bg-white p-6 transition-all duration-300 hover:border-transparent hover:shadow-[0_16px_48px_rgba(0,0,0,0.10)] dark:bg-card">
-                    {/* Subtle bg tint on hover */}
+        {/* Cards row */}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <AnimatePresence mode="wait">
+            {visible.map((col) => {
+              const count = toolsData.filter((t) => col.categories.includes(t.category)).length;
+              return (
+                <motion.div
+                  key={col.name + offset}
+                  initial={{ opacity: 0, y: 20 * direction }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 * direction }}
+                  transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ y: -6 }}
+                >
+                  <Link href={col.href}>
                     <div
-                      className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                      style={{ background: `linear-gradient(135deg, ${col.bg} 0%, transparent 60%)` }}
-                    />
-                    <div className="relative">
-                      {/* Emoji icon */}
-                      <div
-                        className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-2xl transition-transform duration-300 group-hover:scale-110"
-                        style={{ backgroundColor: col.bg }}
-                      >
+                      className="group relative cursor-pointer overflow-hidden rounded-[24px] p-6 transition-all duration-300 hover:shadow-[0_20px_56px_rgba(0,0,0,0.12)]"
+                      style={{ background: col.gradient }}
+                    >
+                      {/* "Discover Tools" label */}
+                      <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-500">
+                        Discover Tools
+                      </p>
+
+                      {/* Large icon */}
+                      <div className="mb-4 text-5xl transition-transform duration-300 group-hover:scale-110">
                         {col.emoji}
                       </div>
-                      <h3 className="mb-1 font-bold text-[#111827] dark:text-white">{col.name}</h3>
-                      <p className="mb-4 text-xs leading-relaxed text-[#6B7280] dark:text-muted-foreground">
-                        {col.description}
+
+                      {/* Title */}
+                      <h3 className="mb-1 text-xl font-bold text-gray-900">{col.name}</h3>
+
+                      {/* Slightly wrong count phrasing — as specified */}
+                      <p className="mb-6 text-sm text-gray-600">
+                        {count} {col.name} Tools
                       </p>
-                      <div className="flex items-center justify-between">
-                        <span
-                          className="rounded-full px-2.5 py-1 text-xs font-semibold"
-                          style={{ backgroundColor: `${col.accent}18`, color: col.accent }}
-                        >
-                          {count} tools
-                        </span>
-                        <ArrowRight
-                          className="h-4 w-4 opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100"
-                          style={{ color: col.accent }}
-                        />
+
+                      {/* Explore button */}
+                      <div className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-all group-hover:bg-[#4B0082]">
+                        Explore
+                        <span style={{ color: col.accent }}>→</span>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
       </div>
     </section>

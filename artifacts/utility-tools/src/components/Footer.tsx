@@ -3,10 +3,10 @@ import { Sparkles } from 'lucide-react';
 
 const LINKS = {
   Explore: [
-    { label: 'AI Tools',      href: '/ai-grammar-tools' },
-    { label: 'Utility Tools', href: '/text-tools' },
-    { label: 'Collections',   href: '/categories' },
-    { label: 'History',       href: '/history' },
+    { label: 'AI Tools',        href: '/ai-tools' },
+    { label: 'Utility Tools',   href: '/utility-tools' },
+    { label: 'Developer Tools', href: '/developer-tools' },
+    { label: 'History',         href: '/history' },
   ],
   Resources: [
     { label: 'Blog',   href: '/blog' },
@@ -16,45 +16,97 @@ const LINKS = {
   Company: [
     { label: 'About',   href: '/about' },
     { label: 'Contact', href: '/contact' },
-    { label: 'Privacy', href: '/privacy' },
-    { label: 'Terms',   href: '/terms' },
+  ],
+  Legal: [
+    { label: 'Terms of Service', href: '/terms' },
+    { label: 'Privacy Policy',   href: '/privacy' },
+    { label: 'DMCA Copyright',   href: '/dmca' },
   ],
 };
 
+// Social icons as inline SVG to avoid extra deps
+function TwitterIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function LinkedInIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  );
+}
+
+function GmailIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.907 1.528-1.147C21.69 2.28 24 3.434 24 5.457z" />
+    </svg>
+  );
+}
+
 export function Footer() {
   return (
-    <footer className="mt-16 border-t border-border/50 bg-background pt-16 pb-8">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
-          {/* Brand column */}
-          <div className="md:col-span-1">
-            <Link href="/" className="mb-5 inline-flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#7C3AED]/10 text-[#7C3AED]">
-                <Sparkles className="h-4.5 w-4.5" />
+    <footer className="bg-[#111827] text-white">
+      <div className="mx-auto max-w-[1400px] px-4 pt-16 pb-8 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-5">
+
+          {/* Brand column — takes 2 of 5 cols on large screens */}
+          <div className="md:col-span-2">
+            <Link href="/" className="mb-6 inline-flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#7C3AED]/20 text-[#a78bfa]">
+                <Sparkles className="h-4 w-4" />
               </div>
-              <span className="text-base font-bold tracking-tight text-foreground">ToolboxX</span>
+              <span className="text-base font-bold text-white">ToolboxX</span>
             </Link>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              200+ free AI and utility tools for creators, students, developers and businesses.
+            <p className="max-w-xs text-sm leading-relaxed text-gray-400">
+              200+ free AI and utility tools for creators, students, developers and businesses. No sign-up. No tracking.
             </p>
-            {/* Color dots */}
-            <div className="mt-6 flex gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#7C3AED]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-[#10B981]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-[#F59E0B]" />
+
+            {/* Social icons */}
+            <div className="mt-6 flex gap-3">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/8 text-gray-400 transition-colors hover:bg-white/15 hover:text-white"
+                aria-label="Twitter / X"
+              >
+                <TwitterIcon />
+              </a>
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/8 text-gray-400 transition-colors hover:bg-white/15 hover:text-white"
+                aria-label="LinkedIn"
+              >
+                <LinkedInIcon />
+              </a>
+              <a
+                href="mailto:hello@toolboxx.app"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/8 text-gray-400 transition-colors hover:bg-white/15 hover:text-white"
+                aria-label="Email"
+              >
+                <GmailIcon />
+              </a>
             </div>
           </div>
 
           {/* Link columns */}
           {(Object.entries(LINKS) as [string, { label: string; href: string }[]][]).map(([group, links]) => (
             <div key={group}>
-              <h4 className="mb-4 text-sm font-semibold text-foreground">{group}</h4>
+              <h4 className="mb-4 text-sm font-semibold text-white">{group}</h4>
               <ul className="space-y-2.5">
                 {links.map(({ label, href }) => (
                   <li key={label}>
                     <Link
                       href={href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      className="text-sm text-gray-400 transition-colors hover:text-white"
                     >
                       {label}
                     </Link>
@@ -65,9 +117,40 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-8 text-center text-sm text-muted-foreground sm:flex-row sm:text-left">
-          <p>© {new Date().getFullYear()} ToolboxX. All rights reserved.</p>
-          <p className="text-xs">No backend calls · 100% client-side · Privacy first</p>
+        {/* Bottom bar */}
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
+          <p className="text-sm text-gray-500">
+            ToolboxX © {new Date().getFullYear()} · All rights reserved.
+          </p>
+
+          {/* Contact icons on right */}
+          <div className="flex items-center gap-3">
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 transition-colors hover:text-gray-300"
+              aria-label="Twitter"
+            >
+              <TwitterIcon />
+            </a>
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 transition-colors hover:text-gray-300"
+              aria-label="LinkedIn"
+            >
+              <LinkedInIcon />
+            </a>
+            <a
+              href="mailto:hello@toolboxx.app"
+              className="text-gray-500 transition-colors hover:text-gray-300"
+              aria-label="Email"
+            >
+              <GmailIcon />
+            </a>
+          </div>
         </div>
       </div>
     </footer>
