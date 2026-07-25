@@ -101,8 +101,6 @@ export function HistorySection() {
     setItems(loadHistory().slice(0, 3));
   }, []);
 
-  if (items.length === 0) return null;
-
   const handleDelete = (id: string) => {
     deleteHistoryEntry(id);
     setItems(loadHistory().slice(0, 3));
@@ -127,53 +125,60 @@ export function HistorySection() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {items.map((item, i) => {
-              const emoji = getCategoryEmoji(item.toolCategory);
-              return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.35, delay: i * 0.07 }}
-                  whileHover={{ y: -3 }}
-                >
-                  <Link href="/history">
-                    <div className="group relative cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#4B0082]/20 hover:shadow-[0_6px_24px_rgba(75,0,130,0.09)] dark:bg-card dark:border-border/50">
-                      <div
-                        className="pointer-events-none absolute right-3 top-2 select-none text-6xl"
-                        style={{ opacity: 0.055 }}
-                        aria-hidden="true"
-                      >
-                        {emoji}
-                      </div>
-                      <div className="relative">
-                        <div className="mb-3 flex items-start justify-between">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4B0082]/8 text-lg">
-                            {emoji}
+          {items.length === 0 ? (
+            <div className="flex items-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 dark:border-border dark:bg-card">
+              <Clock className="h-4 w-4 shrink-0 text-gray-300" />
+              <p className="text-sm text-gray-400">Tools you use will appear here so you can pick up where you left off.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {items.map((item, i) => {
+                const emoji = getCategoryEmoji(item.toolCategory);
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.35, delay: i * 0.07 }}
+                    whileHover={{ y: -3 }}
+                  >
+                    <Link href="/history">
+                      <div className="group relative cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#4B0082]/20 hover:shadow-[0_6px_24px_rgba(75,0,130,0.09)] dark:bg-card dark:border-border/50">
+                        <div
+                          className="pointer-events-none absolute right-3 top-2 select-none text-6xl"
+                          style={{ opacity: 0.055 }}
+                          aria-hidden="true"
+                        >
+                          {emoji}
+                        </div>
+                        <div className="relative">
+                          <div className="mb-3 flex items-start justify-between">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4B0082]/8 text-lg">
+                              {emoji}
+                            </div>
+                            <KebabMenu onDelete={() => handleDelete(item.id)} />
                           </div>
-                          <KebabMenu onDelete={() => handleDelete(item.id)} />
-                        </div>
-                        <p className="mb-1 text-sm font-semibold text-gray-900 dark:text-white">{item.toolName}</p>
-                        <span className="mb-2 inline-block rounded-full bg-[#4B0082]/8 px-2 py-0.5 text-[11px] font-medium text-[#4B0082]">
-                          AI Tools
-                        </span>
-                        <p className="mb-3 line-clamp-1 text-xs text-gray-500">{item.prompt}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-1 text-xs text-gray-400">
-                            <Clock className="h-3 w-3" />
-                            {timeAgo(item.createdAt)}
+                          <p className="mb-1 text-sm font-semibold text-gray-900 dark:text-white">{item.toolName}</p>
+                          <span className="mb-2 inline-block rounded-full bg-[#4B0082]/8 px-2 py-0.5 text-[11px] font-medium text-[#4B0082]">
+                            AI Tools
                           </span>
-                          <ArrowRight className="h-3 w-3 text-[#4B0082] opacity-0 transition-opacity group-hover:opacity-100" />
+                          <p className="mb-3 line-clamp-1 text-xs text-gray-500">{item.prompt}</p>
+                          <div className="flex items-center justify-between">
+                            <span className="flex items-center gap-1 text-xs text-gray-400">
+                              <Clock className="h-3 w-3" />
+                              {timeAgo(item.createdAt)}
+                            </span>
+                            <ArrowRight className="h-3 w-3 text-[#4B0082] opacity-0 transition-opacity group-hover:opacity-100" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
       </div>
     </section>
