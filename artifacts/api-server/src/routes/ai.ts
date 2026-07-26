@@ -2,6 +2,7 @@ import { Router } from "express";
 import { GoogleGenAI } from "@google/genai";
 import rateLimit from "express-rate-limit";
 import { logger } from "../lib/logger";
+import { getGroqClient, getOpenRouterClient } from "../lib/ai-providers";
 
 const router = Router();
 
@@ -157,6 +158,73 @@ function extractTextFromGeminiResponse(response: GeminiResponseLike): string {
     .map((part) => (typeof part.text === "string" ? part.text : ""))
     .filter(Boolean)
     .join("");
+}
+
+// ---------------------------------------------------------------------------
+// isRateLimitError — detect quota / rate-limit errors from any AI provider.
+// Groq SDK and OpenAI SDK (used for OpenRouter) both expose a `.status`
+// property on their error objects; Gemini surfaces quota as a message string.
+// ---------------------------------------------------------------------------
+function isRateLimitError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message.toLowerCase();
+  const status = (err as { status?: number }).status;
+  return (
+    status === 429 ||
+    msg.includes("quota") ||
+    msg.includes("resource_exhausted") ||
+    msg.includes("rate_limit") ||
+    msg.includes("rate limit") ||
+    msg.includes("too many requests")
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Fallback provider helpers
+// ---------------------------------------------------------------------------
+
+function getGroqModelForTool(toolId: string): string {
+  // Use the larger model for complex, long-form tools; the fast 8B model for
+  // everything else (it has a much higher rate-limit ceiling on Groq Cloud).
+  return COMPLEX_TOOL_IDS.has(toolId)
+    ? "llama-3.3-70b-versatile"
+    : "llama-3.1-8b-instant";
+}
+
+function getOpenRouterModelForTool(toolId: string): string {
+  return COMPLEX_TOOL_IDS.has(toolId)
+    ? "google/gemini-2.0-flash-001"
+    : "google/gemini-2.0-flash-lite-001";
+}
+
+async function generateWithGroq(
+  prompt: string,
+  toolId: string,
+  maxOutputTokens: number,
+): Promise<string> {
+  const groq = getGroqClient();
+  const model = getGroqModelForTool(toolId);
+  const completion = await groq.chat.completions.create({
+    model,
+    messages: [{ role: "user", content: prompt }],
+    max_tokens: maxOutputTokens,
+  });
+  return completion.choices[0]?.message?.content ?? "";
+}
+
+async function generateWithOpenRouter(
+  prompt: string,
+  toolId: string,
+  maxOutputTokens: number,
+): Promise<string> {
+  const client = getOpenRouterClient();
+  const model = getOpenRouterModelForTool(toolId);
+  const completion = await client.chat.completions.create({
+    model,
+    messages: [{ role: "user", content: prompt }],
+    max_tokens: maxOutputTokens,
+  });
+  return completion.choices[0]?.message?.content ?? "";
 }
 
 // ---------------------------------------------------------------------------
@@ -602,57 +670,80 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       `[perf][ai/generate][${requestId}] prompt ready (validate=${timings.validateMs.toFixed(1)}ms, build=${timings.promptMs.toFixed(1)}ms)`,
     );
 
-    // ---- Stage 3: Gemini API call (network send + model latency + receive) --
-    // Lazy singleton: reuse the client across requests to avoid allocating a
-    // new HTTP pool on every call. Re-instantiated only when the key changes.
-    if (!genAIClient || genAIClientKey !== apiKey) {
-      genAIClient = new GoogleGenAI({ apiKey });
-      genAIClientKey = apiKey;
-    }
-    const ai = genAIClient;
-    const tGeminiStart = nowMs();
-    logger.info(
-      { requestId, toolId, selectedModel, selectedMaxOutputTokens, ts: new Date().toISOString() },
-      `[perf][ai/generate][${requestId}] → sending request to Gemini (${selectedModel})`,
-    );
-
-    const stream = await ai.models.generateContentStream({
-      model: selectedModel,
-      contents: prompt,
-      config: {
-        maxOutputTokens: selectedMaxOutputTokens,
-        // Disable the model's internal reasoning/thinking pass. These tools
-        // are structured prompt→output tasks that do not need chain-of-thought,
-        // and the default thinking budget adds unnecessary latency before any
-        // visible output is produced.
-        thinkingConfig: { thinkingBudget: 0 },
-      },
-    });
-
+    // ---- Stage 3: AI generation with automatic provider fallback ------------
+    // Primary: Gemini. On 429 / quota / rate-limit errors, falls back to
+    // Groq, then OpenRouter. All other errors are re-thrown immediately so
+    // they surface clearly (invalid key, safety filter, network failure, etc.).
+    const tAiStart = nowMs();
     let resultText = "";
     let finishReason: string | undefined;
-    for await (const chunk of stream) {
-      const chunkText = extractTextFromGeminiResponse(chunk as GeminiResponseLike);
-      if (chunkText) {
-        resultText += chunkText;
+    let providerUsed = "gemini";
+
+    try {
+      // Lazy Gemini singleton — re-created only when the key changes.
+      if (!genAIClient || genAIClientKey !== apiKey) {
+        genAIClient = new GoogleGenAI({ apiKey });
+        genAIClientKey = apiKey;
       }
-      const chunkFinishReason = chunk.candidates?.[0]?.finishReason;
-      if (chunkFinishReason) {
-        finishReason = chunkFinishReason;
+      const ai = genAIClient;
+
+      logger.info(
+        { requestId, toolId, selectedModel, selectedMaxOutputTokens, ts: new Date().toISOString() },
+        `[perf][ai/generate][${requestId}] → sending request to Gemini (${selectedModel})`,
+      );
+
+      const stream = await ai.models.generateContentStream({
+        model: selectedModel,
+        contents: prompt,
+        config: {
+          maxOutputTokens: selectedMaxOutputTokens,
+          // Disable the model's internal reasoning/thinking pass. These tools
+          // are structured prompt→output tasks that do not need chain-of-thought,
+          // and the default thinking budget adds unnecessary latency before any
+          // visible output is produced.
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      });
+
+      for await (const chunk of stream) {
+        const chunkText = extractTextFromGeminiResponse(chunk as GeminiResponseLike);
+        if (chunkText) resultText += chunkText;
+        const chunkFinishReason = chunk.candidates?.[0]?.finishReason;
+        if (chunkFinishReason) finishReason = chunkFinishReason;
+      }
+    } catch (geminiErr) {
+      if (!isRateLimitError(geminiErr)) throw geminiErr;
+      logger.warn(
+        { requestId, toolId, err: geminiErr, ts: new Date().toISOString() },
+        `[ai/generate][${requestId}] Gemini quota/rate-limit — trying Groq`,
+      );
+
+      try {
+        resultText = await generateWithGroq(prompt, toolId, selectedMaxOutputTokens);
+        providerUsed = "groq";
+      } catch (groqErr) {
+        if (!isRateLimitError(groqErr)) throw groqErr;
+        logger.warn(
+          { requestId, toolId, err: groqErr, ts: new Date().toISOString() },
+          `[ai/generate][${requestId}] Groq quota/rate-limit — trying OpenRouter`,
+        );
+        resultText = await generateWithOpenRouter(prompt, toolId, selectedMaxOutputTokens);
+        providerUsed = "openrouter";
       }
     }
 
-    timings.geminiMs = nowMs() - tGeminiStart;
+    timings.aiMs = nowMs() - tAiStart;
     logger.info(
       {
         requestId,
-        geminiMs: Number(timings.geminiMs.toFixed(1)),
+        provider: providerUsed,
+        aiMs: Number(timings.aiMs.toFixed(1)),
         selectedModel,
         selectedMaxOutputTokens,
         outputChars: resultText.length,
         ts: new Date().toISOString(),
       },
-      `[perf][ai/generate][${requestId}] ← Gemini responded in ${timings.geminiMs.toFixed(1)}ms`,
+      `[perf][ai/generate][${requestId}] ← ${providerUsed} responded in ${timings.aiMs.toFixed(1)}ms`,
     );
 
     // ---- Stage 4: response processing/serialization ------------------------
@@ -678,8 +769,8 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
 
     if (!resultText) {
       logger.warn(
-        { requestId, toolId },
-        `[ai/generate][${requestId}] Gemini response missing expected text path`,
+        { requestId, toolId, provider: providerUsed },
+        `[ai/generate][${requestId}] ${providerUsed} response was empty`,
       );
     }
 
@@ -691,18 +782,19 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       {
         requestId,
         toolId,
+        provider: providerUsed,
         resultChars: resultText.length,
         validateMs: Number(timings.validateMs.toFixed(1)),
         promptMs: Number(timings.promptMs.toFixed(1)),
-        geminiMs: Number(timings.geminiMs.toFixed(1)),
+        aiMs: Number(timings.aiMs.toFixed(1)),
         serializeMs: Number(timings.serializeMs.toFixed(1)),
         totalServerMs: Number(timings.totalMs.toFixed(1)),
-        geminiShareOfTotalPct: Number(((timings.geminiMs / timings.totalMs) * 100).toFixed(1)),
+        aiShareOfTotalPct: Number(((timings.aiMs / timings.totalMs) * 100).toFixed(1)),
         ts: new Date().toISOString(),
       },
       `[perf][ai/generate][${requestId}] DONE — total=${timings.totalMs.toFixed(1)}ms ` +
         `(validate=${timings.validateMs.toFixed(1)}ms, prompt=${timings.promptMs.toFixed(1)}ms, ` +
-        `gemini=${timings.geminiMs.toFixed(1)}ms, serialize=${timings.serializeMs.toFixed(1)}ms)`,
+        `${providerUsed}=${timings.aiMs.toFixed(1)}ms, serialize=${timings.serializeMs.toFixed(1)}ms)`,
     );
 
     res.json(payload);
@@ -718,14 +810,11 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       },
       `[perf][ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms`,
     );
-    // Don't leak internal/upstream error strings — log server-side, return generic message
-    const isKnown = err instanceof Error && (
-      err.message.includes("API_KEY") ||
-      err.message.includes("quota") ||
-      err.message.includes("RESOURCE_EXHAUSTED")
-    );
+    // Don't leak internal/upstream error strings — log server-side, return generic message.
+    // isRateLimitError covers quota/429 signals from all three providers.
+    const isKnown = isRateLimitError(err);
     const clientMessage = isKnown
-      ? "API quota exceeded. Please try again later."
+      ? "All AI providers are currently busy. Please try again in a moment."
       : "Generation failed. Please try again.";
     res.status(500).json({ error: clientMessage });
   }
