@@ -42,7 +42,6 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "ai-summarizer": 900,
   "ai-paraphraser": 900,
   "ai-humanizer": 900,
-  "ai-title": 400,
   "ai-seo-title": 400,
   "ai-meta-description": 400,
   "ai-blog-title": 400,
