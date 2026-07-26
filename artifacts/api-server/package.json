@@ -12,6 +12,8 @@
   "dependencies": {
     "@google/genai": "^2.10.0",
     "@workspace/api-zod": "workspace:*",
+    "groq-sdk": "^0.23.0",
+    "openai": "^6.27.0",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
