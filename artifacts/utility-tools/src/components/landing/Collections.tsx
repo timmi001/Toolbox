@@ -178,21 +178,9 @@ function getIcon(name: string): LucideIcon {
 }
 
 export function Collections() {
-  // Alternates between 'utility' and 'ai' every 20 s
+  // Mode is controlled exclusively by the manual Utility / AI toggle buttons.
   const [mode, setMode] = useState<'utility' | 'ai'>('utility');
   const [chipsVisible, setChipsVisible] = useState(true);
-  const chipTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    chipTimerRef.current = setInterval(() => {
-      setChipsVisible(false);
-      setTimeout(() => {
-        setMode(prev => (prev === 'utility' ? 'ai' : 'utility'));
-        setChipsVisible(true);
-      }, 300);
-    }, 20_000);
-    return () => { if (chipTimerRef.current) clearInterval(chipTimerRef.current); };
-  }, []);
 
   const collections = mode === 'utility' ? UTILITY_COLLECTIONS : AI_COLLECTIONS;
   const modeLabel   = mode === 'utility' ? 'Utility Tools' : 'AI Tools';
