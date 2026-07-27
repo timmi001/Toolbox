@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Sparkles, Menu, X, Search, Home, Clock, Bookmark, FileText, Shield, Copyright } from 'lucide-react';
+import { Menu, X, Search, Home, Clock, Bookmark, FileText, Shield, Copyright } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SIDEBAR_LINKS = [
@@ -45,9 +45,7 @@ export function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2.5 select-none">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4B0082]/10 text-[#4B0082]">
-              <Sparkles className="h-4 w-4" />
-            </div>
+            <img src="/logo.png" alt="ToolboxX logo" className="h-9 w-9 object-contain" />
             <span className="text-base font-bold tracking-tight text-gray-900">ToolboxX</span>
           </Link>
 
@@ -99,9 +97,7 @@ export function Navbar() {
               {/* Header */}
               <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                 <Link href="/" className="flex items-center gap-2.5" onClick={() => setSidebarOpen(false)}>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4B0082]/10 text-[#4B0082]">
-                    <Sparkles className="h-4 w-4" />
-                  </div>
+                  <img src="/logo.png" alt="ToolboxX logo" className="h-8 w-8 object-contain" />
                   <span className="font-bold text-gray-900">ToolboxX</span>
                 </Link>
                 <button
