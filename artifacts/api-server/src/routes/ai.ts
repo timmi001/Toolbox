@@ -180,6 +180,28 @@ function isRateLimitError(err: unknown): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// isProviderUnavailableError — detect missing API key / provider not
+// configured errors. These come from getGroqClient() / getOpenRouterClient()
+// when the corresponding env var is absent. Like rate-limit errors, they
+// must NOT break the fallback chain — we should skip to the next provider.
+// ---------------------------------------------------------------------------
+function isProviderUnavailableError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message.toLowerCase();
+  return (
+    msg.includes("is not set") ||
+    msg.includes("not configured") ||
+    msg.includes("api key") ||
+    msg.includes("apikey")
+  );
+}
+
+// isFallbackableError — true when we should skip this provider and try the next.
+function isFallbackableError(err: unknown): boolean {
+  return isRateLimitError(err) || isProviderUnavailableError(err);
+}
+
+// ---------------------------------------------------------------------------
 // Fallback provider helpers
 // ---------------------------------------------------------------------------
 
@@ -712,23 +734,79 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         if (chunkFinishReason) finishReason = chunkFinishReason;
       }
     } catch (geminiErr) {
-      if (!isRateLimitError(geminiErr)) throw geminiErr;
+      // Log the exact Gemini error regardless of type so it is always visible.
       logger.warn(
-        { requestId, toolId, err: geminiErr, ts: new Date().toISOString() },
-        `[ai/generate][${requestId}] Gemini quota/rate-limit — trying Groq`,
+        {
+          requestId,
+          toolId,
+          provider: "gemini",
+          errMessage: geminiErr instanceof Error ? geminiErr.message : String(geminiErr),
+          errStatus: (geminiErr as { status?: number })?.status,
+          isFallbackable: isFallbackableError(geminiErr),
+          ts: new Date().toISOString(),
+        },
+        `[ai/generate][${requestId}] Gemini error`,
+      );
+
+      // Only fallback on rate-limit / quota / missing-key errors.
+      // Any other error (safety filter, invalid key, network, etc.) is fatal.
+      if (!isFallbackableError(geminiErr)) throw geminiErr;
+
+      logger.warn(
+        { requestId, toolId, ts: new Date().toISOString() },
+        `[ai/generate][${requestId}] Gemini skipped — trying Groq`,
       );
 
       try {
         resultText = await generateWithGroq(prompt, toolId, selectedMaxOutputTokens);
         providerUsed = "groq";
       } catch (groqErr) {
-        if (!isRateLimitError(groqErr)) throw groqErr;
+        // Log the exact Groq error separately.
         logger.warn(
-          { requestId, toolId, err: groqErr, ts: new Date().toISOString() },
-          `[ai/generate][${requestId}] Groq quota/rate-limit — trying OpenRouter`,
+          {
+            requestId,
+            toolId,
+            provider: "groq",
+            errMessage: groqErr instanceof Error ? groqErr.message : String(groqErr),
+            errStatus: (groqErr as { status?: number })?.status,
+            isFallbackable: isFallbackableError(groqErr),
+            ts: new Date().toISOString(),
+          },
+          `[ai/generate][${requestId}] Groq error`,
         );
-        resultText = await generateWithOpenRouter(prompt, toolId, selectedMaxOutputTokens);
-        providerUsed = "openrouter";
+
+        // BUG FIX: was `isRateLimitError` — missing-key errors from
+        // getGroqClient() are NOT rate-limit errors, so the old check
+        // re-threw them and OpenRouter was never reached.
+        // Now we use isFallbackableError which also covers missing-key.
+        if (!isFallbackableError(groqErr)) throw groqErr;
+
+        logger.warn(
+          { requestId, toolId, ts: new Date().toISOString() },
+          `[ai/generate][${requestId}] Groq skipped — trying OpenRouter`,
+        );
+
+        try {
+          resultText = await generateWithOpenRouter(prompt, toolId, selectedMaxOutputTokens);
+          providerUsed = "openrouter";
+        } catch (openRouterErr) {
+          // Log the exact OpenRouter error separately.
+          logger.warn(
+            {
+              requestId,
+              toolId,
+              provider: "openrouter",
+              errMessage: openRouterErr instanceof Error ? openRouterErr.message : String(openRouterErr),
+              errStatus: (openRouterErr as { status?: number })?.status,
+              isFallbackable: isFallbackableError(openRouterErr),
+              ts: new Date().toISOString(),
+            },
+            `[ai/generate][${requestId}] OpenRouter error`,
+          );
+          // All three providers failed — re-throw so the outer catch can
+          // return a clean 500 to the client.
+          throw openRouterErr;
+        }
       }
     }
 
