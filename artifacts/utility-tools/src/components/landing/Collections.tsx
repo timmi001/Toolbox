@@ -161,7 +161,11 @@ const CATEGORY_ACCENT: Record<string, string> = {
   marketing: '#DC2626',
 };
 
+// How many tools to fetch per batch — always 8 (the desktop maximum).
+// On mobile we visually hide the last 2 via CSS, showing 6 in a 2×3 grid.
 const BATCH_SIZE = 8;
+// Rotation interval in ms. New tools added to toolsData are picked up automatically.
+const ROTATION_INTERVAL_MS = 7_000;
 
 function getBatch(all: typeof toolsData, batchIndex: number) {
   const shifted = [...all.slice(batchIndex * BATCH_SIZE), ...all.slice(0, batchIndex * BATCH_SIZE)];
@@ -207,7 +211,7 @@ export function Collections() {
         setBatchIndex(prev => (prev + 1) % totalBatches);
         setSpotVisible(true);
       }, 350);
-    }, 60_000);
+    }, ROTATION_INTERVAL_MS);
     return () => { if (spotTimerRef.current) clearInterval(spotTimerRef.current); };
   }, [totalBatches]);
 
@@ -298,13 +302,10 @@ export function Collections() {
 
         {/* ── Rotating tools spotlight ── */}
         <div className="mt-6">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-2 flex items-center justify-between">
             <div>
               <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-[#4B0082]">All Tools</p>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                Explore Tools
-                <span className="ml-2 text-xs font-normal text-gray-400">refreshes every 60s</span>
-              </h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Explore Tools</h2>
             </div>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(totalBatches, 10) }).map((_, i) => (
@@ -322,6 +323,15 @@ export function Collections() {
             </div>
           </div>
 
+          {/* Progress bar — resets every rotation via key change */}
+          <div className="mb-3 h-0.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+            <div
+              key={`prog-${batchIndex}`}
+              className="h-full w-full origin-left rounded-full bg-[#4B0082]"
+              style={{ animation: `toolsRotationProgress ${ROTATION_INTERVAL_MS}ms linear forwards` }}
+            />
+          </div>
+
           <AnimatePresence mode="wait">
             {spotVisible && (
               <motion.div
@@ -332,11 +342,14 @@ export function Collections() {
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-8"
               >
-                {spotlightTools.map(tool => {
+                {spotlightTools.map((tool, idx) => {
                   const Icon = getIcon(tool.icon ?? 'Wrench');
                   const accent = CATEGORY_ACCENT[tool.category] ?? '#4B0082';
+                  // Cards 7–8 (index 6–7): visible on sm+ (≥640 px), hidden on mobile.
+                  // This gives 6 cards in a 2×3 grid on mobile and 8 on tablet/desktop.
+                  const responsiveClass = idx >= 6 ? 'hidden sm:block' : '';
                   return (
-                    <Link key={tool.slug} href={`/tools/${tool.slug}`}>
+                    <Link key={tool.slug} href={`/tools/${tool.slug}`} className={responsiveClass}>
                       <div className="group cursor-pointer rounded-xl border border-gray-100 bg-white p-3 text-center transition-all duration-200 hover:border-transparent hover:shadow-[0_6px_20px_rgba(0,0,0,0.10)] dark:bg-card dark:border-border/50">
                         <div
                           className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110"

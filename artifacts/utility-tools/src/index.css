@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+@keyframes toolsRotationProgress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
