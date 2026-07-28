@@ -1,17 +1,10 @@
 import { Router } from "express";
-import { GoogleGenAI } from "@google/genai";
 import rateLimit from "express-rate-limit";
 import { logger } from "../lib/logger";
-import { getGroqClient, getOpenRouterClient } from "../lib/ai-providers";
+import { generateText } from "../lib/ai-service";
 
 const router = Router();
 
-// ---------------------------------------------------------------------------
-// Gemini client singleton — reused across requests to avoid allocating a new
-// HTTP connection pool on every call. Re-created only if the key changes.
-// ---------------------------------------------------------------------------
-let genAIClient: GoogleGenAI | null = null;
-let genAIClientKey: string | null = null;
 
 // ---------------------------------------------------------------------------
 // Performance diagnostics (read-only instrumentation — does not change
@@ -126,128 +119,11 @@ function getOutputTokenBudget(toolId: string): number {
   return TOOL_MAX_OUTPUT_TOKENS[toolId] ?? DEFAULT_MAX_OUTPUT_TOKENS;
 }
 
-function getModelForTool(toolId: string): string {
-  return COMPLEX_TOOL_IDS.has(toolId) ? "gemini-2.5-flash" : "gemini-2.5-flash-lite";
-}
 
 function compactPrompt(prompt: string): string {
   return prompt.replace(/\n{3,}/g, "\n\n").trim();
 }
 
-type GeminiResponseLike = {
-  text?: unknown;
-  candidates?: Array<{
-    finishReason?: string;
-    content?: {
-      parts?: Array<{ text?: unknown }>;
-    };
-  }>;
-};
-
-function extractTextFromGeminiResponse(response: GeminiResponseLike): string {
-  if (typeof response.text === "string") {
-    return response.text;
-  }
-
-  const parts = response.candidates?.[0]?.content?.parts;
-  if (!Array.isArray(parts)) {
-    return "";
-  }
-
-  return parts
-    .map((part) => (typeof part.text === "string" ? part.text : ""))
-    .filter(Boolean)
-    .join("");
-}
-
-// ---------------------------------------------------------------------------
-// isRateLimitError — detect quota / rate-limit errors from any AI provider.
-// Groq SDK and OpenAI SDK (used for OpenRouter) both expose a `.status`
-// property on their error objects; Gemini surfaces quota as a message string.
-// ---------------------------------------------------------------------------
-function isRateLimitError(err: unknown): boolean {
-  if (!(err instanceof Error)) return false;
-  const msg = err.message.toLowerCase();
-  const status = (err as { status?: number }).status;
-  return (
-    status === 429 ||
-    msg.includes("quota") ||
-    msg.includes("resource_exhausted") ||
-    msg.includes("rate_limit") ||
-    msg.includes("rate limit") ||
-    msg.includes("too many requests")
-  );
-}
-
-// ---------------------------------------------------------------------------
-// isProviderUnavailableError — detect missing API key / provider not
-// configured errors. These come from getGroqClient() / getOpenRouterClient()
-// when the corresponding env var is absent. Like rate-limit errors, they
-// must NOT break the fallback chain — we should skip to the next provider.
-// ---------------------------------------------------------------------------
-function isProviderUnavailableError(err: unknown): boolean {
-  if (!(err instanceof Error)) return false;
-  const msg = err.message.toLowerCase();
-  return (
-    msg.includes("is not set") ||
-    msg.includes("not configured") ||
-    msg.includes("api key") ||
-    msg.includes("apikey")
-  );
-}
-
-// isFallbackableError — true when we should skip this provider and try the next.
-function isFallbackableError(err: unknown): boolean {
-  return isRateLimitError(err) || isProviderUnavailableError(err);
-}
-
-// ---------------------------------------------------------------------------
-// Fallback provider helpers
-// ---------------------------------------------------------------------------
-
-function getGroqModelForTool(toolId: string): string {
-  // Use the larger model for complex, long-form tools; the fast 8B model for
-  // everything else (it has a much higher rate-limit ceiling on Groq Cloud).
-  return COMPLEX_TOOL_IDS.has(toolId)
-    ? "llama-3.3-70b-versatile"
-    : "llama-3.1-8b-instant";
-}
-
-function getOpenRouterModelForTool(toolId: string): string {
-  return COMPLEX_TOOL_IDS.has(toolId)
-    ? "google/gemini-2.0-flash-001"
-    : "google/gemini-2.0-flash-lite-001";
-}
-
-async function generateWithGroq(
-  prompt: string,
-  toolId: string,
-  maxOutputTokens: number,
-): Promise<string> {
-  const groq = getGroqClient();
-  const model = getGroqModelForTool(toolId);
-  const completion = await groq.chat.completions.create({
-    model,
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: maxOutputTokens,
-  });
-  return completion.choices[0]?.message?.content ?? "";
-}
-
-async function generateWithOpenRouter(
-  prompt: string,
-  toolId: string,
-  maxOutputTokens: number,
-): Promise<string> {
-  const client = getOpenRouterClient();
-  const model = getOpenRouterModelForTool(toolId);
-  const completion = await client.chat.completions.create({
-    model,
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: maxOutputTokens,
-  });
-  return completion.choices[0]?.message?.content ?? "";
-}
 
 // ---------------------------------------------------------------------------
 // Rate limiting — 20 requests per minute per IP
@@ -665,17 +541,8 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
-    // GEMINI_API_KEY is the secret name used in this project.
-    // by the Replit secret that stores it. Previously this was read as
-    // GEMINI_API_KEY (a mismatch) which caused all AI tools to return 503.
-    const apiKey = process.env["GEMINI_API_KEY"];
-    if (!apiKey) {
-      res.status(503).json({ error: "AI service is not configured." });
-      return;
-    }
-
     const promptTokensEst = Math.ceil(prompt.length / 4);
-    const selectedModel = getModelForTool(toolId);
+    const isComplex = COMPLEX_TOOL_IDS.has(toolId);
     const selectedMaxOutputTokens = getOutputTokenBudget(toolId);
 
     logger.info(
@@ -684,144 +551,44 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         toolId,
         promptChars: prompt.length,
         promptTokensEst,
-        selectedModel,
+        isComplex,
         selectedMaxOutputTokens,
-        thinkingBudget: 0,
         ts: new Date().toISOString(),
       },
       `[perf][ai/generate][${requestId}] prompt ready (validate=${timings.validateMs.toFixed(1)}ms, build=${timings.promptMs.toFixed(1)}ms)`,
     );
 
-    // ---- Stage 3: AI generation with automatic provider fallback ------------
-    // Primary: Gemini. On 429 / quota / rate-limit errors, falls back to
-    // Groq, then OpenRouter. All other errors are re-thrown immediately so
-    // they surface clearly (invalid key, safety filter, network failure, etc.).
+    // ---- Stage 3: AI generation — delegates to the resilient service layer --
+    // Tries Gemini → Groq → OpenRouter with per-provider timeouts, automatic
+    // retries for transient errors, and structured per-attempt logging.
+    // See lib/ai-service.ts for the full pipeline.
     const tAiStart = nowMs();
-    let resultText = "";
-    let finishReason: string | undefined;
-    let providerUsed = "gemini";
 
-    try {
-      // Lazy Gemini singleton — re-created only when the key changes.
-      if (!genAIClient || genAIClientKey !== apiKey) {
-        genAIClient = new GoogleGenAI({ apiKey });
-        genAIClientKey = apiKey;
-      }
-      const ai = genAIClient;
+    const { result: aiResult, attempts: providerAttempts } = await generateText({
+      prompt,
+      toolId,
+      maxOutputTokens: selectedMaxOutputTokens,
+      isComplex,
+      requestId,
+    });
 
-      logger.info(
-        { requestId, toolId, selectedModel, selectedMaxOutputTokens, ts: new Date().toISOString() },
-        `[perf][ai/generate][${requestId}] → sending request to Gemini (${selectedModel})`,
-      );
-
-      const stream = await ai.models.generateContentStream({
-        model: selectedModel,
-        contents: prompt,
-        config: {
-          maxOutputTokens: selectedMaxOutputTokens,
-          // Disable the model's internal reasoning/thinking pass. These tools
-          // are structured prompt→output tasks that do not need chain-of-thought,
-          // and the default thinking budget adds unnecessary latency before any
-          // visible output is produced.
-          thinkingConfig: { thinkingBudget: 0 },
-        },
-      });
-
-      for await (const chunk of stream) {
-        const chunkText = extractTextFromGeminiResponse(chunk as GeminiResponseLike);
-        if (chunkText) resultText += chunkText;
-        const chunkFinishReason = chunk.candidates?.[0]?.finishReason;
-        if (chunkFinishReason) finishReason = chunkFinishReason;
-      }
-    } catch (geminiErr) {
-      // Log the exact Gemini error regardless of type so it is always visible.
-      logger.warn(
-        {
-          requestId,
-          toolId,
-          provider: "gemini",
-          errMessage: geminiErr instanceof Error ? geminiErr.message : String(geminiErr),
-          errStatus: (geminiErr as { status?: number })?.status,
-          isFallbackable: isFallbackableError(geminiErr),
-          ts: new Date().toISOString(),
-        },
-        `[ai/generate][${requestId}] Gemini error`,
-      );
-
-      // Only fallback on rate-limit / quota / missing-key errors.
-      // Any other error (safety filter, invalid key, network, etc.) is fatal.
-      if (!isFallbackableError(geminiErr)) throw geminiErr;
-
-      logger.warn(
-        { requestId, toolId, ts: new Date().toISOString() },
-        `[ai/generate][${requestId}] Gemini skipped — trying Groq`,
-      );
-
-      try {
-        resultText = await generateWithGroq(prompt, toolId, selectedMaxOutputTokens);
-        providerUsed = "groq";
-      } catch (groqErr) {
-        // Log the exact Groq error separately.
-        logger.warn(
-          {
-            requestId,
-            toolId,
-            provider: "groq",
-            errMessage: groqErr instanceof Error ? groqErr.message : String(groqErr),
-            errStatus: (groqErr as { status?: number })?.status,
-            isFallbackable: isFallbackableError(groqErr),
-            ts: new Date().toISOString(),
-          },
-          `[ai/generate][${requestId}] Groq error`,
-        );
-
-        // BUG FIX: was `isRateLimitError` — missing-key errors from
-        // getGroqClient() are NOT rate-limit errors, so the old check
-        // re-threw them and OpenRouter was never reached.
-        // Now we use isFallbackableError which also covers missing-key.
-        if (!isFallbackableError(groqErr)) throw groqErr;
-
-        logger.warn(
-          { requestId, toolId, ts: new Date().toISOString() },
-          `[ai/generate][${requestId}] Groq skipped — trying OpenRouter`,
-        );
-
-        try {
-          resultText = await generateWithOpenRouter(prompt, toolId, selectedMaxOutputTokens);
-          providerUsed = "openrouter";
-        } catch (openRouterErr) {
-          // Log the exact OpenRouter error separately.
-          logger.warn(
-            {
-              requestId,
-              toolId,
-              provider: "openrouter",
-              errMessage: openRouterErr instanceof Error ? openRouterErr.message : String(openRouterErr),
-              errStatus: (openRouterErr as { status?: number })?.status,
-              isFallbackable: isFallbackableError(openRouterErr),
-              ts: new Date().toISOString(),
-            },
-            `[ai/generate][${requestId}] OpenRouter error`,
-          );
-          // All three providers failed — re-throw so the outer catch can
-          // return a clean 500 to the client.
-          throw openRouterErr;
-        }
-      }
-    }
+    const resultText   = aiResult.text;
+    const finishReason = aiResult.finishReason;
+    const providerUsed = aiResult.provider;
 
     timings.aiMs = nowMs() - tAiStart;
     logger.info(
       {
         requestId,
         provider: providerUsed,
+        model: aiResult.model,
         aiMs: Number(timings.aiMs.toFixed(1)),
-        selectedModel,
-        selectedMaxOutputTokens,
         outputChars: resultText.length,
+        usage: aiResult.usage,
+        providerAttempts,
         ts: new Date().toISOString(),
       },
-      `[perf][ai/generate][${requestId}] ← ${providerUsed} responded in ${timings.aiMs.toFixed(1)}ms`,
+      `[perf][ai/generate][${requestId}] ← ${providerUsed}/${aiResult.model} in ${timings.aiMs.toFixed(1)}ms`,
     );
 
     // ---- Stage 4: response processing/serialization ------------------------
