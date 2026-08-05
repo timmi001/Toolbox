@@ -48,8 +48,9 @@ app.use(
 //   same as an explicit rejection.
 //
 // Fix:
-//   1. Add toolboxx.site (www + apex) to the hard-coded default list so the
-//      production frontend works without any environment variable being set.
+//   1. Add toolboxx.site (www + apex) and the deployed Vercel frontend origin
+//      to the hard-coded default list so the production frontend works without
+//      any environment variable being set.
 //   2. Expose ALLOWED_ORIGINS as an env var so operators can add more origins
 //      (e.g. staging domains) without a code change.
 //   3. Explicitly declare methods and allowedHeaders so preflight OPTIONS
@@ -61,10 +62,12 @@ app.use(
 const PRODUCTION_ORIGINS = [
   "https://www.toolboxx.site",
   "https://toolboxx.site",
+  "https://toolbox-ashy-six.vercel.app",
 ];
 
 const DEV_ORIGINS: (string | RegExp)[] = [
   /^https?:\/\/localhost(:\d+)?$/,
+  /^https?:\/\/[^/]+\.vercel\.app$/,
   /\.replit\.dev$/,
   /\.repl\.co$/,
 ];
