@@ -489,6 +489,12 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
   const timings: Record<string, number> = {};
 
   try {
+    if (!req.body || typeof req.body !== "object") {
+      logger.warn({ requestId }, `[ai/generate][${requestId}] missing or malformed JSON body`);
+      res.status(400).json({ success: false, message: "Request body must be a JSON object." });
+      return;
+    }
+
     const { toolId, inputs } = req.body as {
       toolId: unknown;
       inputs: unknown;
@@ -504,17 +510,17 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
 
     // Basic shape validation
     if (typeof toolId !== "string" || !toolId.trim()) {
-      res.status(400).json({ error: "toolId is required." });
+      res.status(400).json({ success: false, message: "toolId is required." });
       return;
     }
     if (typeof inputs !== "object" || inputs === null || Array.isArray(inputs)) {
-      res.status(400).json({ error: "inputs must be an object." });
+      res.status(400).json({ success: false, message: "inputs must be an object." });
       return;
     }
 
     const schema = TOOL_SCHEMAS[toolId];
     if (!schema) {
-      res.status(400).json({ error: "Unknown tool." });
+      res.status(400).json({ success: false, message: "Unknown tool." });
       return;
     }
 
@@ -524,7 +530,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     for (const key of schema.required) {
       const val = safeInputs[key];
       if (typeof val !== "string" || !val.trim()) {
-        res.status(400).json({ error: `Missing required field: ${key}` });
+        res.status(400).json({ success: false, message: `Missing required field: ${key}` });
         return;
       }
     }
@@ -535,7 +541,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       const val = safeInputs[key];
       if (typeof val === "string") {
         if (val.length > maxLen) {
-          res.status(400).json({ error: `Input "${key}" exceeds maximum length of ${maxLen} characters.` });
+          res.status(400).json({ success: false, message: `Input "${key}" exceeds maximum length of ${maxLen} characters.` });
           return;
         }
         cleanInputs[key] = val;
@@ -555,7 +561,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     timings.promptMs = nowMs() - tPromptStart;
 
     if (!prompt) {
-      res.status(400).json({ error: "Could not build prompt for this tool." });
+      res.status(400).json({ success: false, message: "Could not build prompt for this tool." });
       return;
     }
 
@@ -622,7 +628,8 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         `[perf][ai/generate][${requestId}] generation blocked`,
       );
       res.status(422).json({
-        error:
+        success: false,
+        message:
           finishReason === "SAFETY"
             ? "The request was blocked by safety filters. Please rephrase your input."
             : "Generation was stopped before completing. Please try again.",
@@ -679,7 +686,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     const clientMessage = isKnown
       ? "All AI providers are currently busy. Please try again in a moment."
       : "Generation failed. Please try again.";
-    res.status(500).json({ error: clientMessage });
+    res.status(500).json({ success: false, message: clientMessage });
   }
 });
 

@@ -215,6 +215,78 @@ function sleep(ms: number): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Safe response parsing helpers
+// ---------------------------------------------------------------------------
+
+function extractContentText(content: unknown): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content
+      .map(item => {
+        if (typeof item === "string") return item;
+        if (item && typeof item === "object") {
+          const text = (item as { text?: unknown }).text;
+          return typeof text === "string" ? text : "";
+        }
+        return "";
+      })
+      .join("");
+  }
+  if (content && typeof content === "object") {
+    const text = (content as { text?: unknown }).text;
+    if (typeof text === "string") return text;
+  }
+  return "";
+}
+
+function normalizeUsage(raw: unknown): GenerationResult["usage"] | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const usage = raw as {
+    prompt_tokens?: unknown;
+    completion_tokens?: unknown;
+    total_tokens?: unknown;
+  };
+
+  const promptTokens = typeof usage.prompt_tokens === "number" ? usage.prompt_tokens : undefined;
+  const completionTokens = typeof usage.completion_tokens === "number" ? usage.completion_tokens : undefined;
+  const totalTokens = typeof usage.total_tokens === "number" ? usage.total_tokens : undefined;
+
+  if (promptTokens === undefined && completionTokens === undefined && totalTokens === undefined) {
+    return undefined;
+  }
+
+  return {
+    promptTokens,
+    completionTokens,
+    totalTokens,
+  };
+}
+
+function normalizeOpenAIResponse(completion: unknown): { text: string; finishReason?: string; usage?: GenerationResult["usage"] } {
+  if (!completion || typeof completion !== "object") {
+    throw new Error("Provider returned an invalid completion payload.");
+  }
+
+  const payload = completion as {
+    choices?: Array<{
+      finish_reason?: string;
+      message?: { content?: unknown };
+    }>;
+    usage?: unknown;
+  };
+
+  const firstChoice = payload.choices?.[0];
+  const text = extractContentText(firstChoice?.message?.content);
+  const finishReason = typeof firstChoice?.finish_reason === "string" ? firstChoice.finish_reason : undefined;
+
+  return {
+    text,
+    finishReason,
+    usage: normalizeUsage(payload.usage),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // AgentRouter  (OpenAI-compatible)
 // ---------------------------------------------------------------------------
 
@@ -239,20 +311,14 @@ async function runAgentRouter(
     `AgentRouter/${resolvedModel}`,
   );
 
-  const u = completion.usage;
+  const normalized = normalizeOpenAIResponse(completion);
   return {
-    text: completion.choices[0]?.message?.content ?? "",
+    text: normalized.text,
     provider: "agentrouter",
     model: resolvedModel,
     durationMs: Date.now() - start,
-    finishReason: completion.choices[0]?.finish_reason ?? undefined,
-    usage: u
-      ? {
-          promptTokens:     u.prompt_tokens,
-          completionTokens: u.completion_tokens,
-          totalTokens:      u.total_tokens,
-        }
-      : undefined,
+    finishReason: normalized.finishReason,
+    usage: normalized.usage,
   };
 }
 
@@ -263,9 +329,16 @@ async function runAgentRouter(
 let _geminiClient: GoogleGenAI | null = null;
 let _geminiKey: string | null = null;
 
+function getGeminiApiKey(): string {
+  const key = process.env["GEMINI_API_KEY"] ?? process.env["GOOGLE_API_KEY"];
+  if (!key) {
+    throw new Error("GEMINI_API_KEY/GOOGLE_API_KEY is not set.");
+  }
+  return key;
+}
+
 function getGeminiClient(): GoogleGenAI {
-  const key = process.env["GEMINI_API_KEY"];
-  if (!key) throw new Error("GEMINI_API_KEY is not set.");
+  const key = getGeminiApiKey();
   if (_geminiClient && _geminiKey === key) return _geminiClient;
   _geminiClient = new GoogleGenAI({ apiKey: key });
   _geminiKey = key;
@@ -347,20 +420,14 @@ async function runGroq(
     `Groq/${model}`,
   );
 
-  const u = completion.usage;
+  const normalized = normalizeOpenAIResponse(completion);
   return {
-    text: completion.choices[0]?.message?.content ?? "",
+    text: normalized.text,
     provider: "groq",
     model,
     durationMs: Date.now() - start,
-    finishReason: completion.choices[0]?.finish_reason ?? undefined,
-    usage: u
-      ? {
-          promptTokens:     u.prompt_tokens,
-          completionTokens: u.completion_tokens,
-          totalTokens:      u.total_tokens,
-        }
-      : undefined,
+    finishReason: normalized.finishReason,
+    usage: normalized.usage,
   };
 }
 
@@ -386,20 +453,14 @@ async function runOpenRouter(
     `OpenRouter/${model}`,
   );
 
-  const u = completion.usage;
+  const normalized = normalizeOpenAIResponse(completion);
   return {
-    text: completion.choices[0]?.message?.content ?? "",
+    text: normalized.text,
     provider: "openrouter",
     model,
     durationMs: Date.now() - start,
-    finishReason: completion.choices[0]?.finish_reason ?? undefined,
-    usage: u
-      ? {
-          promptTokens:     u.prompt_tokens,
-          completionTokens: u.completion_tokens,
-          totalTokens:      u.total_tokens,
-        }
-      : undefined,
+    finishReason: normalized.finishReason,
+    usage: normalized.usage,
   };
 }
 
@@ -427,7 +488,7 @@ function buildChain(isComplex: boolean): ProviderDef[] {
     {
       name:   "gemini",
       model:  PROVIDER_MODELS.gemini[tier],
-      hasKey: () => Boolean(process.env["GEMINI_API_KEY"]),
+      hasKey: () => Boolean(process.env["GEMINI_API_KEY"] ?? process.env["GOOGLE_API_KEY"]),
       run:    runGemini,
     },
     {
