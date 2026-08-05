@@ -26,7 +26,7 @@ export function Navbar() {
             alt="ToolboXX logo"
             className="h-12 w-12 object-contain rounded-full ring-1 ring-gray-200 drop-shadow-md"
           />
-          <span className="font-black text-3xl tracking-tight text-foreground">toolboxx</span>
+          <span className="font-black text-3xl tracking-tight text-foreground">toolbuxx</span>
         </Link>
 
         <div className="hidden md:flex flex-1 max-w-md mx-4">
