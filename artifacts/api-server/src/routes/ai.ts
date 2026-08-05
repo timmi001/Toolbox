@@ -551,11 +551,6 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     };
     resolvedToolId = typeof toolId === "string" ? toolId.trim() : undefined;
 
-    logger.info(
-      { requestId, toolId, ts: new Date().toISOString() },
-      `[perf][ai/generate][${requestId}] request received`,
-    );
-
     // ---- Stage 1: validation ------------------------------------------------
     const tValidateStart = nowMs();
 
@@ -697,7 +692,19 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     // Gemini hits a safety filter or recitation block the text is empty but
     // no exception is thrown — without this check the client silently gets
     // an empty 200, with no indication that content was blocked.
-    if (finishReason && finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
+    //
+    // Normalise finish reasons across providers:
+    //   Gemini        → "STOP" | "MAX_TOKENS" | "SAFETY" | "RECITATION" …
+    //   OpenAI-compat → "stop" | "length" | "content_filter" …  (lowercase)
+    //
+    // Treat both the Gemini and OpenAI-compat success reasons as non-blocking
+    // so Groq / OpenRouter / AgentRouter responses are never mis-classified.
+    const normalizedFinishReason = typeof finishReason === "string"
+      ? finishReason.toUpperCase()
+      : finishReason;
+
+    const SUCCESS_FINISH_REASONS = new Set(["STOP", "MAX_TOKENS", "LENGTH"]);
+    if (normalizedFinishReason && !SUCCESS_FINISH_REASONS.has(normalizedFinishReason)) {
       logger.warn(
         { requestId, toolId, finishReason, ts: new Date().toISOString() },
         `[perf][ai/generate][${requestId}] generation blocked`,
@@ -774,6 +781,13 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     const serverStatus = getSafeStatus(err);
     const clientMessage = getSafeClientMessage(err);
 
+    // Extract provider SDK fields (Groq/OpenAI SDK: .status, .error, .headers).
+    // These are not part of the standard Error interface but contain the raw
+    // provider response body — the most useful field for diagnosing a 500.
+    const sdkErr = err && typeof err === "object" ? (err as Record<string, unknown>) : {};
+    const sdkResponseBody = sdkErr["error"] ?? sdkErr["response"] ?? sdkErr["body"] ?? undefined;
+    const sdkHeaders = sdkErr["headers"] ?? undefined;
+
     logger.error(
       {
         requestId,
@@ -787,11 +801,13 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         response: (err as { response?: unknown }).response,
         errorCode,
         httpStatus: errorStatus ?? serverStatus,
+        sdkResponseBody,
+        sdkHeaders,
         totalServerMs: Number(timings.totalMs.toFixed(1)),
         stageReachedMs: timings,
         ts: new Date().toISOString(),
       },
-      `[perf][ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms`,
+      `[ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms — ${errorName ?? "Error"}: ${errorMessage.slice(0, 200)}`,
     );
 
     res.status(serverStatus).json({ success: false, message: clientMessage });

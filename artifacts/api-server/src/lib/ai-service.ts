@@ -113,6 +113,45 @@ export interface GenerationOutput {
 }
 
 // ---------------------------------------------------------------------------
+// Provider SDK error detail extractor
+//
+// Groq SDK / OpenAI SDK errors expose HTTP-level fields beyond the standard
+// Error interface:
+//   .status          — HTTP status code from the upstream provider
+//   .headers         — response headers (useful for Retry-After, request IDs)
+//   .error           — parsed JSON response body (the raw provider error object)
+//
+// @google/genai throws plain Errors but sometimes attaches .status and
+// .errorDetails. Extracting all of these into a flat log field means the
+// Render log contains the full provider response even when the message alone
+// is not enough to diagnose the failure.
+// ---------------------------------------------------------------------------
+
+interface ProviderErrorDetails {
+  errorName?: string;
+  stack?: string;
+  sdkStatus?: number;
+  sdkResponseBody?: unknown;
+  sdkHeaders?: unknown;
+}
+
+function extractProviderErrorDetails(err: unknown): ProviderErrorDetails {
+  if (!err || typeof err !== "object") {
+    return {};
+  }
+  const e = err as Record<string, unknown>;
+  return {
+    errorName:       err instanceof Error ? err.constructor.name : undefined,
+    stack:           err instanceof Error ? err.stack            : undefined,
+    sdkStatus:       typeof e["status"] === "number" ? (e["status"] as number) : undefined,
+    // OpenAI/Groq SDK: `.error` is the parsed provider JSON response body.
+    // Fallback to `.response` or `.body` for other SDK conventions.
+    sdkResponseBody: e["error"] ?? e["response"] ?? e["body"] ?? undefined,
+    sdkHeaders:      e["headers"] ?? undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Error classification
 // ---------------------------------------------------------------------------
 
@@ -446,50 +485,64 @@ async function runGemini(
   const timeoutMs = params.isComplex ? TIMEOUT_COMPLEX_MS : TIMEOUT_STANDARD_MS;
   const start = Date.now();
 
-  const stream = await withTimeout(
-    ai.models.generateContentStream({
-      model,
-      contents: params.prompt,
-      config: {
-        maxOutputTokens: params.maxOutputTokens,
-        // Disable internal reasoning/thinking — these tools are
-        // structured prompt→output tasks; thinking adds latency with no gain.
-        thinkingConfig: { thinkingBudget: 0 },
-      },
-    }),
+  // Wrap the ENTIRE operation (stream acquisition + chunk iteration) in a
+  // single timeout. The previous approach only timed out stream acquisition —
+  // if the stream stalled mid-way after the first chunk arrived, the timeout
+  // would never fire and the request could hang indefinitely.
+  const result = await withTimeout(
+    (async () => {
+      const stream = await ai.models.generateContentStream({
+        model,
+        contents: params.prompt,
+        config: {
+          maxOutputTokens: params.maxOutputTokens,
+          // Disable internal reasoning/thinking — these tools are
+          // structured prompt→output tasks; thinking adds latency with no gain.
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      });
+
+      let text = "";
+      let finishReason: string | undefined;
+      let lastResponseBody: unknown;
+
+      for await (const chunk of stream) {
+        lastResponseBody = chunk;
+        const parsed = extractGeminiText(chunk as GeminiChunk);
+        text += parsed.text;
+        if (parsed.finishReason) finishReason = parsed.finishReason;
+      }
+
+      if (!text.trim()) {
+        throw new Error("Gemini returned an empty response body.");
+      }
+
+      logger.info(
+        {
+          requestId: params.requestId,
+          provider: "gemini",
+          model,
+          responsePreview: lastResponseBody,
+          outputChars: text.length,
+          finishReason,
+          ts: new Date().toISOString(),
+        },
+        `[ai-service][${params.requestId}] Gemini response parsed`,
+      );
+
+      return { text, finishReason };
+    })(),
     timeoutMs,
     `Gemini/${model}`,
   );
 
-  let text = "";
-  let finishReason: string | undefined;
-  let lastResponseBody: unknown;
-
-  for await (const chunk of stream) {
-    lastResponseBody = chunk;
-    const parsed = extractGeminiText(chunk);
-    text += parsed.text;
-    if (parsed.finishReason) finishReason = parsed.finishReason;
-  }
-
-  if (!text.trim()) {
-    throw new Error("Gemini returned an empty response body.");
-  }
-
-  logger.info(
-    {
-      requestId: params.requestId,
-      provider: "gemini",
-      model,
-      responsePreview: lastResponseBody,
-      outputChars: text.length,
-      finishReason,
-      ts: new Date().toISOString(),
-    },
-    `[ai-service][${params.requestId}] Gemini response parsed`,
-  );
-
-  return { text, provider: "gemini", model, durationMs: Date.now() - start, finishReason };
+  return {
+    text: result.text,
+    provider: "gemini",
+    model,
+    durationMs: Date.now() - start,
+    finishReason: result.finishReason,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -661,8 +714,8 @@ const MAX_RETRIES_PER_PROVIDER = 2;
 /**
  * Generate text using the best available provider.
  *
- * Tries Gemini → Groq → OpenRouter in order. Throws only when all providers
- * are exhausted or a fatal (non-fallbackable) error occurs.
+ * Tries AgentRouter → Gemini → Groq → OpenRouter in order. Throws only when
+ * all providers are exhausted or a fatal (non-fallbackable) error occurs.
  */
 export async function generateText(params: GenerationParams): Promise<GenerationOutput> {
   const chain   = buildChain(params.isComplex);
@@ -753,6 +806,7 @@ export async function generateText(params: GenerationParams): Promise<Generation
       } catch (err) {
         const meta      = classifyError(err);
         const durationMs = Date.now() - attemptStart;
+        const sdkDetails = extractProviderErrorDetails(err);
 
         logger.warn(
           {
@@ -766,6 +820,13 @@ export async function generateText(params: GenerationParams): Promise<Generation
             fallbackReason: meta.reason,
             isFallbackable: meta.isFallbackable,
             durationMs,
+            // Full SDK error details — visible in Render logs even when
+            // the classified message is a truncated excerpt.
+            errorName:         sdkDetails.errorName,
+            stack:             sdkDetails.stack,
+            sdkStatus:         sdkDetails.sdkStatus,
+            sdkResponseBody:   sdkDetails.sdkResponseBody,
+            sdkHeaders:        sdkDetails.sdkHeaders,
             ts:             new Date().toISOString(),
           },
           `[ai-service][${params.requestId}] ✗ ${provider.name}/${provider.model} — ${meta.reason}: ${meta.message.slice(0, 120)}`,
@@ -775,9 +836,15 @@ export async function generateText(params: GenerationParams): Promise<Generation
         if (!meta.isFallbackable) {
           logger.error(
             {
-              requestId:    params.requestId,
-              provider:     provider.name,
-              errorMessage: meta.message,
+              requestId:       params.requestId,
+              provider:        provider.name,
+              errorMessage:    meta.message,
+              // Full details repeated at error level so fatal failures are
+              // always identifiable without cross-referencing the warn above.
+              errorName:       sdkDetails.errorName,
+              stack:           sdkDetails.stack,
+              sdkStatus:       sdkDetails.sdkStatus,
+              sdkResponseBody: sdkDetails.sdkResponseBody,
             },
             `[ai-service][${params.requestId}] fatal error from ${provider.name} — aborting chain`,
           );

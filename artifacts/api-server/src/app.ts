@@ -76,8 +76,15 @@ const DEV_ORIGINS: (string | RegExp)[] = [
   /\.repl\.co$/,
 ];
 
+// When ALLOWED_ORIGINS is set, merge the operator-supplied strings WITH the
+// built-in regex patterns so that setting this variable to add one new domain
+// (e.g. a staging environment) does not accidentally drop localhost / vercel.app
+// / replit.dev access that the RegExp patterns provide.
 const ALLOWED_ORIGINS: (string | RegExp)[] = process.env["ALLOWED_ORIGINS"]
-  ? process.env["ALLOWED_ORIGINS"].split(",").map((o) => o.trim())
+  ? [
+      ...process.env["ALLOWED_ORIGINS"].split(",").map((o) => o.trim()),
+      ...DEV_ORIGINS,
+    ]
   : [...PRODUCTION_ORIGINS, ...DEV_ORIGINS];
 
 const corsOptions: cors.CorsOptions = {
@@ -126,7 +133,7 @@ app.use((_req: Request, res: Response) => {
 // route produces an HTML response body instead of the JSON the frontend expects.
 // ---------------------------------------------------------------------------
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   const status = (err && typeof err === "object" && "status" in err && typeof (err as { status: unknown }).status === "number")
     ? (err as { status: number }).status
     : 500;
@@ -134,7 +141,31 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     err instanceof Error ? err.message : "An unexpected error occurred.";
   const stack = err instanceof Error ? err.stack : undefined;
 
-  logger.error({ err, status, stack }, "Unhandled Express error");
+  // Extract provider SDK fields if the error came from Groq/OpenAI/Gemini SDK.
+  const sdkError = err && typeof err === "object" ? err as Record<string, unknown> : {};
+
+  logger.error(
+    {
+      // Request context — makes it possible to correlate this log with the
+      // pino-http "request errored" entry and the route's own error log.
+      requestId:  (req as { id?: unknown }).id,
+      route:      req.originalUrl,
+      method:     req.method,
+      // Log a sanitized body: present for AI/developer routes, omitted when
+      // empty. Never include Authorization headers or cookie values.
+      body: req.body && Object.keys(req.body as object).length > 0
+        ? req.body
+        : undefined,
+      // Standard error fields
+      status,
+      message,
+      stack,
+      // SDK-specific fields (set when the error originates from a provider SDK)
+      sdkStatus:       typeof sdkError["status"] === "number" ? sdkError["status"] : undefined,
+      sdkResponseBody: sdkError["error"] ?? sdkError["response"] ?? sdkError["body"] ?? undefined,
+    },
+    "Unhandled Express error",
+  );
 
   if (!res.headersSent) {
     res.status(status).json({

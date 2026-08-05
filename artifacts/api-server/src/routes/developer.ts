@@ -1,8 +1,23 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import dns from "node:dns/promises";
 import net from "node:net";
+import { logger } from "../lib/logger";
 
 const router = Router();
+
+// ---------------------------------------------------------------------------
+// Rate limiting — each HEAD fetch to an external host is a real outbound
+// request; without this an attacker can use the endpoint as a request
+// amplifier or probe internal/external hosts at high volume.
+// ---------------------------------------------------------------------------
+const headersLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please wait a moment before trying again." },
+});
 
 // ---------------------------------------------------------------------------
 // SSRF guard — block requests to loopback, private, link-local, and reserved
@@ -55,7 +70,7 @@ async function resolvesSafeAddress(hostname: string): Promise<boolean> {
 // Fetches HTTP response headers for a given URL server-side (bypasses browser
 // CORS restrictions) and returns status + headers as JSON.
 // ---------------------------------------------------------------------------
-router.post("/http-headers", async (req, res) => {
+router.post("/http-headers", headersLimiter, async (req, res) => {
   const { url } = req.body as { url?: unknown };
 
   if (typeof url !== "string" || !url.trim()) {
@@ -85,6 +100,8 @@ router.post("/http-headers", async (req, res) => {
     return;
   }
 
+  logger.info({ targetHost: parsed.hostname }, "[http-headers] fetching headers");
+
   try {
     const response = await fetch(parsed.href, {
       method: "HEAD",
@@ -97,16 +114,23 @@ router.post("/http-headers", async (req, res) => {
       headers[key.toLowerCase()] = value;
     });
 
+    logger.info(
+      { targetHost: parsed.hostname, status: response.status },
+      "[http-headers] done",
+    );
+
     res.json({
       status: response.status,
       statusText: response.statusText,
       headers,
     });
   } catch (err) {
-    const message =
-      err instanceof Error && err.name === "TimeoutError"
-        ? "Request timed out."
-        : "Failed to reach the URL.";
+    const isTimeout = err instanceof Error && err.name === "TimeoutError";
+    const message = isTimeout ? "Request timed out." : "Failed to reach the URL.";
+    logger.warn(
+      { targetHost: parsed.hostname, err: err instanceof Error ? err.message : String(err) },
+      "[http-headers] fetch failed",
+    );
     res.status(502).json({ error: message });
   }
 });

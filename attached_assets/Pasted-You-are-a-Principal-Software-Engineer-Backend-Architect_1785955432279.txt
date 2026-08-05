@@ -1,0 +1,387 @@
+You are a Principal Software Engineer, Backend Architect, DevOps Engineer, Security Engineer, and Site Reliability Engineer (SRE).
+
+Your task is to perform a **complete production-grade audit** of my backend codebase. Do not stop at fixing the first error—analyze the entire backend, identify all current and potential issues, and leave the backend clean, stable, secure, scalable, and production-ready.
+
+## Primary Goal
+
+Perform a deep forensic analysis of the entire backend.
+
+Identify:
+
+* Runtime errors
+* Build errors
+* Hidden bugs
+* Logical bugs
+* Performance bottlenecks
+* Memory leaks
+* Security vulnerabilities
+* Dependency issues
+* Deployment problems
+* API issues
+* AI integration issues
+* Database issues
+* Infrastructure issues
+
+Then fix every issue permanently.
+
+---
+
+# Phase 1 — Project Audit
+
+Inspect the complete backend.
+
+Audit:
+
+* Folder structure
+* Architecture
+* Routes
+* Controllers
+* Services
+* Middleware
+* Utilities
+* Environment variables
+* Configuration files
+* Package dependencies
+* Docker configuration
+* Build scripts
+* TypeScript configuration
+* Render deployment configuration
+* Logging
+* Error handling
+
+Look for dead code, duplicate code, circular dependencies, and unnecessary complexity.
+
+---
+
+# Phase 2 — Route Audit
+
+Inspect every API endpoint.
+
+Verify:
+
+* Route registration
+* Validation
+* Authentication
+* Authorization
+* Request parsing
+* Response formatting
+* Error handling
+* HTTP status codes
+
+Ensure every endpoint always returns a valid response.
+
+Detect unreachable routes.
+
+Detect duplicated routes.
+
+Detect conflicting middleware.
+
+---
+
+# Phase 3 — AI System Audit
+
+Audit every AI provider.
+
+Current providers:
+
+* AgentRouter (Primary)
+* Gemini
+* Groq
+* OpenRouter
+
+Verify:
+
+* API endpoints
+* API keys
+* Models
+* Request payloads
+* Response parsing
+* Timeouts
+* Retry logic
+* Rate limit handling
+* Fallback logic
+* Error handling
+
+Ensure:
+
+AgentRouter
+
+↓
+
+Gemini
+
+↓
+
+Groq
+
+↓
+
+OpenRouter
+
+works perfectly.
+
+Connection failures, DNS failures, timeout errors, and HTTP 429/500 errors must trigger the next provider automatically.
+
+Never return HTTP 500 because one provider failed.
+
+---
+
+# Phase 4 — Error Handling
+
+Find every place that can throw:
+
+* TypeError
+* ReferenceError
+* FetchError
+* JSON parsing error
+* Undefined access
+* Promise rejection
+* Network error
+* Timeout
+* API failure
+
+Wrap all async operations in proper try/catch blocks.
+
+Never allow uncaught exceptions.
+
+Never allow unhandled promise rejections.
+
+Return structured JSON errors.
+
+---
+
+# Phase 5 — Logging
+
+Improve logging.
+
+Log:
+
+* Request ID
+* Route
+* Request body (excluding secrets)
+* Provider selected
+* External API calls
+* Response times
+* Errors
+* Stack traces
+* Performance metrics
+
+Never log API keys.
+
+Make debugging production issues easy.
+
+---
+
+# Phase 6 — Environment Variables
+
+Verify every required variable.
+
+Examples:
+
+* AGENTROUTER_API_KEY
+* GEMINI_API_KEY
+* GROQ_API_KEY
+* OPENROUTER_API_KEY
+* SUPABASE_URL
+* SUPABASE_SERVICE_ROLE_KEY
+* JWT_SECRET
+
+Ensure missing variables never crash the server.
+
+Provide clear startup validation.
+
+---
+
+# Phase 7 — Database Audit
+
+Audit:
+
+* Connections
+* Queries
+* Transactions
+* Indexes
+* Validation
+* Error handling
+* Connection pooling
+
+Prevent:
+
+* SQL injection
+* Duplicate writes
+* Race conditions
+* N+1 queries
+
+---
+
+# Phase 8 — Security Audit
+
+Check for:
+
+* CORS issues
+* Missing security headers
+* Helmet configuration
+* Rate limiting
+* Input validation
+* XSS
+* CSRF
+* Command injection
+* Path traversal
+* SSRF
+* Open redirects
+* Sensitive data exposure
+
+Harden the backend using security best practices.
+
+---
+
+# Phase 9 — Performance Audit
+
+Find:
+
+* Slow endpoints
+* Blocking code
+* Large synchronous operations
+* Unnecessary database queries
+* Repeated API calls
+* Memory leaks
+* CPU bottlenecks
+
+Optimize performance without changing functionality.
+
+---
+
+# Phase 10 — Dependency Audit
+
+Inspect:
+
+* package.json
+* pnpm-lock.yaml
+
+Remove:
+
+* Unused packages
+* Duplicate packages
+* Deprecated libraries
+* Vulnerable dependencies
+
+Ensure dependency versions are compatible.
+
+---
+
+# Phase 11 — Deployment Audit
+
+Audit Render deployment.
+
+Verify:
+
+* Build command
+* Start command
+* Dockerfile
+* Health check
+* Environment variables
+* Port binding
+* Startup sequence
+* Production configuration
+
+Ensure deployment is stable.
+
+---
+
+# Phase 12 — API Quality
+
+Verify every endpoint:
+
+* Returns consistent JSON.
+* Uses proper status codes.
+* Handles malformed requests.
+* Handles provider failures.
+* Never crashes.
+
+---
+
+# Phase 13 — Code Quality
+
+Refactor where necessary.
+
+Improve:
+
+* Naming
+* Readability
+* Separation of concerns
+* Reusability
+* Type safety
+* Maintainability
+
+Do not rewrite working code unnecessarily.
+
+---
+
+# Phase 14 — Production Testing
+
+Simulate:
+
+* Invalid requests
+* Missing environment variables
+* AgentRouter offline
+* Gemini offline
+* Groq offline
+* OpenRouter offline
+* Database unavailable
+* Network failures
+* Timeouts
+* High request volume
+* Concurrent requests
+
+Verify graceful recovery in every scenario.
+
+---
+
+# Phase 15 — Final Verification
+
+Ensure:
+
+✓ Backend starts without warnings.
+
+✓ Zero runtime exceptions.
+
+✓ Zero unhandled promise rejections.
+
+✓ Zero HTTP 500 errors caused by unhandled exceptions.
+
+✓ AI generation works.
+
+✓ Fallback providers work.
+
+✓ Database operations work.
+
+✓ Every API endpoint responds correctly.
+
+✓ Logging is comprehensive.
+
+✓ Performance is optimized.
+
+✓ Security follows production best practices.
+
+✓ Render deployment is stable.
+
+---
+
+# Deliverables
+
+Produce a detailed audit report containing:
+
+1. Executive summary.
+2. Every issue discovered.
+3. Root cause of each issue.
+4. Severity (Critical, High, Medium, Low).
+5. File names and line numbers.
+6. Code changes made.
+7. Files modified.
+8. Performance improvements.
+9. Security improvements.
+10. Dependency changes.
+11. Deployment changes.
+12. Remaining risks (if any).
+13. Confirmation that the backend is production-ready.
+
+Do not stop after fixing one error. Continue auditing until no critical or high-severity issues remain. Prioritize root-cause fixes over temporary workarounds, preserve existing functionality, and ensure the backend is stable, maintainable, secure, and ready for production.
