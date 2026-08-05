@@ -507,6 +507,7 @@ function getSafeClientMessage(err: unknown): string {
 
   const m = err.message.toLowerCase();
   if (m.includes("timed out") || m.includes("timeout")) return "AI request timed out.";
+  if (m.includes("unauthorized") || m.includes("forbidden") || m.includes("invalid key") || m.includes("invalid api key")) return "AI provider authentication failed. Please check the configured API key.";
   if (m.includes("api key") || m.includes("apikey") || m.includes("not set")) return "The AI provider is not configured for this environment.";
   if (m.includes("quota") || m.includes("resource_exhausted") || m.includes("rate_limit") || m.includes("rate limit") || m.includes("too many requests") || m.includes("429")) return "AI rate limit exceeded. Please try again later.";
   if (m.includes("model") && (m.includes("not found") || m.includes("not_found"))) return "The selected AI model is unavailable.";

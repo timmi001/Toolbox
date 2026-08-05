@@ -12,10 +12,16 @@ services:
         value: production
       - key: PORT
         value: "8080"
+      - key: AGENTROUTER_API_KEY
+        sync: false   # primary AgentRouter API key; set manually in the Render dashboard
       - key: GEMINI_API_KEY
         sync: false   # set manually in Render dashboard
       - key: GOOGLE_API_KEY
         sync: false   # alias accepted by the Google SDK; keep in sync with the production secret if needed
+      - key: GROQ_API_KEY
+        sync: false   # optional fallback provider key
+      - key: OPENROUTER_API_KEY
+        sync: false   # optional fallback provider key
       - key: ALLOWED_ORIGINS
         sync: false   # set to your frontend domain, e.g. https://toolboxx.vercel.app
       # Optional video timeout overrides (defaults are generous for most videos)

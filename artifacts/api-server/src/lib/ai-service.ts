@@ -206,6 +206,20 @@ function classifyError(err: unknown): ErrorMeta {
     return { code, message: raw, isFallbackable: true, reason: "model_not_found" };
   }
 
+  // Auth failures should fallback to the next provider rather than aborting
+  // the whole chain immediately.
+  if (
+    code === 401 ||
+    code === 403 ||
+    msg.includes("unauthorized") ||
+    msg.includes("forbidden") ||
+    msg.includes("authentication") ||
+    msg.includes("invalid key") ||
+    msg.includes("invalid api key")
+  ) {
+    return { code, message: raw, isFallbackable: true, reason: "auth_failure" };
+  }
+
   // 5xx — provider-side server errors
   if (
     (typeof code === "number" && code >= 500 && code < 600) ||
@@ -353,16 +367,19 @@ async function runAgentRouter(
   const client = getAgentRouterClient();
   const timeoutMs = params.isComplex ? TIMEOUT_COMPLEX_MS : TIMEOUT_STANDARD_MS;
   const start = Date.now();
+  const baseURL = process.env["AGENTROUTER_BASE_URL"]?.trim() || "https://co.agentrouter.org/v1";
 
   // Allow the operator to override the model via env var.
-  const resolvedModel = process.env["AGENTROUTER_MODEL"] ?? model;
+  const resolvedModel = (process.env["AGENTROUTER_MODEL"] ?? "").trim() || model;
 
   logger.info(
     {
       requestId: params.requestId,
       provider: "agentrouter",
       model: resolvedModel,
-      baseURL: process.env["AGENTROUTER_BASE_URL"] ?? "https://co.agentrouter.org/v1",
+      endpoint: baseURL,
+      toolId: params.toolId,
+      promptLength: params.prompt.length,
       timeoutMs,
       ts: new Date().toISOString(),
     },
@@ -890,7 +907,9 @@ export async function generateText(params: GenerationParams): Promise<Generation
     lastAttempt?.fallbackReason === "rate_limit" ? 429 :
     lastAttempt?.fallbackReason === "timeout" ? 504 :
     lastAttempt?.fallbackReason === "model_not_found" ? 404 :
-    503;
+    lastAttempt?.fallbackReason === "auth_failure"
+      ? lastAttempt.errorCode === 403 ? 403 : 401
+      : 503;
 
   logger.error(
     { requestId: params.requestId, toolId: params.toolId, attempts, status },
@@ -898,9 +917,11 @@ export async function generateText(params: GenerationParams): Promise<Generation
   );
 
   const error = new Error(
-    "All AI providers are currently unavailable. Please try again in a moment.",
+    `All AI providers are currently unavailable. Summary=${summary}; ` +
+    `last=${lastAttempt?.provider}/${lastAttempt?.model} reason=${lastAttempt?.fallbackReason} ` +
+    `code=${lastAttempt?.errorCode} message=${lastAttempt?.errorMessage}`,
   ) as Error & { status?: number; code?: number };
   error.status = status;
-  error.code = status;
+  error.code = lastAttempt?.errorCode ?? status;
   throw error;
 }

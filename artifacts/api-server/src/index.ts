@@ -2,7 +2,11 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { validateGeminiEnv } from "./lib/ai-service";
 
-validateGeminiEnv();
+// Validate Gemini only when a Gemini-style key is actually configured.
+// This avoids preventing AgentRouter-only deployments from starting.
+if (process.env["GEMINI_API_KEY"] || process.env["GOOGLE_API_KEY"]) {
+  validateGeminiEnv();
+}
 
 // ---------------------------------------------------------------------------
 // Startup — warn early when AI provider keys are absent so the failure mode
