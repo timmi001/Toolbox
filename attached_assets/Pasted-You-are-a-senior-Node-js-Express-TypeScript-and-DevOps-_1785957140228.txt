@@ -1,0 +1,150 @@
+You are a senior Node.js, Express, TypeScript, and DevOps engineer.
+
+My backend returns HTTP 500 from `/ai/generate`, but my logs only show:
+
+* request errored
+* statusCode: 500
+
+The actual exception is not being logged.
+
+## Objective
+
+Instrument the backend so the original exception is always logged before returning HTTP 500.
+
+---
+
+## Tasks
+
+Audit every layer involved in `/ai/generate`.
+
+This includes:
+
+* Express routes
+* AI service
+* AgentRouter integration
+* Gemini fallback
+* Groq fallback
+* OpenRouter fallback
+* Middleware
+* Global error handler
+
+---
+
+## Error Logging
+
+Every catch block must log:
+
+* Full stack trace
+* Error name
+* Error message
+* File
+* Line number (when available)
+* Request ID
+* Provider name
+* HTTP response from provider
+* Response body from provider
+
+Example:
+
+```ts
+try {
+   ...
+} catch (error) {
+   logger.error({
+      requestId,
+      provider,
+      errorName: error.name,
+      errorMessage: error.message,
+      stack: error.stack,
+      response: error.response?.data,
+      status: error.status
+   });
+
+   throw error;
+}
+```
+
+Do not replace the error with a generic message.
+
+---
+
+## AI Provider Logging
+
+For every provider log:
+
+Before request:
+
+* Provider
+* Endpoint
+* Model
+
+After request:
+
+* Status code
+* Response time
+
+On failure:
+
+* Provider response body
+* Status code
+* Stack trace
+
+---
+
+## Global Error Handler
+
+Ensure the global Express error handler logs:
+
+* stack
+* message
+* route
+* request body
+* request id
+
+before returning HTTP 500.
+
+---
+
+## Route Logging
+
+For `/ai/generate`
+
+Log:
+
+Request received
+
+↓
+
+Validation complete
+
+↓
+
+Provider selected
+
+↓
+
+Sending provider request
+
+↓
+
+Provider responded
+
+↓
+
+Parsing response
+
+↓
+
+Returning response
+
+If execution stops, identify the exact step.
+
+---
+
+## Deliverables
+
+1. Add complete production logging.
+2. Do not suppress exceptions.
+3. Preserve stack traces.
+4. Log the exact cause of every HTTP 500.
+5. Ensure future Render logs always contain enough information to identify the root cause.

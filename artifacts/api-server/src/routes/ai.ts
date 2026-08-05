@@ -731,24 +731,37 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     res.json(payload);
   } catch (err) {
     timings.totalMs = nowMs() - tRequestStart;
-    const stack = err instanceof Error ? err.stack : undefined;
-    const errorName = err instanceof Error ? err.name : undefined;
-    const errorCode = (err as { code?: unknown })?.code;
+    const stack      = err instanceof Error ? err.stack              : undefined;
+    const errorName  = err instanceof Error ? err.constructor.name   : undefined;
+    const errorMsg   = err instanceof Error ? err.message            : String(err);
+    const errorCode  = (err as { code?: unknown })?.code;
     const errorStatus = (err as { status?: unknown })?.status;
+
+    // Extract provider SDK fields (Groq/OpenAI SDK: .status, .error, .headers).
+    // These are not part of the standard Error interface but contain the raw
+    // provider response body — the most useful field for diagnosing a 500.
+    const sdkErr = err && typeof err === "object" ? (err as Record<string, unknown>) : {};
+    const sdkResponseBody = sdkErr["error"] ?? sdkErr["response"] ?? sdkErr["body"] ?? undefined;
+    const sdkHeaders      = sdkErr["headers"] ?? undefined;
 
     logger.error(
       {
         requestId,
-        err,
-        stack,
+        // Standard error fields
         errorName,
+        errorMessage: errorMsg,
         errorCode,
         errorStatus,
-        totalServerMs: Number(timings.totalMs.toFixed(1)),
+        stack,
+        // Provider SDK HTTP-level details (present on Groq/OpenAI/AgentRouter errors)
+        sdkResponseBody,
+        sdkHeaders,
+        // Timing
+        totalServerMs:  Number(timings.totalMs.toFixed(1)),
         stageReachedMs: timings,
         ts: new Date().toISOString(),
       },
-      `[perf][ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms`,
+      `[ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms — ${errorName ?? "Error"}: ${errorMsg.slice(0, 200)}`,
     );
     // Don't leak internal/upstream error strings — log server-side, return generic message.
     // isRateLimitError covers quota/429 signals from all three providers.
