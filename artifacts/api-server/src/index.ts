@@ -1,5 +1,8 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { validateGeminiEnv } from "./lib/ai-service";
+
+validateGeminiEnv();
 
 const rawPort = process.env["PORT"];
 

@@ -480,6 +480,43 @@ function isRateLimitError(err: unknown): boolean {
   );
 }
 
+function getSafeStatus(err: unknown): number {
+  if (err && typeof err === "object") {
+    const status = (err as { status?: number }).status;
+    if (typeof status === "number") return status;
+    const code = (err as { code?: number }).code;
+    if (typeof code === "number") return code;
+  }
+
+  if (!(err instanceof Error)) return 500;
+
+  const m = err.message.toLowerCase();
+  if (m.includes("timed out") || m.includes("timeout")) return 504;
+  if (m.includes("api key") || m.includes("apikey") || m.includes("not set")) return 401;
+  if (m.includes("quota") || m.includes("resource_exhausted") || m.includes("rate_limit") || m.includes("rate limit") || m.includes("too many requests") || m.includes("429")) return 429;
+  if (m.includes("model") && (m.includes("not found") || m.includes("not_found"))) return 404;
+  if (m.includes("malformed") || m.includes("invalid") || m.includes("unknown tool")) return 400;
+  if (m.includes("safety") || m.includes("blocked")) return 422;
+  if (m.includes("network") || m.includes("connection") || m.includes("fetch failed") || m.includes("socket hang up") || m.includes("econnreset") || m.includes("econnrefused") || m.includes("etimedout")) return 503;
+  if (m.includes("empty response")) return 502;
+  return 500;
+}
+
+function getSafeClientMessage(err: unknown): string {
+  if (!(err instanceof Error)) return "Generation failed. Please try again.";
+
+  const m = err.message.toLowerCase();
+  if (m.includes("timed out") || m.includes("timeout")) return "AI request timed out.";
+  if (m.includes("api key") || m.includes("apikey") || m.includes("not set")) return "The AI provider is not configured for this environment.";
+  if (m.includes("quota") || m.includes("resource_exhausted") || m.includes("rate_limit") || m.includes("rate limit") || m.includes("too many requests") || m.includes("429")) return "AI rate limit exceeded. Please try again later.";
+  if (m.includes("model") && (m.includes("not found") || m.includes("not_found"))) return "The selected AI model is unavailable.";
+  if (m.includes("malformed") || m.includes("invalid") || m.includes("unknown tool")) return "The request payload is invalid.";
+  if (m.includes("safety") || m.includes("blocked")) return "The request was blocked by the provider safety policy.";
+  if (m.includes("network") || m.includes("connection") || m.includes("fetch failed") || m.includes("socket hang up") || m.includes("econnreset") || m.includes("econnrefused") || m.includes("etimedout")) return "The AI provider could not be reached. Please try again.";
+  if (m.includes("empty response")) return "The AI provider returned an empty response.";
+  return "Generation failed. Please try again.";
+}
+
 // ---------------------------------------------------------------------------
 // Route
 // ---------------------------------------------------------------------------
@@ -487,6 +524,9 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
   const requestId = String(req.id ?? Math.random().toString(36).slice(2, 8));
   const tRequestStart = nowMs();
   const timings: Record<string, number> = {};
+  const requestBodySnapshot = req.body;
+  let resolvedToolId: string | undefined;
+  let resolvedModel: string | undefined;
 
   logger.info(
     {
@@ -509,6 +549,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       toolId: unknown;
       inputs: unknown;
     };
+    resolvedToolId = typeof toolId === "string" ? toolId.trim() : undefined;
 
     logger.info(
       { requestId, toolId, ts: new Date().toISOString() },
@@ -629,6 +670,7 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       requestId,
     });
 
+    resolvedModel = aiResult.model;
     const resultText   = aiResult.text;
     const finishReason = aiResult.finishReason;
     const providerUsed = aiResult.provider;
@@ -726,30 +768,33 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     timings.totalMs = nowMs() - tRequestStart;
     const stack = err instanceof Error ? err.stack : undefined;
     const errorName = err instanceof Error ? err.name : undefined;
+    const errorMessage = err instanceof Error ? err.message : String(err);
     const errorCode = (err as { code?: unknown })?.code;
     const errorStatus = (err as { status?: unknown })?.status;
+    const serverStatus = getSafeStatus(err);
+    const clientMessage = getSafeClientMessage(err);
 
     logger.error(
       {
         requestId,
-        err,
-        stack,
+        toolId: resolvedToolId,
+        model: resolvedModel,
+        requestBody: requestBodySnapshot,
         errorName,
+        message: errorMessage,
+        stack,
+        cause: (err as { cause?: unknown }).cause,
+        response: (err as { response?: unknown }).response,
         errorCode,
-        errorStatus,
+        httpStatus: errorStatus ?? serverStatus,
         totalServerMs: Number(timings.totalMs.toFixed(1)),
         stageReachedMs: timings,
         ts: new Date().toISOString(),
       },
       `[perf][ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms`,
     );
-    // Don't leak internal/upstream error strings — log server-side, return generic message.
-    // isRateLimitError covers quota/429 signals from all three providers.
-    const isKnown = isRateLimitError(err);
-    const clientMessage = isKnown
-      ? "All AI providers are currently busy. Please try again in a moment."
-      : "Generation failed. Please try again.";
-    res.status(500).json({ success: false, message: clientMessage });
+
+    res.status(serverStatus).json({ success: false, message: clientMessage });
   }
 });
 

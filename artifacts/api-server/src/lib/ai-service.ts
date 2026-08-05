@@ -70,6 +70,7 @@ export const PROVIDER_MODELS = {
 
 const TIMEOUT_STANDARD_MS = 30_000;
 const TIMEOUT_COMPLEX_MS  = 60_000;
+const GEMINI_KEY_FORMAT = /^(AIza|AI)[A-Za-z0-9_-]+$/;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -286,6 +287,22 @@ function normalizeOpenAIResponse(completion: unknown): { text: string; finishRea
   };
 }
 
+export function validateGeminiEnv(): string {
+  const key = (process.env["GEMINI_API_KEY"] ?? process.env["GOOGLE_API_KEY"] ?? "").trim();
+
+  if (!key) {
+    throw new Error("Startup validation failed: GEMINI_API_KEY/GOOGLE_API_KEY is not set.");
+  }
+
+  if (!GEMINI_KEY_FORMAT.test(key)) {
+    throw new Error(
+      `Startup validation failed: GEMINI_API_KEY/GOOGLE_API_KEY is not in a valid Google API key format. Received ${key.slice(0, 6)}...`,
+    );
+  }
+
+  return key;
+}
+
 // ---------------------------------------------------------------------------
 // AgentRouter  (OpenAI-compatible)
 // ---------------------------------------------------------------------------
@@ -354,9 +371,12 @@ let _geminiClient: GoogleGenAI | null = null;
 let _geminiKey: string | null = null;
 
 function getGeminiApiKey(): string {
-  const key = process.env["GEMINI_API_KEY"] ?? process.env["GOOGLE_API_KEY"];
+  const key = (process.env["GEMINI_API_KEY"] ?? process.env["GOOGLE_API_KEY"] ?? "").trim();
   if (!key) {
     throw new Error("GEMINI_API_KEY/GOOGLE_API_KEY is not set.");
+  }
+  if (!GEMINI_KEY_FORMAT.test(key)) {
+    throw new Error("GEMINI_API_KEY/GOOGLE_API_KEY is not in a valid Google API key format.");
   }
   return key;
 }
@@ -369,22 +389,53 @@ function getGeminiClient(): GoogleGenAI {
   return _geminiClient;
 }
 
-type GeminiChunk = {
-  text?: unknown;
-  candidates?: Array<{
-    finishReason?: string;
-    content?: { parts?: Array<{ text?: unknown }> };
-  }>;
+type GeminiCandidate = {
+  finishReason?: string;
+  content?: {
+    parts?: Array<{
+      text?: unknown;
+    }>;
+  };
 };
 
-function extractGeminiText(chunk: GeminiChunk): string {
-  if (typeof chunk.text === "string") return chunk.text;
-  const parts = chunk.candidates?.[0]?.content?.parts;
-  if (!Array.isArray(parts)) return "";
-  return parts
-    .map(p => (typeof p.text === "string" ? p.text : ""))
-    .filter(Boolean)
-    .join("");
+type GeminiChunk = {
+  text?: string | (() => string | undefined) | unknown;
+  candidates?: GeminiCandidate[];
+};
+
+function extractGeminiText(chunk: unknown): { text: string; finishReason?: string } {
+  const response = chunk as GeminiChunk | null;
+
+  if (!response || typeof response !== "object") {
+    return { text: "" };
+  }
+
+  if (typeof response.text === "string") {
+    return { text: response.text };
+  }
+
+  if (typeof response.text === "function") {
+    const value = response.text();
+    if (typeof value === "string") {
+      return { text: value };
+    }
+  }
+
+  const firstCandidate = response.candidates?.[0];
+  const parts = firstCandidate?.content?.parts;
+  const text = Array.isArray(parts)
+    ? parts
+        .map(part => (typeof part.text === "string" ? part.text : ""))
+        .filter(Boolean)
+        .join("")
+    : "";
+
+  return {
+    text,
+    finishReason: typeof firstCandidate?.finishReason === "string"
+      ? firstCandidate.finishReason
+      : undefined,
+  };
 }
 
 async function runGemini(
@@ -412,12 +463,31 @@ async function runGemini(
 
   let text = "";
   let finishReason: string | undefined;
+  let lastResponseBody: unknown;
 
   for await (const chunk of stream) {
-    text += extractGeminiText(chunk as GeminiChunk);
-    const fr = (chunk as GeminiChunk).candidates?.[0]?.finishReason;
-    if (fr) finishReason = fr;
+    lastResponseBody = chunk;
+    const parsed = extractGeminiText(chunk);
+    text += parsed.text;
+    if (parsed.finishReason) finishReason = parsed.finishReason;
   }
+
+  if (!text.trim()) {
+    throw new Error("Gemini returned an empty response body.");
+  }
+
+  logger.info(
+    {
+      requestId: params.requestId,
+      provider: "gemini",
+      model,
+      responsePreview: lastResponseBody,
+      outputChars: text.length,
+      finishReason,
+      ts: new Date().toISOString(),
+    },
+    `[ai-service][${params.requestId}] Gemini response parsed`,
+  );
 
   return { text, provider: "gemini", model, durationMs: Date.now() - start, finishReason };
 }
@@ -582,7 +652,7 @@ function buildChain(isComplex: boolean): ProviderDef[] {
 
 /** Error reasons that warrant a single within-provider retry before moving on. */
 const RETRYABLE_REASONS = new Set(["network", "server_error"]);
-const MAX_RETRIES_PER_PROVIDER = 1;
+const MAX_RETRIES_PER_PROVIDER = 2;
 
 // ---------------------------------------------------------------------------
 // Main export
@@ -748,13 +818,22 @@ export async function generateText(params: GenerationParams): Promise<Generation
   const summary = attempts
     .map(a => `${a.provider}/${a.model}(${a.fallbackReason ?? "ok"})`)
     .join(" → ");
+  const lastAttempt = attempts[attempts.length - 1];
+  const status =
+    lastAttempt?.fallbackReason === "rate_limit" ? 429 :
+    lastAttempt?.fallbackReason === "timeout" ? 504 :
+    lastAttempt?.fallbackReason === "model_not_found" ? 404 :
+    503;
 
   logger.error(
-    { requestId: params.requestId, toolId: params.toolId, attempts },
+    { requestId: params.requestId, toolId: params.toolId, attempts, status },
     `[ai-service][${params.requestId}] all providers exhausted: ${summary}`,
   );
 
-  throw new Error(
+  const error = new Error(
     "All AI providers are currently unavailable. Please try again in a moment.",
-  );
+  ) as Error & { status?: number; code?: number };
+  error.status = status;
+  error.code = status;
+  throw error;
 }
