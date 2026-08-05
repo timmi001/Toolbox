@@ -26,7 +26,8 @@ let _agentRouterClient: OpenAI | null = null;
 let _agentRouterKey: string | null = null;
 
 /**
- * Returns a cached AgentRouter client (OpenAI SDK pointed at agentrouter.io).
+ * Returns a cached AgentRouter client (OpenAI SDK pointed at the correct
+ * OpenAI-compatible AgentRouter endpoint: https://co.agentrouter.org/v1).
  * Throws if AGENTROUTER_API_KEY is not set in the environment.
  */
 export function getAgentRouterClient(): OpenAI {
@@ -41,7 +42,7 @@ export function getAgentRouterClient(): OpenAI {
   }
   _agentRouterClient = new OpenAI({
     apiKey: key,
-    baseURL: process.env["AGENTROUTER_BASE_URL"] ?? "https://api.agentrouter.io/v1",
+    baseURL: process.env["AGENTROUTER_BASE_URL"] ?? "https://co.agentrouter.org/v1",
   });
   _agentRouterKey = key;
   return _agentRouterClient;
