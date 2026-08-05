@@ -510,11 +510,6 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       inputs: unknown;
     };
 
-    logger.info(
-      { requestId, toolId, ts: new Date().toISOString() },
-      `[perf][ai/generate][${requestId}] request received`,
-    );
-
     // ---- Stage 1: validation ------------------------------------------------
     const tValidateStart = nowMs();
 
@@ -655,7 +650,19 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     // Gemini hits a safety filter or recitation block the text is empty but
     // no exception is thrown — without this check the client silently gets
     // an empty 200, with no indication that content was blocked.
-    if (finishReason && finishReason !== "STOP" && finishReason !== "MAX_TOKENS") {
+    //
+    // Normalise finish reasons across providers:
+    //   Gemini        → "STOP" | "MAX_TOKENS" | "SAFETY" | "RECITATION" …
+    //   OpenAI-compat → "stop" | "length" | "content_filter" …  (lowercase)
+    //
+    // Treat both the Gemini and OpenAI-compat success reasons as non-blocking
+    // so Groq / OpenRouter / AgentRouter responses are never mis-classified.
+    const normalizedFinishReason = typeof finishReason === "string"
+      ? finishReason.toUpperCase()
+      : finishReason;
+
+    const SUCCESS_FINISH_REASONS = new Set(["STOP", "MAX_TOKENS", "LENGTH"]);
+    if (normalizedFinishReason && !SUCCESS_FINISH_REASONS.has(normalizedFinishReason)) {
       logger.warn(
         { requestId, toolId, finishReason, ts: new Date().toISOString() },
         `[perf][ai/generate][${requestId}] generation blocked`,

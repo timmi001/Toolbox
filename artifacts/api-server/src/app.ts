@@ -76,8 +76,15 @@ const DEV_ORIGINS: (string | RegExp)[] = [
   /\.repl\.co$/,
 ];
 
+// When ALLOWED_ORIGINS is set, merge the operator-supplied strings WITH the
+// built-in regex patterns so that setting this variable to add one new domain
+// (e.g. a staging environment) does not accidentally drop localhost / vercel.app
+// / replit.dev access that the RegExp patterns provide.
 const ALLOWED_ORIGINS: (string | RegExp)[] = process.env["ALLOWED_ORIGINS"]
-  ? process.env["ALLOWED_ORIGINS"].split(",").map((o) => o.trim())
+  ? [
+      ...process.env["ALLOWED_ORIGINS"].split(",").map((o) => o.trim()),
+      ...DEV_ORIGINS,
+    ]
   : [...PRODUCTION_ORIGINS, ...DEV_ORIGINS];
 
 const corsOptions: cors.CorsOptions = {

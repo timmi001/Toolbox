@@ -395,31 +395,45 @@ async function runGemini(
   const timeoutMs = params.isComplex ? TIMEOUT_COMPLEX_MS : TIMEOUT_STANDARD_MS;
   const start = Date.now();
 
-  const stream = await withTimeout(
-    ai.models.generateContentStream({
-      model,
-      contents: params.prompt,
-      config: {
-        maxOutputTokens: params.maxOutputTokens,
-        // Disable internal reasoning/thinking — these tools are
-        // structured prompt→output tasks; thinking adds latency with no gain.
-        thinkingConfig: { thinkingBudget: 0 },
-      },
-    }),
+  // Wrap the ENTIRE operation (stream acquisition + chunk iteration) in a
+  // single timeout. The previous approach only timed out stream acquisition —
+  // if the stream stalled mid-way after the first chunk arrived, the timeout
+  // would never fire and the request could hang indefinitely.
+  const result = await withTimeout(
+    (async () => {
+      const stream = await ai.models.generateContentStream({
+        model,
+        contents: params.prompt,
+        config: {
+          maxOutputTokens: params.maxOutputTokens,
+          // Disable internal reasoning/thinking — these tools are
+          // structured prompt→output tasks; thinking adds latency with no gain.
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      });
+
+      let text = "";
+      let finishReason: string | undefined;
+
+      for await (const chunk of stream) {
+        text += extractGeminiText(chunk as GeminiChunk);
+        const fr = (chunk as GeminiChunk).candidates?.[0]?.finishReason;
+        if (fr) finishReason = fr;
+      }
+
+      return { text, finishReason };
+    })(),
     timeoutMs,
     `Gemini/${model}`,
   );
 
-  let text = "";
-  let finishReason: string | undefined;
-
-  for await (const chunk of stream) {
-    text += extractGeminiText(chunk as GeminiChunk);
-    const fr = (chunk as GeminiChunk).candidates?.[0]?.finishReason;
-    if (fr) finishReason = fr;
-  }
-
-  return { text, provider: "gemini", model, durationMs: Date.now() - start, finishReason };
+  return {
+    text: result.text,
+    provider: "gemini",
+    model,
+    durationMs: Date.now() - start,
+    finishReason: result.finishReason,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -591,8 +605,8 @@ const MAX_RETRIES_PER_PROVIDER = 1;
 /**
  * Generate text using the best available provider.
  *
- * Tries Gemini → Groq → OpenRouter in order. Throws only when all providers
- * are exhausted or a fatal (non-fallbackable) error occurs.
+ * Tries AgentRouter → Gemini → Groq → OpenRouter in order. Throws only when
+ * all providers are exhausted or a fatal (non-fallbackable) error occurs.
  */
 export async function generateText(params: GenerationParams): Promise<GenerationOutput> {
   const chain   = buildChain(params.isComplex);
