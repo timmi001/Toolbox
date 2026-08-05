@@ -488,6 +488,16 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
   const tRequestStart = nowMs();
   const timings: Record<string, number> = {};
 
+  logger.info(
+    {
+      requestId,
+      method: req.method,
+      url: req.originalUrl,
+      ts: new Date().toISOString(),
+    },
+    `[ai/generate][${requestId}] request received`,
+  );
+
   try {
     if (!req.body || typeof req.body !== "object") {
       logger.warn({ requestId }, `[ai/generate][${requestId}] missing or malformed JSON body`);
@@ -555,6 +565,17 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     }
     timings.validateMs = nowMs() - tValidateStart;
 
+    logger.info(
+      {
+        requestId,
+        toolId,
+        inputKeys: Object.keys(cleanInputs),
+        timingMs: Number(timings.validateMs.toFixed(1)),
+        ts: new Date().toISOString(),
+      },
+      `[ai/generate][${requestId}] request validation complete`,
+    );
+
     // ---- Stage 2: prompt preparation ---------------------------------------
     const tPromptStart = nowMs();
     const prompt = compactPrompt(buildPrompt(toolId, cleanInputs) ?? "");
@@ -587,6 +608,18 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     // retries for transient errors, and structured per-attempt logging.
     // See lib/ai-service.ts for the full pipeline.
     const tAiStart = nowMs();
+
+    logger.info(
+      {
+        requestId,
+        toolId,
+        providerOrder: ["agentrouter", "gemini", "groq", "openrouter"],
+        isComplex,
+        selectedMaxOutputTokens,
+        ts: new Date().toISOString(),
+      },
+      `[ai/generate][${requestId}] provider chain selected`,
+    );
 
     const { result: aiResult, attempts: providerAttempts } = await generateText({
       prompt,
@@ -644,6 +677,17 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       );
     }
 
+    logger.info(
+      {
+        requestId,
+        provider: providerUsed,
+        resultChars: resultText.length,
+        finishReason,
+        ts: new Date().toISOString(),
+      },
+      `[ai/generate][${requestId}] response parsed`,
+    );
+
     const payload = { result: resultText };
     timings.serializeMs = nowMs() - tSerializeStart;
 
@@ -667,13 +711,32 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         `${providerUsed}=${timings.aiMs.toFixed(1)}ms, serialize=${timings.serializeMs.toFixed(1)}ms)`,
     );
 
+    logger.info(
+      {
+        requestId,
+        provider: providerUsed,
+        payloadChars: resultText.length,
+        ts: new Date().toISOString(),
+      },
+      `[ai/generate][${requestId}] response returned`,
+    );
+
     res.json(payload);
   } catch (err) {
     timings.totalMs = nowMs() - tRequestStart;
+    const stack = err instanceof Error ? err.stack : undefined;
+    const errorName = err instanceof Error ? err.name : undefined;
+    const errorCode = (err as { code?: unknown })?.code;
+    const errorStatus = (err as { status?: unknown })?.status;
+
     logger.error(
       {
         requestId,
         err,
+        stack,
+        errorName,
+        errorCode,
+        errorStatus,
         totalServerMs: Number(timings.totalMs.toFixed(1)),
         stageReachedMs: timings,
         ts: new Date().toISOString(),

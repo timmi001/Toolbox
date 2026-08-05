@@ -301,6 +301,18 @@ async function runAgentRouter(
   // Allow the operator to override the model via env var.
   const resolvedModel = process.env["AGENTROUTER_MODEL"] ?? model;
 
+  logger.info(
+    {
+      requestId: params.requestId,
+      provider: "agentrouter",
+      model: resolvedModel,
+      baseURL: process.env["AGENTROUTER_BASE_URL"] ?? "https://co.agentrouter.org/v1",
+      timeoutMs,
+      ts: new Date().toISOString(),
+    },
+    `[ai-service][${params.requestId}] AgentRouter request sent`,
+  );
+
   const completion = await withTimeout(
     client.chat.completions.create({
       model: resolvedModel,
@@ -312,6 +324,18 @@ async function runAgentRouter(
   );
 
   const normalized = normalizeOpenAIResponse(completion);
+
+  logger.info(
+    {
+      requestId: params.requestId,
+      provider: "agentrouter",
+      model: resolvedModel,
+      outputChars: normalized.text.length,
+      finishReason: normalized.finishReason,
+      ts: new Date().toISOString(),
+    },
+    `[ai-service][${params.requestId}] AgentRouter response received`,
+  );
   return {
     text: normalized.text,
     provider: "agentrouter",
@@ -410,6 +434,17 @@ async function runGroq(
   const timeoutMs = params.isComplex ? TIMEOUT_COMPLEX_MS : TIMEOUT_STANDARD_MS;
   const start = Date.now();
 
+  logger.info(
+    {
+      requestId: params.requestId,
+      provider: "groq",
+      model,
+      timeoutMs,
+      ts: new Date().toISOString(),
+    },
+    `[ai-service][${params.requestId}] Groq request sent`,
+  );
+
   const completion = await withTimeout(
     groq.chat.completions.create({
       model,
@@ -421,6 +456,18 @@ async function runGroq(
   );
 
   const normalized = normalizeOpenAIResponse(completion);
+
+  logger.info(
+    {
+      requestId: params.requestId,
+      provider: "groq",
+      model,
+      outputChars: normalized.text.length,
+      finishReason: normalized.finishReason,
+      ts: new Date().toISOString(),
+    },
+    `[ai-service][${params.requestId}] Groq response received`,
+  );
   return {
     text: normalized.text,
     provider: "groq",
@@ -443,6 +490,17 @@ async function runOpenRouter(
   const timeoutMs = params.isComplex ? TIMEOUT_COMPLEX_MS : TIMEOUT_STANDARD_MS;
   const start = Date.now();
 
+  logger.info(
+    {
+      requestId: params.requestId,
+      provider: "openrouter",
+      model,
+      timeoutMs,
+      ts: new Date().toISOString(),
+    },
+    `[ai-service][${params.requestId}] OpenRouter request sent`,
+  );
+
   const completion = await withTimeout(
     client.chat.completions.create({
       model,
@@ -454,6 +512,18 @@ async function runOpenRouter(
   );
 
   const normalized = normalizeOpenAIResponse(completion);
+
+  logger.info(
+    {
+      requestId: params.requestId,
+      provider: "openrouter",
+      model,
+      outputChars: normalized.text.length,
+      finishReason: normalized.finishReason,
+      ts: new Date().toISOString(),
+    },
+    `[ai-service][${params.requestId}] OpenRouter response received`,
+  );
   return {
     text: normalized.text,
     provider: "openrouter",

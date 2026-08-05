@@ -26,6 +26,10 @@ app.use(
           id: req.id,
           method: req.method,
           url: req.url?.split("?")[0],
+          headers: {
+            accept: req.headers.accept,
+            origin: req.headers.origin,
+          },
         };
       },
       res(res) {
@@ -128,11 +132,16 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     : 500;
   const message =
     err instanceof Error ? err.message : "An unexpected error occurred.";
+  const stack = err instanceof Error ? err.stack : undefined;
 
-  logger.error({ err, status }, "Unhandled Express error");
+  logger.error({ err, status, stack }, "Unhandled Express error");
 
   if (!res.headersSent) {
-    res.status(status).json({ error: process.env["NODE_ENV"] === "production" ? "Internal server error." : message });
+    res.status(status).json({
+      success: false,
+      message: process.env["NODE_ENV"] === "production" ? "Internal server error." : message,
+      error: process.env["NODE_ENV"] === "production" ? undefined : message,
+    });
   }
 });
 
