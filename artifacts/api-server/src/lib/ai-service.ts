@@ -21,7 +21,7 @@
  */
 
 import { GoogleGenAI } from "@google/genai";
-import { getGroqClient, getOpenRouterClient } from "./ai-providers";
+import { getAgentRouterClient, getGroqClient, getOpenRouterClient } from "./ai-providers";
 import { logger } from "./logger";
 
 // ---------------------------------------------------------------------------
@@ -44,6 +44,12 @@ import { logger } from "./logger";
  *   complex  → google/gemini-2.0-flash-001
  */
 export const PROVIDER_MODELS = {
+  // AgentRouter — primary. "auto" lets AgentRouter pick the best model
+  // automatically. Override with AGENTROUTER_MODEL if a specific model is needed.
+  agentrouter: {
+    standard: "auto",
+    complex:  "auto",
+  },
   gemini: {
     standard: "gemini-2.0-flash-lite",
     complex:  "gemini-2.5-flash",
@@ -209,6 +215,48 @@ function sleep(ms: number): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// AgentRouter  (OpenAI-compatible)
+// ---------------------------------------------------------------------------
+
+async function runAgentRouter(
+  params: GenerationParams,
+  model: string,
+): Promise<GenerationResult> {
+  const client = getAgentRouterClient();
+  const timeoutMs = params.isComplex ? TIMEOUT_COMPLEX_MS : TIMEOUT_STANDARD_MS;
+  const start = Date.now();
+
+  // Allow the operator to override the model via env var.
+  const resolvedModel = process.env["AGENTROUTER_MODEL"] ?? model;
+
+  const completion = await withTimeout(
+    client.chat.completions.create({
+      model: resolvedModel,
+      messages: [{ role: "user", content: params.prompt }],
+      max_tokens: params.maxOutputTokens,
+    }),
+    timeoutMs,
+    `AgentRouter/${resolvedModel}`,
+  );
+
+  const u = completion.usage;
+  return {
+    text: completion.choices[0]?.message?.content ?? "",
+    provider: "agentrouter",
+    model: resolvedModel,
+    durationMs: Date.now() - start,
+    finishReason: completion.choices[0]?.finish_reason ?? undefined,
+    usage: u
+      ? {
+          promptTokens:     u.prompt_tokens,
+          completionTokens: u.completion_tokens,
+          totalTokens:      u.total_tokens,
+        }
+      : undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Gemini
 // ---------------------------------------------------------------------------
 
@@ -369,6 +417,13 @@ interface ProviderDef {
 function buildChain(isComplex: boolean): ProviderDef[] {
   const tier = isComplex ? "complex" : "standard";
   return [
+    // AgentRouter is PRIMARY — tried first on every request.
+    {
+      name:   "agentrouter",
+      model:  PROVIDER_MODELS.agentrouter[tier],
+      hasKey: () => Boolean(process.env["AGENTROUTER_API_KEY"]),
+      run:    runAgentRouter,
+    },
     {
       name:   "gemini",
       model:  PROVIDER_MODELS.gemini[tier],

@@ -463,10 +463,28 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 }
 
 // ---------------------------------------------------------------------------
+// Helper: is this a fallback-worthy error? (quota / rate-limit across all
+// providers — matches the patterns that ai-service.ts surfaces upward when
+// the entire chain is exhausted.)
+// ---------------------------------------------------------------------------
+function isRateLimitError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const m = err.message.toLowerCase();
+  return (
+    m.includes("all ai providers") ||
+    m.includes("quota")            ||
+    m.includes("resource_exhausted") ||
+    m.includes("rate_limit")       ||
+    m.includes("rate limit")       ||
+    m.includes("429")
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Route
 // ---------------------------------------------------------------------------
 router.post("/ai/generate", aiLimiter, async (req, res) => {
-  const requestId = req.id ?? Math.random().toString(36).slice(2, 8);
+  const requestId = String(req.id ?? Math.random().toString(36).slice(2, 8));
   const tRequestStart = nowMs();
   const timings: Record<string, number> = {};
 

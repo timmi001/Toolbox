@@ -1,5 +1,5 @@
 /**
- * AI provider client singletons for Groq and OpenRouter.
+ * AI provider client singletons for AgentRouter, Groq, and OpenRouter.
  *
  * Each getter is lazy: the client is created on first use and reused
  * across requests. This mirrors the Gemini singleton pattern in
@@ -7,18 +7,45 @@
  *
  * Usage (future fallback logic):
  *
- *   import { getGroqClient, getOpenRouterClient } from "../lib/ai-providers";
- *
- *   const groq = getGroqClient();
- *   const openrouter = getOpenRouterClient();
+ *   import { getAgentRouterClient, getGroqClient, getOpenRouterClient } from "../lib/ai-providers";
  *
  * Environment variables:
+ *   AGENTROUTER_API_KEY — AgentRouter API key (primary provider)
  *   GROQ_API_KEY        — Groq Cloud API key
  *   OPENROUTER_API_KEY  — OpenRouter API key
  */
 
 import Groq from "groq-sdk";
 import OpenAI from "openai";
+
+// ---------------------------------------------------------------------------
+// AgentRouter  (OpenAI-compatible API)
+// ---------------------------------------------------------------------------
+
+let _agentRouterClient: OpenAI | null = null;
+let _agentRouterKey: string | null = null;
+
+/**
+ * Returns a cached AgentRouter client (OpenAI SDK pointed at agentrouter.io).
+ * Throws if AGENTROUTER_API_KEY is not set in the environment.
+ */
+export function getAgentRouterClient(): OpenAI {
+  const key = process.env["AGENTROUTER_API_KEY"];
+  if (!key) {
+    throw new Error(
+      "AGENTROUTER_API_KEY is not set. Add it to your environment secrets before using the AgentRouter provider."
+    );
+  }
+  if (_agentRouterClient && _agentRouterKey === key) {
+    return _agentRouterClient;
+  }
+  _agentRouterClient = new OpenAI({
+    apiKey: key,
+    baseURL: process.env["AGENTROUTER_BASE_URL"] ?? "https://api.agentrouter.io/v1",
+  });
+  _agentRouterKey = key;
+  return _agentRouterClient;
+}
 
 // ---------------------------------------------------------------------------
 // Groq
