@@ -1,34 +1,13 @@
-import { SearchBar } from '@/components/SearchBar';
-import { CategoryGrid } from '@/components/CategoryGrid';
-import { ToolFAQ } from '@/components/ToolFAQ';
-
-const HOME_FAQS = [
-  { question: "Are these tools really free?", answer: "Yes, 100% free forever. No premium tiers, no hidden costs." },
-  { question: "Is my data secure?", answer: "Absolutely. All tools run client-side in your browser. Your data never leaves your device." },
-  { question: "Do I need to create an account?", answer: "No account required. Just open the tool and start using it immediately." },
-  { question: "Are there any usage limits?", answer: "No limits. Use any tool as many times as you need." }
-];
+import { Hero } from '@/components/landing/Hero';
+import { HistorySection } from '@/components/landing/HistorySection';
+import { Collections } from '@/components/landing/Collections';
 
 export default function Home() {
   return (
-    <div className="space-y-24 pb-12 animate-in fade-in duration-700">
-      <section className="text-center pt-16 pb-8 px-4">
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-          100+ fully functional utility tools running securely in your browser. Fast, reliable, and completely free.
-        </p>
-        <div className="flex justify-center w-full max-w-2xl mx-auto">
-          <SearchBar />
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-2xl font-bold mb-6 tracking-tight">Explore Categories</h2>
-        <CategoryGrid />
-      </section>
-
-      <section className="max-w-3xl mx-auto">
-        <ToolFAQ faqs={HOME_FAQS} />
-      </section>
+    <div className="bg-white dark:bg-background">
+      <Hero />
+      <HistorySection />
+      <Collections />
     </div>
   );
 }

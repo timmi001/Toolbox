@@ -1,16 +1,10 @@
 import { Router } from "express";
-import { GoogleGenAI } from "@google/genai";
 import rateLimit from "express-rate-limit";
 import { logger } from "../lib/logger";
+import { generateText } from "../lib/ai-service";
 
 const router = Router();
 
-// ---------------------------------------------------------------------------
-// Gemini client singleton — reused across requests to avoid allocating a new
-// HTTP connection pool on every call. Re-created only if the key changes.
-// ---------------------------------------------------------------------------
-let genAIClient: GoogleGenAI | null = null;
-let genAIClientKey: string | null = null;
 
 // ---------------------------------------------------------------------------
 // Performance diagnostics (read-only instrumentation — does not change
@@ -42,7 +36,6 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "ai-summarizer": 900,
   "ai-paraphraser": 900,
   "ai-humanizer": 900,
-  "ai-title": 400,
   "ai-seo-title": 400,
   "ai-meta-description": 400,
   "ai-blog-title": 400,
@@ -126,39 +119,11 @@ function getOutputTokenBudget(toolId: string): number {
   return TOOL_MAX_OUTPUT_TOKENS[toolId] ?? DEFAULT_MAX_OUTPUT_TOKENS;
 }
 
-function getModelForTool(toolId: string): string {
-  return COMPLEX_TOOL_IDS.has(toolId) ? "gemini-2.5-flash" : "gemini-2.5-flash-lite";
-}
 
 function compactPrompt(prompt: string): string {
   return prompt.replace(/\n{3,}/g, "\n\n").trim();
 }
 
-type GeminiResponseLike = {
-  text?: unknown;
-  candidates?: Array<{
-    finishReason?: string;
-    content?: {
-      parts?: Array<{ text?: unknown }>;
-    };
-  }>;
-};
-
-function extractTextFromGeminiResponse(response: GeminiResponseLike): string {
-  if (typeof response.text === "string") {
-    return response.text;
-  }
-
-  const parts = response.candidates?.[0]?.content?.parts;
-  if (!Array.isArray(parts)) {
-    return "";
-  }
-
-  return parts
-    .map((part) => (typeof part.text === "string" ? part.text : ""))
-    .filter(Boolean)
-    .join("");
-}
 
 // ---------------------------------------------------------------------------
 // Rate limiting — 20 requests per minute per IP
@@ -498,10 +463,28 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 }
 
 // ---------------------------------------------------------------------------
+// Helper: is this a fallback-worthy error? (quota / rate-limit across all
+// providers — matches the patterns that ai-service.ts surfaces upward when
+// the entire chain is exhausted.)
+// ---------------------------------------------------------------------------
+function isRateLimitError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const m = err.message.toLowerCase();
+  return (
+    m.includes("all ai providers") ||
+    m.includes("quota")            ||
+    m.includes("resource_exhausted") ||
+    m.includes("rate_limit")       ||
+    m.includes("rate limit")       ||
+    m.includes("429")
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Route
 // ---------------------------------------------------------------------------
 router.post("/ai/generate", aiLimiter, async (req, res) => {
-  const requestId = req.id ?? Math.random().toString(36).slice(2, 8);
+  const requestId = String(req.id ?? Math.random().toString(36).slice(2, 8));
   const tRequestStart = nowMs();
   const timings: Record<string, number> = {};
 
@@ -576,17 +559,8 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
-    // GEMINI_API_KEY is the secret name used in this project.
-    // by the Replit secret that stores it. Previously this was read as
-    // GEMINI_API_KEY (a mismatch) which caused all AI tools to return 503.
-    const apiKey = process.env["GEMINI_API_KEY"];
-    if (!apiKey) {
-      res.status(503).json({ error: "AI service is not configured." });
-      return;
-    }
-
     const promptTokensEst = Math.ceil(prompt.length / 4);
-    const selectedModel = getModelForTool(toolId);
+    const isComplex = COMPLEX_TOOL_IDS.has(toolId);
     const selectedMaxOutputTokens = getOutputTokenBudget(toolId);
 
     logger.info(
@@ -595,65 +569,44 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         toolId,
         promptChars: prompt.length,
         promptTokensEst,
-        selectedModel,
+        isComplex,
         selectedMaxOutputTokens,
-        thinkingBudget: 0,
         ts: new Date().toISOString(),
       },
       `[perf][ai/generate][${requestId}] prompt ready (validate=${timings.validateMs.toFixed(1)}ms, build=${timings.promptMs.toFixed(1)}ms)`,
     );
 
-    // ---- Stage 3: Gemini API call (network send + model latency + receive) --
-    // Lazy singleton: reuse the client across requests to avoid allocating a
-    // new HTTP pool on every call. Re-instantiated only when the key changes.
-    if (!genAIClient || genAIClientKey !== apiKey) {
-      genAIClient = new GoogleGenAI({ apiKey });
-      genAIClientKey = apiKey;
-    }
-    const ai = genAIClient;
-    const tGeminiStart = nowMs();
-    logger.info(
-      { requestId, toolId, selectedModel, selectedMaxOutputTokens, ts: new Date().toISOString() },
-      `[perf][ai/generate][${requestId}] → sending request to Gemini (${selectedModel})`,
-    );
+    // ---- Stage 3: AI generation — delegates to the resilient service layer --
+    // Tries Gemini → Groq → OpenRouter with per-provider timeouts, automatic
+    // retries for transient errors, and structured per-attempt logging.
+    // See lib/ai-service.ts for the full pipeline.
+    const tAiStart = nowMs();
 
-    const stream = await ai.models.generateContentStream({
-      model: selectedModel,
-      contents: prompt,
-      config: {
-        maxOutputTokens: selectedMaxOutputTokens,
-        // Disable the model's internal reasoning/thinking pass. These tools
-        // are structured prompt→output tasks that do not need chain-of-thought,
-        // and the default thinking budget adds unnecessary latency before any
-        // visible output is produced.
-        thinkingConfig: { thinkingBudget: 0 },
-      },
+    const { result: aiResult, attempts: providerAttempts } = await generateText({
+      prompt,
+      toolId,
+      maxOutputTokens: selectedMaxOutputTokens,
+      isComplex,
+      requestId,
     });
 
-    let resultText = "";
-    let finishReason: string | undefined;
-    for await (const chunk of stream) {
-      const chunkText = extractTextFromGeminiResponse(chunk as GeminiResponseLike);
-      if (chunkText) {
-        resultText += chunkText;
-      }
-      const chunkFinishReason = chunk.candidates?.[0]?.finishReason;
-      if (chunkFinishReason) {
-        finishReason = chunkFinishReason;
-      }
-    }
+    const resultText   = aiResult.text;
+    const finishReason = aiResult.finishReason;
+    const providerUsed = aiResult.provider;
 
-    timings.geminiMs = nowMs() - tGeminiStart;
+    timings.aiMs = nowMs() - tAiStart;
     logger.info(
       {
         requestId,
-        geminiMs: Number(timings.geminiMs.toFixed(1)),
-        selectedModel,
-        selectedMaxOutputTokens,
+        provider: providerUsed,
+        model: aiResult.model,
+        aiMs: Number(timings.aiMs.toFixed(1)),
         outputChars: resultText.length,
+        usage: aiResult.usage,
+        providerAttempts,
         ts: new Date().toISOString(),
       },
-      `[perf][ai/generate][${requestId}] ← Gemini responded in ${timings.geminiMs.toFixed(1)}ms`,
+      `[perf][ai/generate][${requestId}] ← ${providerUsed}/${aiResult.model} in ${timings.aiMs.toFixed(1)}ms`,
     );
 
     // ---- Stage 4: response processing/serialization ------------------------
@@ -679,8 +632,8 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
 
     if (!resultText) {
       logger.warn(
-        { requestId, toolId },
-        `[ai/generate][${requestId}] Gemini response missing expected text path`,
+        { requestId, toolId, provider: providerUsed },
+        `[ai/generate][${requestId}] ${providerUsed} response was empty`,
       );
     }
 
@@ -692,18 +645,19 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       {
         requestId,
         toolId,
+        provider: providerUsed,
         resultChars: resultText.length,
         validateMs: Number(timings.validateMs.toFixed(1)),
         promptMs: Number(timings.promptMs.toFixed(1)),
-        geminiMs: Number(timings.geminiMs.toFixed(1)),
+        aiMs: Number(timings.aiMs.toFixed(1)),
         serializeMs: Number(timings.serializeMs.toFixed(1)),
         totalServerMs: Number(timings.totalMs.toFixed(1)),
-        geminiShareOfTotalPct: Number(((timings.geminiMs / timings.totalMs) * 100).toFixed(1)),
+        aiShareOfTotalPct: Number(((timings.aiMs / timings.totalMs) * 100).toFixed(1)),
         ts: new Date().toISOString(),
       },
       `[perf][ai/generate][${requestId}] DONE — total=${timings.totalMs.toFixed(1)}ms ` +
         `(validate=${timings.validateMs.toFixed(1)}ms, prompt=${timings.promptMs.toFixed(1)}ms, ` +
-        `gemini=${timings.geminiMs.toFixed(1)}ms, serialize=${timings.serializeMs.toFixed(1)}ms)`,
+        `${providerUsed}=${timings.aiMs.toFixed(1)}ms, serialize=${timings.serializeMs.toFixed(1)}ms)`,
     );
 
     res.json(payload);
@@ -719,14 +673,11 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       },
       `[perf][ai/generate][${requestId}] FAILED after ${timings.totalMs.toFixed(1)}ms`,
     );
-    // Don't leak internal/upstream error strings — log server-side, return generic message
-    const isKnown = err instanceof Error && (
-      err.message.includes("API_KEY") ||
-      err.message.includes("quota") ||
-      err.message.includes("RESOURCE_EXHAUSTED")
-    );
+    // Don't leak internal/upstream error strings — log server-side, return generic message.
+    // isRateLimitError covers quota/429 signals from all three providers.
+    const isKnown = isRateLimitError(err);
     const clientMessage = isKnown
-      ? "API quota exceeded. Please try again later."
+      ? "All AI providers are currently busy. Please try again in a moment."
       : "Generation failed. Please try again.";
     res.status(500).json({ error: clientMessage });
   }

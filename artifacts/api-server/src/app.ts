@@ -88,8 +88,10 @@ app.options("/{*path}", cors(corsOptions));
 // Apply CORS headers to all actual requests.
 app.use(cors(corsOptions));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 2 MB covers the largest AI tool inputs (up to 20 000-char transcript/essay
+// fields) while still rejecting obviously oversized payloads.
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
 // Mount the router at /api for the Replit dev environment, where the shared
 // proxy routes /<artifact-slug>/* so multiple services share one domain.

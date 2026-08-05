@@ -1,9 +1,4 @@
 import { useMemo, useRef, useState } from 'react';
-import { Download, Import, Trash2, History as HistoryIcon, ShieldCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { EmptyHistory } from '@/components/history/EmptyHistory';
 import { HistoryCard } from '@/components/history/HistoryCard';
 import { HistoryToolbar } from '@/components/history/HistoryToolbar';
@@ -32,59 +27,18 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/50 p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm font-medium text-primary">
-            <HistoryIcon className="h-4 w-4" />
-            AI History
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight">Your local AI generation history</h1>
-          <p className="text-sm text-muted-foreground">Browse, search, favorite, and export your ToolboxX AI runs entirely on this device. History stays in your browser only and is never sent to the server.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary" className="rounded-full bg-emerald-500/10 text-emerald-600">
-            <ShieldCheck className="mr-1 h-3.5 w-3.5" />
-            Local only
-          </Badge>
-          <Badge variant="secondary" className="rounded-full">
-            {entries.length} saved
-          </Badge>
-        </div>
-      </div>
-
-      <div className="space-y-4 rounded-2xl border border-border/60 bg-card/50 p-4 shadow-sm">
-        <SearchBar value={query} onChange={setQuery} />
-        <FilterBar
-          category={category}
-          setCategory={setCategory}
-          sort={sort}
-          setSort={setSort}
-          categories={categories}
-        />
-        <HistoryToolbar
-          onImportClick={onImportClick}
-          onExportJson={() => exportHistory('json', 'toolboxx-ai-history.json')}
-          onExportTxt={() => exportHistory('txt', 'toolboxx-ai-history.txt')}
-          onExportPdf={() => exportHistory('pdf', 'toolboxx-ai-history.pdf')}
-          onClear={() => {
-            if (window.confirm('Clear all local AI history? This cannot be undone.')) {
-              clearAllHistory();
-            }
-          }}
-        />
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="application/json,.json"
-          className="hidden"
-          onChange={async event => {
-            const file = event.target.files?.[0];
-            if (!file) return;
-            await importHistory(file);
-            event.currentTarget.value = '';
-          }}
-        />
-      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={async event => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          await importHistory(file);
+          event.currentTarget.value = '';
+        }}
+      />
 
       {loading ? (
         <div className="rounded-2xl border border-border/60 bg-card/50 p-8 text-sm text-muted-foreground animate-pulse">Loading history…</div>

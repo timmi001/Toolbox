@@ -69,26 +69,26 @@ export default function CategoryPage() {
   );
 
   return (
-    <div className="py-8 animate-in fade-in duration-500">
+    <div className="py-5 animate-in fade-in duration-500">
       <BreadcrumbNav category={mappedCategory} />
 
-      <header className="mb-12">
-        <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-4">{details.title}</h1>
-        <p className="text-xl text-muted-foreground mb-8 max-w-3xl">{details.desc}</p>
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1.5">{details.title}</h1>
+        <p className="text-sm text-muted-foreground mb-4 max-w-2xl">{details.desc}</p>
 
-        <div className="relative max-w-md">
+        <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={`Search ${categoryTools.length} ${details.title.toLowerCase()}...`}
-            className="pl-9 bg-card border-border/50"
+            className="pl-9 bg-card border-border/50 h-9 text-sm"
           />
         </div>
       </header>
 
       {filteredTools.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
           {filteredTools.map(tool => (
             <ToolCard key={tool.slug} tool={tool} />
           ))}

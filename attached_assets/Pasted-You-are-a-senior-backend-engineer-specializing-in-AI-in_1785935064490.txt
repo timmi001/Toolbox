@@ -1,0 +1,169 @@
+You are a senior backend engineer specializing in AI integrations. Refactor my AI provider architecture so that **AgentRouter becomes the primary/default AI provider**, while my existing providers remain as automatic fallbacks.
+
+## Objective
+
+Update the backend so that **every AI request is sent to AgentRouter first**. If AgentRouter is unavailable, rate-limited, times out, or returns an error, the system should automatically try the next provider without requiring any frontend changes.
+
+## Provider Priority
+
+Use the following order:
+
+1. AgentRouter (Primary)
+2. Gemini
+3. Groq
+4. OpenRouter
+
+The frontend should never know which provider generated the response.
+
+---
+
+## Environment Variables
+
+Use these environment variables:
+
+```env
+AGENTROUTER_API_KEY=
+GEMINI_API_KEY=
+GROQ_API_KEY=
+OPENROUTER_API_KEY=
+```
+
+Validate all required variables before attempting requests.
+
+---
+
+## AgentRouter Integration
+
+* Create or update an AgentRouter client.
+* Use the correct AgentRouter API endpoint.
+* Read the API key from `AGENTROUTER_API_KEY`.
+* Support configurable model selection.
+* Ensure responses are normalized to match the application's existing response format.
+
+---
+
+## Provider Manager
+
+Refactor the AI service into a provider manager.
+
+Example flow:
+
+```
+Request
+    │
+    ▼
+AgentRouter
+    │
+Success? ── Yes → Return Response
+    │
+    No
+    ▼
+Gemini
+    │
+Success? ── Yes → Return Response
+    │
+    No
+    ▼
+Groq
+    │
+Success? ── Yes → Return Response
+    │
+    No
+    ▼
+OpenRouter
+    │
+Success? ── Yes → Return Response
+    │
+    No
+    ▼
+Return appropriate error
+```
+
+The fallback process must happen automatically.
+
+---
+
+## Error Handling
+
+Retry the next provider when:
+
+* Rate limit (429)
+* Timeout
+* Network failure
+* 5xx server errors
+* Provider unavailable
+* Invalid response format
+
+Do not fall back for invalid user input or request validation errors.
+
+---
+
+## Logging
+
+Log which provider handled the request.
+
+Example:
+
+```
+Using AgentRouter...
+AgentRouter succeeded.
+```
+
+or
+
+```
+AgentRouter failed (429).
+Switching to Gemini...
+Gemini succeeded.
+```
+
+Never log API keys or other secrets.
+
+---
+
+## Response Normalization
+
+Ensure every provider returns the same response structure so the frontend requires no changes.
+
+---
+
+## Performance
+
+* Avoid duplicate API calls.
+* Use only one successful provider per request.
+* Stop trying additional providers once one succeeds.
+* Set reasonable request timeouts.
+* Prevent infinite retry loops.
+
+---
+
+## Existing Code
+
+* Reuse the existing AI service architecture where possible.
+* Do not break existing routes or API endpoints.
+* Keep all current functionality working.
+* Remove obsolete provider-selection logic if it conflicts with the new priority order.
+
+---
+
+## Testing
+
+Verify these scenarios:
+
+1. AgentRouter succeeds.
+2. AgentRouter fails and Gemini succeeds.
+3. AgentRouter and Gemini fail; Groq succeeds.
+4. AgentRouter, Gemini, and Groq fail; OpenRouter succeeds.
+5. All providers fail and a meaningful error is returned.
+
+---
+
+## Deliverables
+
+Provide:
+
+* The updated provider manager.
+* All modified files.
+* Any new files created.
+* An explanation of the changes.
+* Confirmation that AgentRouter is now the default provider and the remaining providers act as automatic fallbacks without requiring frontend changes.

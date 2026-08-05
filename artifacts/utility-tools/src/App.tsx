@@ -6,6 +6,8 @@ import { Layout } from "@/components/Layout";
 import { CurrencyPreferenceProvider } from "@/contexts/CurrencyPreferenceContext";
 import React, { Suspense, Component, type ErrorInfo, type ReactNode } from "react";
 import Home from "@/pages/Home";
+import AiTools from "@/pages/AiTools";
+import UtilityTools from "@/pages/UtilityTools";
 import CategoryPage from "@/pages/CategoryPage";
 import HistoryPage from "@/pages/History";
 import NotFound from "@/pages/not-found";
@@ -152,6 +154,9 @@ const ImageDimensions = L(() => import("@/pages/tools/image/image-dimensions"));
 const ScreenshotFrame = L(() => import("@/pages/tools/image/screenshot-frame"));
 const BgRemover = L(() => import("@/pages/tools/image/bg-remover"));
 const HiResExport = L(() => import("@/pages/tools/image/hi-res-export"));
+const RotateImage = L(() => import("@/pages/tools/image/rotate-image"));
+const CropImage = L(() => import("@/pages/tools/image/crop-image"));
+const FlipImage = L(() => import("@/pages/tools/image/flip-image"));
 
 // File Conversion Tools
 const Mp4ToMp3 = L(() => import("@/pages/tools/file-conversion/mp4-to-mp3"));
@@ -322,6 +327,8 @@ const AiParaphrasingTool = L(() => import("@/pages/tools/ai/ai-paraphrasing-tool
 const AiMathSolver = L(() => import("@/pages/tools/ai/ai-math-solver"));
 const AiStudyPlanner = L(() => import("@/pages/tools/ai/ai-study-planner"));
 const AiJambCbtPractice = L(() => import("@/pages/tools/ai/ai-jamb-cbt-practice"));
+const AiJambCutoffChecker = L(() => import("@/pages/tools/ai/ai-jamb-cutoff-checker"));
+const AiJambSubjectCombination = L(() => import("@/pages/tools/ai/ai-jamb-subject-combination"));
 const AiGhostwriting = L(() => import("@/pages/tools/ai/ai-ghostwriting"));
 const AiStoryWriter = L(() => import("@/pages/tools/ai/ai-story-writer"));
 const AiBookOutlineGenerator = L(() => import("@/pages/tools/ai/ai-book-outline-generator"));
@@ -336,6 +343,8 @@ function Router() {
       <Layout>
         <Switch>
         <Route path="/" component={Home} />
+        <Route path="/ai-tools" component={AiTools} />
+        <Route path="/utility-tools" component={UtilityTools} />
 
         {/* Categories */}
         <Route path="/text-tools" component={CategoryPage} />
@@ -365,6 +374,7 @@ function Router() {
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={TermsOfService} />
         <Route path="/copyright-policy" component={DmcaPolicy} />
+        <Route path="/dmca" component={DmcaPolicy} />
         <Route path="/about" component={AboutUs} />
         <Route path="/contact" component={Contact} />
 
@@ -452,6 +462,9 @@ function Router() {
         <Route path="/tools/image/screenshot-frame" component={ScreenshotFrame} />
         <Route path="/tools/image/bg-remover" component={BgRemover} />
         <Route path="/tools/image/hi-res-export" component={HiResExport} />
+        <Route path="/tools/image/rotate-image" component={RotateImage} />
+        <Route path="/tools/image/crop-image" component={CropImage} />
+        <Route path="/tools/image/flip-image" component={FlipImage} />
 
         {/* File Conversion Tools */}
         <Route path="/tools/file-conversion/mp4-to-mp3" component={Mp4ToMp3} />
@@ -596,6 +609,8 @@ function Router() {
         <Route path="/tools/ai/ai-math-solver" component={AiMathSolver} />
         <Route path="/tools/ai/ai-study-planner" component={AiStudyPlanner} />
         <Route path="/tools/ai/ai-jamb-cbt-practice" component={AiJambCbtPractice} />
+        <Route path="/tools/ai/ai-jamb-cutoff-checker" component={AiJambCutoffChecker} />
+        <Route path="/tools/ai/ai-jamb-subject-combination" component={AiJambSubjectCombination} />
         <Route path="/tools/ai/ai-ghostwriting" component={AiGhostwriting} />
         <Route path="/tools/ai/ai-story-writer" component={AiStoryWriter} />
         <Route path="/tools/ai/ai-book-outline-generator" component={AiBookOutlineGenerator} />
