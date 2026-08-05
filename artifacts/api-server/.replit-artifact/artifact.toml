@@ -6,7 +6,7 @@ id = "artifacts/api-server"
 router = "path"
 
 [[services]]
-name = "web"
+name = "API Server"
 paths = [ "/api" ]
 localPort = 22729
 

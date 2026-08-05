@@ -1,40 +1,46 @@
-# Free Online Utility Tools
+# ToolboxX
 
-A hub of 100+ free browser-based utility tools — text, developer, image, PDF, calculator, business, SEO, and AI-powered tools — built on Replit.
+A comprehensive collection of 200+ free online tools covering text processing, developer utilities, calculators, image tools, PDF tools, file conversion, business tools, and AI-powered writing/coding tools. No sign-up required.
 
 ## Run & Operate
 
-- Workflows start automatically: `artifacts/utility-tools: web` (frontend) and `artifacts/api-server: API Server` (backend)
+- `pnpm --filter @workspace/utility-tools run dev` — run the frontend (port 18470, served at `/`)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 22729, served at `/api`)
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm --filter @workspace/utility-tools run typecheck` — typecheck frontend only
-- Required env: `GEMINI_API_KEY` — Google Gemini API key (for AI tools at `/tools/ai/*`)
+- `pnpm run build` — typecheck + build all packages
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- Frontend: React + Vite, Tailwind CSS v4, Wouter (routing), TanStack Query
-- Backend: Express 5, `@google/genai` (Gemini 2.5 Flash), `express-rate-limit`
-- UI: Radix UI primitives, Lucide React icons, shadcn/ui components
-- PDF tools: `pdf-lib`, `pdfjs-dist`; QR tools: `qrcode`; ZIP: `jszip`
+- pnpm workspaces, Node.js 20, TypeScript 5.9
+- Frontend: React + Vite + Tailwind CSS v4 + wouter (routing)
+- UI: shadcn/ui components (Radix primitives), Framer Motion, Recharts
+- Backend: Express 5 + pino logging
+- AI: Google Generative AI (@google/genai), OpenAI, Groq
+- Build: esbuild (API server)
 
 ## Where things live
 
-- `artifacts/utility-tools/src/App.tsx` — all routes (100+ tool pages via Wouter)
-- `artifacts/utility-tools/src/pages/` — page components by category (`tools/`, `blog/`)
-- `artifacts/utility-tools/src/components/` — shared layout, tool shell, UI primitives
-- `artifacts/api-server/src/routes/ai.ts` — AI generation endpoint (`POST /api/ai/generate`)
-- `artifacts/api-server/src/routes/health.ts` — health check (`GET /api/healthz`)
+- `artifacts/utility-tools/` — main frontend app (React + Vite)
+  - `src/App.tsx` — all routes (200+ lazy-loaded tool pages)
+  - `src/pages/tools/` — tool page components organized by category
+  - `src/components/` — Layout, Navbar, Footer, ToolCard, etc.
+  - `src/index.css` — Tailwind theme tokens (purple/green palette, Inter font)
+- `artifacts/api-server/` — Express API server
+  - `src/routes/ai.ts` — AI-powered tool endpoints (uses Google Generative AI)
+  - `src/routes/developer.ts` — developer utility endpoints
+  - `src/routes/video.ts` — video download endpoints (yt-dlp)
 
 ## Architecture decisions
 
-- All tools run client-side in the browser; no user data hits the server except AI prompts.
-- AI tools share a single Express endpoint (`/api/ai/generate`) with per-tool prompt builders and input validation, rate-limited to 20 req/min per IP.
-- Routing is flat Wouter routes in `App.tsx` — no Next.js file-based routing.
-- Tailwind CSS v4 with custom theme tokens in `src/index.css` (Inter font, HSL color system).
+- All frontend tool pages are lazy-loaded (`React.lazy`) for fast initial load
+- AI routes proxy to Google Generative AI with rate limiting
+- yt-dlp is invoked via system PATH for video tools
+- No database required — all tools are client-side or stateless API calls
+- wouter used instead of React Router for lightweight client-side routing
 
 ## Product
 
-100+ free tools across 8 categories: AI Tools, Text Tools, Developer Tools, Image Tools, PDF Tools, Business Tools, Calculator Tools, and SEO Tools. Also includes a Blog section.
+ToolboxX gives creators, students, developers, and businesses instant access to 200+ browser-based tools with no installation or account required. Categories: AI writing/coding, text processing, developer tools, PDF tools, image tools, calculators, file conversion, and business tools.
 
 ## User preferences
 
@@ -42,14 +48,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-- AI tools require `GEMINI_API_KEY` secret. Without it, the backend returns 503.
-- `pdfjs-dist` version was bumped to v6 during install — test PDF tools if issues arise.
-- Do not run `pnpm dev` at the workspace root — use the managed workflows instead.
-- Tool category `marketing` has no `/tools/marketing/*` routes — those tools are registered under `/tools/ai/*` in `App.tsx`. Always build tool links with `getToolRoutePath()` from `lib/tools-data.ts`, never `/tools/${tool.category}/${tool.slug}` directly.
-- `.migration-backup/` at the repo root is a preserved snapshot of the original Vercel import, kept for reference. It's outside all tsconfig/package includes, so it's excluded from typecheck/build and artifact auto-detection.
+- The api-server dev script builds then starts (not a watch mode); restart after code changes
+- yt-dlp is available via Nix PATH; see memory for shadowing notes if version issues arise
+- `pnpm approve-builds` required if @google/genai build scripts need to run
 
 ## Pointers
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
-- Frontend routes are in `artifacts/utility-tools/src/App.tsx`.
-- AI prompts are in `artifacts/api-server/src/routes/ai.ts` (`buildPrompt` function).
+- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details

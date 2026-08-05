@@ -1,6 +1,7 @@
 kind = "web"
 previewPath = "/"
 title = "Free Online Utility Tools"
+description = "A comprehensive collection of free online tools covering text processing, developer utilities, calculators, image tools, PDF tools, file conversion, business tools, and AI-powered tools. Designed for developers, writers, students, and professionals who need quick, browser-based tools without installation."
 version = "1.0.0"
 id = "artifacts/utility-tools"
 router = "path"
