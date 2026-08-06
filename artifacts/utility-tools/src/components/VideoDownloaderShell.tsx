@@ -49,11 +49,15 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
     setError('');
     setResult(null);
     try {
+      console.log(`[frontend][handleFetch] fetching metadata for url=${trimmed} platform=${config.platform}`);
       const data = await videoDownload.fetch({ url: trimmed, platform: config.platform });
+      console.log(`[frontend][handleFetch] success: title=${data.title} formats=${data.formats.length}`);
       setSourceUrl(trimmed);
       setResult(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      const errorMsg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+      console.error(`[frontend][handleFetch] error: ${errorMsg}`);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -82,11 +86,16 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
       title: result.title,
     });
 
+    console.log(`[frontend][downloadFile] starting download: format=${format.formatId} url=${sourceUrl}`);
+    console.log(`[frontend][downloadFile] stream URL: ${downloadUrl}`);
+
     try {
       const response = await fetch(downloadUrl, {
         credentials: 'same-origin',
         cache: 'no-store',
       });
+
+      console.log(`[frontend][downloadFile] fetch response status=${response.status} contentType=${response.headers.get('content-type')}`);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -97,21 +106,29 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
         } catch {
           // Ignore JSON parse errors and fall back to the default message.
         }
+        console.error(`[frontend][downloadFile] HTTP error response: ${message}`);
         throw new Error(message);
       }
 
+      console.log(`[frontend][downloadFile] creating blob from response`);
       const blob = await response.blob();
+      console.log(`[frontend][downloadFile] blob created: size=${blob.size} type=${blob.type}`);
+
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
       a.download = `${result.title}.${format.ext}`;
       a.style.display = 'none';
       document.body.appendChild(a);
+      console.log(`[frontend][downloadFile] triggering download: filename=${a.download}`);
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+      console.log(`[frontend][downloadFile] download triggered successfully`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to download the file.');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to download the file.';
+      console.error(`[frontend][downloadFile] error: ${errorMsg}`);
+      setError(errorMsg);
     }
   }
 

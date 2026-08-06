@@ -10,6 +10,7 @@ const fs = require('fs');
 const { errorHandler } = require('./middleware/errorHandler');
 const { rateLimiter } = require('./middleware/rateLimiter');
 const downloadRoutes = require('./routes/download');
+const videoRoutes = require('./routes/video');
 const { verifyDependencies } = require('./services/downloader');
 
 dotenv.config();
@@ -38,10 +39,15 @@ app.use(express.urlencoded({ extended: true, limit: process.env.MAX_REQUEST_BODY
 app.use(rateLimiter);
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK' });
+  console.log('[health] health check');
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Legacy routes (kept for backwards compatibility)
 app.use('/api/download', downloadRoutes);
+
+// New routes (match frontend expectations)
+app.use('/api/video', videoRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

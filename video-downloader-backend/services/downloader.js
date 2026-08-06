@@ -199,17 +199,21 @@ async function inspectUrl(url) {
 
   // Prevent duplicate concurrent inspections
   if (inflight.has(cacheKey)) {
+    console.log(`[service][inspectUrl] cache hit (inflight) for ${url}`);
     return inflight.get(cacheKey);
   }
 
   const promise = (async () => {
     const t0 = process.hrtime.bigint();
+    console.log(`[service][inspectUrl] starting metadata fetch for ${url}`);
     // Use compact JSON for faster structured parsing and retry on transient failures
     const { stdout } = await runCommandWithRetries('yt-dlp', ['-j', '--no-warnings', url], { timeout: 1000 * 30, retries: 1 });
+    console.log(`[service][inspectUrl] yt-dlp completed, parsing JSON`);
     let infoObj;
     try {
       infoObj = JSON.parse(stdout);
     } catch (e) {
+      console.error(`[service][inspectUrl] JSON parse failed: ${e.message}`);
       throw new Error('Unable to inspect the provided URL (parse failed).');
     }
 
@@ -228,7 +232,7 @@ async function inspectUrl(url) {
 
     cache.set(cacheKey, result, 1000 * 60 * 10); // 10m TTL for metadata
     const durMs = Number(process.hrtime.bigint() - t0) / 1e6;
-    console.info(`[perf][inspectUrl] url=${url} durationMs=${durMs.toFixed(1)}`);
+    console.info(`[perf][inspectUrl] url=${url} durationMs=${durMs.toFixed(1)} formats=${result.formats.length}`);
     return result;
   })();
 
@@ -245,10 +249,12 @@ async function downloadVideo(url, format) {
   ensureDir(tempDir);
   ensureDir(downloadsDir);
   const t0 = process.hrtime.bigint();
+  console.log(`[service][downloadVideo] starting: url=${url} format=${format}`);
   // Fast path: check if a cached direct URL is available
   const cacheKey = `direct:${url}:${format}`;
   const cached = cache.get(cacheKey);
   if (cached && cached.directUrl) {
+    console.log(`[service][downloadVideo] cache hit (direct URL)`);
     return {
       direct: true,
       url: cached.directUrl,
@@ -267,20 +273,33 @@ async function downloadVideo(url, format) {
 
   // Avoid duplicate downloads for same URL+format
   const inflightKey = `dl:${url}:${format}`;
-  if (inflight.has(inflightKey)) return inflight.get(inflightKey);
+  if (inflight.has(inflightKey)) {
+    console.log(`[service][downloadVideo] returning existing inflight promise`);
+    return inflight.get(inflightKey);
+  }
 
   const promise = (async () => {
-    const { stdout } = await runCommandWithRetries('yt-dlp', args, { timeout: 1000 * 60 * 2, retries: 2 });
-    const directUrl = stdout.split(/\r?\n/).find(Boolean);
-    if (directUrl && isDirectDownloadSafe(directUrl)) {
-      cache.set(cacheKey, { directUrl }, 1000 * 60 * 60); // 1 hour
-      return { direct: true, url: directUrl, fileName: path.basename(directUrl.split('?')[0]) };
-    }
+    try {
+      console.log(`[service][downloadVideo] extracting direct URL with yt-dlp args=${args.join(' ')}`);
+      const { stdout } = await runCommandWithRetries('yt-dlp', args, { timeout: 1000 * 60 * 2, retries: 2 });
+      const directUrl = stdout.split(/\r?\n/).find(Boolean);
+      console.log(`[service][downloadVideo] yt-dlp returned: ${directUrl ? 'URL found' : 'no URL'}`);
+      if (directUrl && isDirectDownloadSafe(directUrl)) {
+        console.log(`[service][downloadVideo] direct URL is safe, caching and returning`);
+        cache.set(cacheKey, { directUrl }, 1000 * 60 * 60); // 1 hour
+        return { direct: true, url: directUrl, fileName: path.basename(directUrl.split('?')[0]) };
+      }
 
-    // Fallback: stream to disk via yt-dlp
-    await runCommandWithRetries('yt-dlp', ['-f', format === 'best' ? 'bestvideo+bestaudio/best' : format, '-o', tempOutputPath, '--no-playlist', '--no-warnings', url], { timeout: 1000 * 60 * 5, retries: 2 });
-    fs.renameSync(tempOutputPath, outputPath);
-    return { direct: false, filePath: outputPath, fileName: outputName };
+      // Fallback: stream to disk via yt-dlp
+      console.log(`[service][downloadVideo] direct URL not available, downloading to disk at ${tempOutputPath}`);
+      await runCommandWithRetries('yt-dlp', ['-f', format === 'best' ? 'bestvideo+bestaudio/best' : format, '-o', tempOutputPath, '--no-playlist', '--no-warnings', url], { timeout: 1000 * 60 * 5, retries: 2 });
+      console.log(`[service][downloadVideo] download complete, moving to ${outputPath}`);
+      fs.renameSync(tempOutputPath, outputPath);
+      return { direct: false, filePath: outputPath, fileName: outputName };
+    } catch (err) {
+      console.error(`[service][downloadVideo] failed: ${err.message}`);
+      throw err;
+    }
   })();
 
   inflight.set(inflightKey, promise);
@@ -298,6 +317,7 @@ async function downloadAudio(url, format) {
   ensureDir(tempDir);
   ensureDir(downloadsDir);
   const t0 = process.hrtime.bigint();
+  console.log(`[service][downloadAudio] starting: url=${url} format=${format}`);
 
   const outputName = `${uuidv4()}.mp3`;
   const outputPath = path.join(downloadsDir, outputName);
@@ -307,6 +327,7 @@ async function downloadAudio(url, format) {
   const cacheKey = `direct:${url}:audio:${format}`;
   const cached = cache.get(cacheKey);
   if (cached && cached.directUrl) {
+    console.log(`[service][downloadAudio] cache hit (direct URL)`);
     return {
       direct: true,
       url: cached.directUrl,
@@ -315,19 +336,32 @@ async function downloadAudio(url, format) {
   }
 
   const inflightKey = `dl:audio:${url}:${format}`;
-  if (inflight.has(inflightKey)) return inflight.get(inflightKey);
+  if (inflight.has(inflightKey)) {
+    console.log(`[service][downloadAudio] returning existing inflight promise`);
+    return inflight.get(inflightKey);
+  }
 
   const promise = (async () => {
-    const { stdout } = await runCommandWithRetries('yt-dlp', ['-f', 'bestaudio', '--no-playlist', '--no-warnings', '--print', 'url', url], { timeout: 1000 * 60 * 2, retries: 2 });
-    const directUrl = stdout.split(/\r?\n/).find(Boolean);
-    if (directUrl && isDirectDownloadSafe(directUrl)) {
-      cache.set(cacheKey, { directUrl }, 1000 * 60 * 60);
-      return { direct: true, url: directUrl, fileName: path.basename(directUrl.split('?')[0]) };
-    }
+    try {
+      console.log(`[service][downloadAudio] extracting direct audio URL with yt-dlp`);
+      const { stdout } = await runCommandWithRetries('yt-dlp', ['-f', 'bestaudio', '--no-playlist', '--no-warnings', '--print', 'url', url], { timeout: 1000 * 60 * 2, retries: 2 });
+      const directUrl = stdout.split(/\r?\n/).find(Boolean);
+      console.log(`[service][downloadAudio] yt-dlp returned: ${directUrl ? 'URL found' : 'no URL'}`);
+      if (directUrl && isDirectDownloadSafe(directUrl)) {
+        console.log(`[service][downloadAudio] direct URL is safe, caching and returning`);
+        cache.set(cacheKey, { directUrl }, 1000 * 60 * 60);
+        return { direct: true, url: directUrl, fileName: path.basename(directUrl.split('?')[0]) };
+      }
 
-    await runCommandWithRetries('yt-dlp', ['-x', '--audio-format', format || 'mp3', '-o', tempOutputPath, '--no-playlist', '--no-warnings', url], { timeout: 1000 * 60 * 5, retries: 2 });
-    fs.renameSync(tempOutputPath, outputPath);
-    return { direct: false, filePath: outputPath, fileName: outputName };
+      console.log(`[service][downloadAudio] direct URL not available, downloading and converting to disk at ${tempOutputPath}`);
+      await runCommandWithRetries('yt-dlp', ['-x', '--audio-format', format || 'mp3', '-o', tempOutputPath, '--no-playlist', '--no-warnings', url], { timeout: 1000 * 60 * 5, retries: 2 });
+      console.log(`[service][downloadAudio] download and conversion complete, moving to ${outputPath}`);
+      fs.renameSync(tempOutputPath, outputPath);
+      return { direct: false, filePath: outputPath, fileName: outputName };
+    } catch (err) {
+      console.error(`[service][downloadAudio] failed: ${err.message}`);
+      throw err;
+    }
   })();
 
   inflight.set(inflightKey, promise);
