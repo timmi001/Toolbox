@@ -70,7 +70,7 @@ const AI_CATEGORIES = [
   {
     emoji: '🎓',
     name: 'AI Study & Exams',
-    description: 'Study notes, quizzes, flashcards, homework help, planners and JAMB prep.',
+    description: 'Study notes, quizzes, flashcards, homework help, planners and exam-prep tools.',
     href: '/ai-study-exams-tools',
     filterCategories: ['ai-study-exams'],
     accent: '#0891B2',
