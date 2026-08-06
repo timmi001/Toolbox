@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { validateUrl, validateDownloadRequest } = require('../utils/validator');
 const { inspectUrl, downloadVideo, downloadAudio, cleanupTempFiles } = require('../services/downloader');
 
@@ -26,13 +27,19 @@ async function downloadVideoHandler(req, res, next) {
     }
 
     const result = await downloadVideo(url, format);
-    res.download(result.filePath, result.fileName, async (err) => {
-      if (err) {
-        return next(err);
-      }
+    if (result.direct) {
+      // Return redirect to the direct URL so clients can download directly
+      return res.json({ direct: true, url: result.url, fileName: result.fileName });
+    }
 
+    // Stream file to response to avoid blocking server for long
+    res.setHeader('Content-Disposition', `attachment; filename="${result.fileName}"`);
+    const stream = fs.createReadStream(result.filePath);
+    stream.on('error', next);
+    stream.on('close', async () => {
       await cleanupTempFiles([result.filePath]);
     });
+    stream.pipe(res);
   } catch (error) {
     next(error);
   }
@@ -48,13 +55,17 @@ async function downloadAudioHandler(req, res, next) {
     }
 
     const result = await downloadAudio(url, format);
-    res.download(result.filePath, result.fileName, async (err) => {
-      if (err) {
-        return next(err);
-      }
+    if (result.direct) {
+      return res.json({ direct: true, url: result.url, fileName: result.fileName });
+    }
 
+    res.setHeader('Content-Disposition', `attachment; filename="${result.fileName}"`);
+    const stream = fs.createReadStream(result.filePath);
+    stream.on('error', next);
+    stream.on('close', async () => {
       await cleanupTempFiles([result.filePath]);
     });
+    stream.pipe(res);
   } catch (error) {
     next(error);
   }
