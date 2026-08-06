@@ -327,8 +327,6 @@ const AiParaphrasingTool = L(() => import("@/pages/tools/ai/ai-paraphrasing-tool
 const AiMathSolver = L(() => import("@/pages/tools/ai/ai-math-solver"));
 const AiStudyPlanner = L(() => import("@/pages/tools/ai/ai-study-planner"));
 const AiJambCbtPractice = L(() => import("@/pages/tools/ai/ai-jamb-cbt-practice"));
-const AiJambCutoffChecker = L(() => import("@/pages/tools/ai/ai-jamb-cutoff-checker"));
-const AiJambSubjectCombination = L(() => import("@/pages/tools/ai/ai-jamb-subject-combination"));
 const AiGhostwriting = L(() => import("@/pages/tools/ai/ai-ghostwriting"));
 const AiStoryWriter = L(() => import("@/pages/tools/ai/ai-story-writer"));
 const AiBookOutlineGenerator = L(() => import("@/pages/tools/ai/ai-book-outline-generator"));
@@ -614,8 +612,6 @@ function Router() {
         <Route path="/tools/ai/ai-math-solver" component={AiMathSolver} />
         <Route path="/tools/ai/ai-study-planner" component={AiStudyPlanner} />
         <Route path="/tools/ai/ai-jamb-cbt-practice" component={AiJambCbtPractice} />
-        <Route path="/tools/ai/ai-jamb-cutoff-checker" component={AiJambCutoffChecker} />
-        <Route path="/tools/ai/ai-jamb-subject-combination" component={AiJambSubjectCombination} />
         <Route path="/tools/ai/ai-ghostwriting" component={AiGhostwriting} />
         <Route path="/tools/ai/ai-story-writer" component={AiStoryWriter} />
         <Route path="/tools/ai/ai-book-outline-generator" component={AiBookOutlineGenerator} />
