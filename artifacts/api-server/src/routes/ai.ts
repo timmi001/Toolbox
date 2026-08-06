@@ -444,21 +444,42 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
       return `Generate 10 realistic JAMB CBT practice questions for the subject: "${i.subject}".\n\nFor EACH question provide:\n\n**Question [N]:** [The question text]\n\n**A)** [Option A]\n**B)** [Option B]\n**C)** [Option C]\n**D)** [Option D]\n\n**Correct Answer:** [A/B/C/D]\n**Explanation:** [Why this is correct and why other options are wrong - helps learning]\n\n---\n\nMake questions realistic to actual JAMB exams, vary difficulty levels, and focus on core concepts covered in the curriculum.`;
 
     case "ai-event-assistant":
-      return `Create a polished event plan for a ${i.event_type || "special"} event with the theme "${i.theme}".
+      return `Create a polished, production-ready event toolkit for a ${i.event_type || "special"} event${i.event_name ? ` named "${i.event_name}"` : ""}${i.theme ? ` with the theme "${i.theme}"` : ""}.
 
-Guest count: ${i.guest_count || "Flexible"}
-Budget: ${i.budget || "Flexible"}
-Extra details: ${i.details || "None provided"}
+Event details:
+- Purpose: ${i.event_purpose || "Not specified"}
+- Date: ${i.event_date || "Not specified"}
+- Time: ${i.start_time || "Not specified"}${i.end_time ? ` to ${i.end_time}` : ""}
+- Venue: ${i.venue || "Not specified"}
+- City/Country: ${i.city || "Not specified"}${i.country ? `, ${i.country}` : ""}
+- Budget: ${i.budget || "Flexible"}${i.currency ? ` ${i.currency}` : ""}
+- Expected guests: ${i.guest_count || "Flexible"}
+- Audience: ${i.audience || "General audience"}
+- Tone: ${i.tone || "Professional"}
+- Dress code: ${i.dress_code || "Not specified"}
+- Special requirements: ${i.special_requirements || "None"}
+- Additional notes: ${i.additional_notes || "None"}
 
-Return a multi-part response with:
-1. Event concept and atmosphere
-2. Suggested layout and decor ideas
-3. Food and beverage ideas
-4. Entertainment and activities
-5. Practical logistics and timeline notes
-6. A short checklist of must-have items
+${i.section_focus ? `Focus on the section titled "${i.section_focus}" and write it as a detailed, practical subsection with clear bullet points and a polished tone.` : "Create a complete toolkit with the following sections and include enough details for execution:"}
 
-Make it feel practical, stylish, and easy to execute.`;
+${i.section_focus ? "" : `1. Event Overview
+2. Event Timeline
+3. Budget Planner
+4. Event Checklist
+5. Shopping List
+6. Vendor Suggestions
+7. Invitation Generator
+8. Event Description
+9. Social Media Promotion
+10. Email Campaign
+11. Speech Generator
+12. Event Hashtags
+13. Seating Planner
+14. Risk & Contingency
+15. AI Recommendations
+`}
+
+Format the response as markdown with clear headings. Use practical, stylish, and easy-to-execute language. Keep each section detailed but concise enough to be immediately useful.`;
 
     case "ai-event-itinerary":
       return `Create a clear event itinerary for "${i.event_name}" with the following flow notes:
