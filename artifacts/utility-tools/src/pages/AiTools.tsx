@@ -111,6 +111,17 @@ const AI_CATEGORIES = [
     border: 'border-[#0F766E]/15',
     hoverShadow: 'rgba(15,118,110,0.12)',
   },
+  {
+    emoji: '🎉',
+    name: 'AI Event Planning',
+    description: 'Plan birthdays, weddings, launches, and work events with AI-assisted itineraries, checklists, and invites.',
+    href: '/ai-event-tools',
+    filterCategories: ['ai-events'],
+    accent: '#F59E0B',
+    bg: 'from-[#F59E0B]/8 to-[#F59E0B]/3',
+    border: 'border-[#F59E0B]/15',
+    hoverShadow: 'rgba(245,158,11,0.12)',
+  },
 ] as const;
 
 // Quick-access popular AI tools
@@ -124,7 +135,7 @@ export default function AiTools() {
 
   const totalAiTools = toolsData.filter(t =>
     ['ai-blogging-seo', 'ai-resume', 'ai-social', 'ai-email', 'ai-grammar',
-     'ai-study-exams', 'ai-ghostwriting', 'marketing', 'business'].includes(t.category)
+     'ai-study-exams', 'ai-ghostwriting', 'marketing', 'business', 'ai-events'].includes(t.category)
   ).length;
 
   const visibleCategories = AI_CATEGORIES.filter(c =>

@@ -334,6 +334,10 @@ const AiStoryWriter = L(() => import("@/pages/tools/ai/ai-story-writer"));
 const AiBookOutlineGenerator = L(() => import("@/pages/tools/ai/ai-book-outline-generator"));
 const AiChapterGenerator = L(() => import("@/pages/tools/ai/ai-chapter-generator"));
 const AiSpeechWriter = L(() => import("@/pages/tools/ai/ai-speech-writer"));
+const AiEventAssistant = L(() => import("@/pages/tools/ai/ai-event-assistant"));
+const AiEventItinerary = L(() => import("@/pages/tools/ai/ai-event-itinerary"));
+const AiEventChecklist = L(() => import("@/pages/tools/ai/ai-event-checklist"));
+const AiEventInvitation = L(() => import("@/pages/tools/ai/ai-event-invitation"));
 
 const queryClient = new QueryClient();
 
@@ -362,6 +366,7 @@ function Router() {
         <Route path="/ai-grammar-tools" component={CategoryPage} />
         <Route path="/ai-study-exams-tools" component={CategoryPage} />
         <Route path="/ai-ghostwriting-tools" component={CategoryPage} />
+        <Route path="/ai-event-tools" component={CategoryPage} />
         <Route path="/audio-tools" component={CategoryPage} />
         <Route path="/video-tools" component={CategoryPage} />
 
@@ -616,6 +621,10 @@ function Router() {
         <Route path="/tools/ai/ai-book-outline-generator" component={AiBookOutlineGenerator} />
         <Route path="/tools/ai/ai-chapter-generator" component={AiChapterGenerator} />
         <Route path="/tools/ai/ai-speech-writer" component={AiSpeechWriter} />
+        <Route path="/tools/ai/ai-event-assistant" component={AiEventAssistant} />
+        <Route path="/tools/ai/ai-event-itinerary" component={AiEventItinerary} />
+        <Route path="/tools/ai/ai-event-checklist" component={AiEventChecklist} />
+        <Route path="/tools/ai/ai-event-invitation" component={AiEventInvitation} />
 
         {/* Audio Tools */}
         <Route path="/tools/audio/mp3-converter" component={Mp3Converter} />

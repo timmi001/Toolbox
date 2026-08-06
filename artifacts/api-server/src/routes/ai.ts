@@ -94,6 +94,10 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "ai-json-formatter": 800,
   "ai-math-solver": 900,
   "ai-jamb-cbt-practice": 1000,
+  "ai-event-assistant": 1200,
+  "ai-event-itinerary": 900,
+  "ai-event-checklist": 900,
+  "ai-event-invitation": 800,
 };
 
 const COMPLEX_TOOL_IDS = new Set([
@@ -217,6 +221,10 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-ghostwriting":   { required: ["topic"], maxLengths: {"topic":3000} },
   "ai-math-solver":    { required: ["problem"], maxLengths: {"problem": 1000} },
   "ai-jamb-cbt-practice": { required: ["subject"], maxLengths: {"subject": 100} },
+  "ai-event-assistant": { required: ["event_type", "theme"], maxLengths: { event_type: 100, theme: 200, guest_count: 100, budget: 100, details: 2000 } },
+  "ai-event-itinerary": { required: ["event_name", "flow"], maxLengths: { event_name: 200, duration: 100, flow: 4000 } },
+  "ai-event-checklist": { required: ["event_name", "timeline"], maxLengths: { event_name: 200, details: 3000 } },
+  "ai-event-invitation": { required: ["event_name", "tone"], maxLengths: { event_name: 200, audience: 200, details: 2000 } },
 };
 
 // ---------------------------------------------------------------------------
@@ -434,6 +442,46 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 
     case "ai-jamb-cbt-practice":
       return `Generate 10 realistic JAMB CBT practice questions for the subject: "${i.subject}".\n\nFor EACH question provide:\n\n**Question [N]:** [The question text]\n\n**A)** [Option A]\n**B)** [Option B]\n**C)** [Option C]\n**D)** [Option D]\n\n**Correct Answer:** [A/B/C/D]\n**Explanation:** [Why this is correct and why other options are wrong - helps learning]\n\n---\n\nMake questions realistic to actual JAMB exams, vary difficulty levels, and focus on core concepts covered in the curriculum.`;
+
+    case "ai-event-assistant":
+      return `Create a polished event plan for a ${i.event_type || "special"} event with the theme "${i.theme}".
+
+Guest count: ${i.guest_count || "Flexible"}
+Budget: ${i.budget || "Flexible"}
+Extra details: ${i.details || "None provided"}
+
+Return a multi-part response with:
+1. Event concept and atmosphere
+2. Suggested layout and decor ideas
+3. Food and beverage ideas
+4. Entertainment and activities
+5. Practical logistics and timeline notes
+6. A short checklist of must-have items
+
+Make it feel practical, stylish, and easy to execute.`;
+
+    case "ai-event-itinerary":
+      return `Create a clear event itinerary for "${i.event_name}" with the following flow notes:
+
+${i.flow}
+
+Include a timeline with suggested start/end times, transitions, key moments, and hosting notes. The tone should feel ${i.tone || "energetic"} and the plan should be easy to follow.`;
+
+    case "ai-event-checklist":
+      return `Create a practical planning checklist for "${i.event_name}" for a ${i.timeline || "flexible"} timeline.
+
+Specific needs:
+${i.details || "None provided"}
+
+Organize the checklist into planning phases: early prep, mid planning, final week, and day-of. Include both admin tasks and execution tasks.`;
+
+    case "ai-event-invitation":
+      return `Write a polished event invitation for "${i.event_name}" aimed at ${i.audience || "guests"}.
+
+Tone: ${i.tone || "warm"}
+Additional details: ${i.details || "None provided"}
+
+Return a short invitation message with a warm opening, key event details, and a polished sign-off. Keep it concise and ready to copy into a message or card.`;
 
     case "ai-homework-helper":
       return `Help with homework for the topic: "${i.topic}"${i.subject ? ` (${i.subject})` : ""}\n\nProvide:\n1. **Concept Explanation** — clear explanation of the key concept\n2. **Step-by-Step Solution** — break down how to solve similar problems\n3. **Real Examples** — provide 2-3 worked examples with full working\n4. **Key Tips** — common mistakes to avoid and study strategies\n5. **Practice Questions** — suggest 3 similar questions for practice\n\nMake it educational and suitable for a student learning this topic.`;

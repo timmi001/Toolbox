@@ -391,6 +391,46 @@ const configs: Record<string, AiToolConfig> = {
       { key: "tone", label: "Tone", type: "select", options: ["Urgent", "Friendly", "Confident", "Professional", "Playful"] },
     ],
   },
+  "ai-event-assistant": {
+    toolId: "ai-event-assistant",
+    buttonLabel: "Plan Event",
+    fields: [
+      { key: "event_type", label: "Event Type", type: "select", options: ["Birthday", "Wedding", "Corporate Launch", "Baby Shower", "Graduation", "Community Gathering", "Other"], required: true },
+      { key: "theme", label: "Theme / Mood", type: "text", placeholder: "e.g. elegant, playful, boho, minimal", required: true },
+      { key: "guest_count", label: "Estimated Guests", type: "text", placeholder: "e.g. 40 guests" },
+      { key: "budget", label: "Budget Range", type: "text", placeholder: "e.g. $2,000 - $5,000" },
+      { key: "details", label: "Extra Details", type: "textarea", placeholder: "Add the vibe, venue notes, food ideas, or anything else that matters...", rows: 4 } ,
+    ],
+  },
+  "ai-event-itinerary": {
+    toolId: "ai-event-itinerary",
+    buttonLabel: "Build Itinerary",
+    fields: [
+      { key: "event_name", label: "Event Name", type: "text", placeholder: "e.g. Summer Launch Party", required: true },
+      { key: "duration", label: "Event Duration", type: "text", placeholder: "e.g. 4 hours" },
+      { key: "flow", label: "Flow / Agenda Notes", type: "textarea", placeholder: "Share your desired sequence, arrival time, speeches, dinner, games, or any key moments...", required: true, rows: 5 },
+      { key: "tone", label: "Tone", type: "select", options: ["Elegant", "Relaxed", "Energetic", "Formal", "Playful"] },
+    ],
+  },
+  "ai-event-checklist": {
+    toolId: "ai-event-checklist",
+    buttonLabel: "Generate Checklist",
+    fields: [
+      { key: "event_name", label: "Event Name", type: "text", placeholder: "e.g. Wedding Reception", required: true },
+      { key: "timeline", label: "Planning Timeline", type: "select", options: ["1 month", "2 months", "3 months", "6 months", "Flexible"], required: true },
+      { key: "details", label: "Specific Needs", type: "textarea", placeholder: "Mention vendors, decor, logistics, food, transport, or special requests...", rows: 4 } ,
+    ],
+  },
+  "ai-event-invitation": {
+    toolId: "ai-event-invitation",
+    buttonLabel: "Write Invitation",
+    fields: [
+      { key: "event_name", label: "Event Name", type: "text", placeholder: "e.g. Birthday Brunch", required: true },
+      { key: "audience", label: "Audience", type: "text", placeholder: "e.g. close friends, coworkers, family" },
+      { key: "tone", label: "Tone", type: "select", options: ["Warm", "Elegant", "Playful", "Formal", "Casual"], required: true },
+      { key: "details", label: "Event Details", type: "textarea", placeholder: "Add date, venue, dress code, RSVP notes, or any extra context...", rows: 4 },
+    ],
+  },
   "ai-mission-statement": {
     toolId: "ai-mission-statement",
     buttonLabel: "Generate Mission Statement",

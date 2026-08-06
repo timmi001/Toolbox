@@ -1,4 +1,4 @@
-export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar' | 'ai-study-exams' | 'ai-ghostwriting';
+export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar' | 'ai-study-exams' | 'ai-ghostwriting' | 'ai-events';
 
 export type Tool = {
   slug: string;
@@ -183,6 +183,11 @@ export const toolsData: Tool[] = [
   { slug: 'ai-sales-copy-generator', name: 'AI Sales Copy Generator', description: 'Write persuasive sales copy for emails, landing pages, and product offers.', category: 'marketing', keywords: ['ai', 'sales copy', 'conversion', 'marketing', 'copywriting'], new: true, icon: 'TrendingUp' },
   { slug: 'ai-landing-page-copy-generator', name: 'AI Landing Page Copy Generator', description: 'Generate conversion-focused landing page sections, headlines, and benefits.', category: 'marketing', keywords: ['ai', 'landing page', 'copywriting', 'marketing', 'conversion'], new: true, icon: 'LayoutPanelTop' },
   { slug: 'ai-cta-generator', name: 'AI CTA Generator', description: 'Generate clear, compelling call-to-action text for ads, emails, and landing pages.', category: 'marketing', keywords: ['ai', 'cta', 'call to action', 'conversion', 'marketing'], new: true, icon: 'MousePointerSquare' },
+  // AI Event Planning Tools
+  { slug: 'ai-event-assistant', name: 'AI Event Assistant', description: 'Plan full event concepts, guest experience, theme ideas, and logistics from a simple brief.', category: 'ai-events', keywords: ['ai', 'event planning', 'party', 'wedding', 'launch'], new: true, icon: 'CalendarDays' },
+  { slug: 'ai-event-itinerary', name: 'AI Event Itinerary Builder', description: 'Create a polished day-of schedule with timings, transitions, and hosting notes.', category: 'ai-events', keywords: ['ai', 'itinerary', 'schedule', 'event timeline'], new: true, icon: 'CalendarRange' },
+  { slug: 'ai-event-checklist', name: 'AI Event Checklist Generator', description: 'Build a practical checklist for vendors, guests, setup, and day-of responsibilities.', category: 'ai-events', keywords: ['ai', 'checklist', 'event planner', 'to-do'], new: true, icon: 'ListChecks' },
+  { slug: 'ai-event-invitation', name: 'AI Event Invitation Writer', description: 'Draft warm, polished invites and announcement copy for any audience and tone.', category: 'ai-events', keywords: ['ai', 'invitation', 'announcement', 'message'], new: true, icon: 'Mail' },
   // AI Resume Tools
   { slug: 'ai-resume-summary', name: 'AI Resume Summary Generator', description: 'Write a compelling professional summary for the top of your resume based on your background and target role.', category: 'ai-resume', keywords: ["ai","resume","summary","career"], new: true, icon: 'FileText' },
   { slug: 'ai-resume-bullet-points', name: 'AI Resume Bullet Point Generator', description: 'Turn your job responsibilities into powerful, achievement-focused resume bullet points.', category: 'ai-resume', keywords: ["ai","resume","bullet points","career"], new: true, icon: 'ListChecks' },
@@ -296,6 +301,7 @@ const ROUTE_CATEGORY: Partial<Record<ToolCategory, string>> = {
   'ai-grammar': 'ai',
   'ai-study-exams': 'ai',
   'ai-ghostwriting': 'ai',
+  'ai-events': 'ai',
 };
 export const getToolRoutePath = (tool: Pick<Tool, 'category' | 'slug'>) =>
   `/tools/${ROUTE_CATEGORY[tool.category] ?? tool.category}/${tool.slug}`;
