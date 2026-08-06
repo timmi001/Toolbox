@@ -45,8 +45,8 @@ export function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2.5 select-none">
-            <img src="/logo.png" alt="ToolboxX logo" className="h-9 w-9 object-contain" />
-            <span className="text-base font-bold tracking-tight text-gray-900">ToolboxX</span>
+            <img src="/logo.png" alt="Toolbuxx logo" className="h-9 w-9 object-contain" />
+            <span className="text-base font-bold tracking-tight text-gray-900">Toolbuxx</span>
           </Link>
 
           {/* Centered search bar — grows to fill space */}
@@ -97,8 +97,8 @@ export function Navbar() {
               {/* Header */}
               <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
                 <Link href="/" className="flex items-center gap-2.5" onClick={() => setSidebarOpen(false)}>
-                  <img src="/logo.png" alt="ToolboxX logo" className="h-8 w-8 object-contain" />
-                  <span className="font-bold text-gray-900">ToolboxX</span>
+                  <img src="/logo.png" alt="Toolbuxx logo" className="h-8 w-8 object-contain" />
+                  <span className="font-bold text-gray-900">Toolbuxx</span>
                 </Link>
                 <button
                   onClick={() => setSidebarOpen(false)}
