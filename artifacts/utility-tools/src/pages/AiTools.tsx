@@ -102,8 +102,8 @@ const AI_CATEGORIES = [
   },
   {
     emoji: '🎉',
-    name: 'AI Event Planning',
-    description: 'Plan birthdays, weddings, launches, and work events with AI-assisted itineraries, checklists, and invites.',
+    name: 'AI Events & Ticketing',
+    description: 'Create premium event concepts, guest-ready invites, schedules, and planning checklists for launches, weddings, and celebrations.',
     href: '/ai-event-tools',
     filterCategories: ['ai-events'],
     accent: '#F59E0B',
