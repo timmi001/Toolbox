@@ -190,31 +190,6 @@ const configs: Record<string, AiToolConfig> = {
       { key: "json", label: "JSON Input", type: "textarea", placeholder: "Paste your JSON here (valid or invalid)...", required: true, rows: 10 },
     ],
   },
-  "ai-study-notes": {
-    toolId: "ai-study-notes",
-    buttonLabel: "Generate Study Notes",
-    fields: [
-      { key: "topic", label: "Topic", type: "text", placeholder: "e.g. Photosynthesis, World War II, Machine Learning", required: true },
-      { key: "level", label: "Level", type: "select", options: ["Beginner", "Intermediate", "Advanced", "Expert"] },
-      { key: "format", label: "Notes Format", type: "select", options: ["Detailed Notes", "Outline", "Summary"] },
-    ],
-  },
-  "ai-homework-helper": {
-    toolId: "ai-homework-helper",
-    buttonLabel: "Generate Help Plan",
-    fields: [
-      { key: "topic", label: "Homework Topic or Question", type: "textarea", placeholder: "e.g. Explain photosynthesis in simple terms", required: true, rows: 6 },
-      { key: "subject", label: "Subject", type: "text", placeholder: "e.g. Biology" },
-    ],
-  },
-  "ai-study-planner": {
-    toolId: "ai-study-planner",
-    buttonLabel: "Create Plan",
-    fields: [
-      { key: "topic", label: "Study Topic", type: "text", placeholder: "e.g. Biology revision", required: true },
-      { key: "days", label: "Number of Days", type: "select", options: ["3", "5", "7", "14"] },
-    ],
-  },
   "ai-essay-generator": {
     toolId: "ai-essay-generator",
     buttonLabel: "Generate Essay",
@@ -252,23 +227,6 @@ const configs: Record<string, AiToolConfig> = {
     fields: [
       { key: "topic", label: "Speech Topic", type: "text", placeholder: "e.g. The value of discipline", required: true },
       { key: "audience", label: "Audience", type: "text", placeholder: "e.g. Students, team, conference" },
-    ],
-  },
-  "ai-quiz-generator": {
-    toolId: "ai-quiz-generator",
-    buttonLabel: "Generate Quiz",
-    fields: [
-      { key: "topic", label: "Topic", type: "text", placeholder: "e.g. Ancient Rome, JavaScript Promises, Human Anatomy", required: true },
-      { key: "count", label: "Number of Questions", type: "select", options: ["5", "10", "15", "20"] },
-      { key: "difficulty", label: "Difficulty", type: "select", options: ["Easy", "Medium", "Hard", "Mixed"] },
-    ],
-  },
-  "ai-flashcard-generator": {
-    toolId: "ai-flashcard-generator",
-    buttonLabel: "Generate Flashcards",
-    fields: [
-      { key: "topic", label: "Topic", type: "text", placeholder: "e.g. Spanish vocabulary, React hooks, Periodic table", required: true },
-      { key: "count", label: "Number of Cards", type: "select", options: ["10", "15", "20", "25", "30"] },
     ],
   },
   "ai-interview-questions": {
@@ -687,13 +645,6 @@ const configs: Record<string, AiToolConfig> = {
       { key: "topic", label: "Topic or Brief", type: "textarea", placeholder: "Describe the article, speech, or piece you need ghostwritten...", required: true, rows: 5 },
       { key: "type", label: "Content Type", type: "select", options: ["Blog Article", "Speech", "Personal Essay", "LinkedIn Post", "Social Bio", "Email Draft"] },
       { key: "tone", label: "Voice & Tone", type: "select", options: ["Professional", "Conversational", "Inspiring", "Academic", "Casual"] },
-    ],
-  },
-  "ai-math-solver": {
-    toolId: "ai-math-solver",
-    buttonLabel: "Solve Problem",
-    fields: [
-      { key: "problem", label: "Math Problem", type: "textarea", placeholder: "e.g. Solve 2x + 5 = 15 for x, or Find the derivative of x²+3x", required: true, rows: 6 },
     ],
   },
   "ai-jamb-cbt-practice": {

@@ -4,7 +4,7 @@ import { ToolCard } from '@/components/ToolCard';
 import { useSEO } from '@/hooks/useSEO';
 import { BreadcrumbNav } from '@/components/BreadcrumbNav';
 import { Input } from '@/components/ui/input';
-import { BookOpen, BrainCircuit, CalendarDays, CheckCircle2, GraduationCap, Search, Sparkles, TrendingUp } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useState } from 'react';
 
 const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
@@ -26,15 +26,6 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'ai-ghostwriting-tools': { title: 'AI Ghostwriting', desc: 'Create polished essays, stories, book outlines, chapters, and speeches with a guided writing workflow.' },
   'ai-event-tools': { title: 'AI Event Planning', desc: 'Plan birthdays, weddings, launches, and work events with AI-assisted itineraries, checklists, and invite copy.' },
 };
-
-const STUDY_HIGHLIGHTS = [
-  { title: 'Study notes in minutes', description: 'Turn a topic into clean revision notes you can review fast.', slug: 'ai-study-notes', icon: BookOpen },
-  { title: 'Practice mode', description: 'Generate quizzes and mock questions that feel like a real exam.', slug: 'ai-quiz-generator', icon: BrainCircuit },
-  { title: 'Flashcards that stick', description: 'Build compact flashcards for memorization and quick drills.', slug: 'ai-flashcard-generator', icon: Sparkles },
-  { title: 'Plan your prep', description: 'Map out revision blocks, milestones, and deadlines with a study planner.', slug: 'ai-study-planner', icon: CalendarDays },
-  { title: 'Track progress', description: 'Use analytics-style summaries to see what needs more attention.', slug: 'ai-homework-helper', icon: TrendingUp },
-  { title: 'Tutor-style support', description: 'Break down tricky problems and assignments step by step.', slug: 'ai-math-solver', icon: GraduationCap },
-] as const;
 
 export default function CategoryPage() {
   const [match, params] = useRoute('/:category');

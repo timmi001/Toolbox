@@ -9,7 +9,6 @@ import Home from "@/pages/Home";
 import AiTools from "@/pages/AiTools";
 import UtilityTools from "@/pages/UtilityTools";
 import CategoryPage from "@/pages/CategoryPage";
-import StudyExamsHub from "@/pages/StudyExamsHub";
 import HistoryPage from "@/pages/History";
 import NotFound from "@/pages/not-found";
 import BlogIndex from "@/pages/blog/BlogIndex";
@@ -279,9 +278,6 @@ const AiCodeExplainer = L(() => import("@/pages/tools/developer/ai-code-explaine
 const AiCodeReviewer = L(() => import("@/pages/tools/developer/ai-code-reviewer"));
 const AiBugFinder = L(() => import("@/pages/tools/developer/ai-bug-finder"));
 const AiJsonFormatter = L(() => import("@/pages/tools/developer/ai-json-formatter"));
-const AiStudyNotes = L(() => import("@/pages/tools/ai/ai-study-notes"));
-const AiQuizGenerator = L(() => import("@/pages/tools/ai/ai-quiz-generator"));
-const AiFlashcardGenerator = L(() => import("@/pages/tools/ai/ai-flashcard-generator"));
 const AiInterviewQuestions = L(() => import("@/pages/tools/ai/ai-interview-questions"));
 const AiMeetingNotes = L(() => import("@/pages/tools/ai/ai-meeting-notes"));
 const AiInterviewPractice = L(() => import("@/pages/tools/ai/ai-interview-practice"));
@@ -320,13 +316,7 @@ const AiToneChanger = L(() => import("@/pages/tools/ai/ai-tone-changer"));
 const AiExpandText = L(() => import("@/pages/tools/ai/ai-expand-text"));
 const AiShortenText = L(() => import("@/pages/tools/ai/ai-shorten-text"));
 const AiProofreader = L(() => import("@/pages/tools/ai/ai-proofreader"));
-const AiHomeworkHelper = L(() => import("@/pages/tools/ai/ai-homework-helper"));
-const AiEssayWriter = L(() => import("@/pages/tools/ai/ai-essay-writer"));
-const AiEssayImprover = L(() => import("@/pages/tools/ai/ai-essay-improver"));
 const AiEssayGenerator = L(() => import("@/pages/tools/ai/ai-essay-generator"));
-const AiParaphrasingTool = L(() => import("@/pages/tools/ai/ai-paraphrasing-tool"));
-const AiMathSolver = L(() => import("@/pages/tools/ai/ai-math-solver"));
-const AiStudyPlanner = L(() => import("@/pages/tools/ai/ai-study-planner"));
 const AiGhostwriting = L(() => import("@/pages/tools/ai/ai-ghostwriting"));
 const AiStoryWriter = L(() => import("@/pages/tools/ai/ai-story-writer"));
 const AiBookOutlineGenerator = L(() => import("@/pages/tools/ai/ai-book-outline-generator"));
@@ -346,7 +336,6 @@ function Router() {
         <Switch>
         <Route path="/" component={Home} />
         <Route path="/ai-tools" component={AiTools} />
-        <Route path="/study-exams-hub" component={StudyExamsHub} />
         <Route path="/utility-tools" component={UtilityTools} />
 
         {/* Categories */}
@@ -563,9 +552,6 @@ function Router() {
         <Route path="/tools/developer/ai-code-reviewer" component={AiCodeReviewer} />
         <Route path="/tools/developer/ai-bug-finder" component={AiBugFinder} />
         <Route path="/tools/developer/ai-json-formatter" component={AiJsonFormatter} />
-        <Route path="/tools/ai/ai-study-notes" component={AiStudyNotes} />
-        <Route path="/tools/ai/ai-quiz-generator" component={AiQuizGenerator} />
-        <Route path="/tools/ai/ai-flashcard-generator" component={AiFlashcardGenerator} />
         <Route path="/tools/ai/ai-interview-questions" component={AiInterviewQuestions} />
         <Route path="/tools/ai/ai-meeting-notes" component={AiMeetingNotes} />
         <Route path="/tools/ai/ai-interview-practice" component={AiInterviewPractice} />
@@ -604,13 +590,7 @@ function Router() {
         <Route path="/tools/ai/ai-expand-text" component={AiExpandText} />
         <Route path="/tools/ai/ai-shorten-text" component={AiShortenText} />
         <Route path="/tools/ai/ai-proofreader" component={AiProofreader} />
-        <Route path="/tools/ai/ai-homework-helper" component={AiHomeworkHelper} />
-        <Route path="/tools/ai/ai-essay-writer" component={AiEssayWriter} />
-        <Route path="/tools/ai/ai-essay-improver" component={AiEssayImprover} />
         <Route path="/tools/ai/ai-essay-generator" component={AiEssayGenerator} />
-        <Route path="/tools/ai/ai-paraphrasing-tool" component={AiParaphrasingTool} />
-        <Route path="/tools/ai/ai-math-solver" component={AiMathSolver} />
-        <Route path="/tools/ai/ai-study-planner" component={AiStudyPlanner} />
         <Route path="/tools/ai/ai-ghostwriting" component={AiGhostwriting} />
         <Route path="/tools/ai/ai-story-writer" component={AiStoryWriter} />
         <Route path="/tools/ai/ai-book-outline-generator" component={AiBookOutlineGenerator} />

@@ -65,15 +65,10 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "ai-expand-text": 900,
   "ai-shorten-text": 700,
   "ai-proofreader": 700,
-  "ai-study-notes": 1100,
-  "ai-homework-helper": 1000,
-  "ai-study-planner": 800,
   "ai-story-writer": 1400,
   "ai-book-outline-generator": 1200,
   "ai-chapter-generator": 1800,
   "ai-speech-writer": 1000,
-  "ai-quiz-generator": 900,
-  "ai-flashcard-generator": 800,
   "ai-interview-questions": 1200,
   "ai-meeting-notes": 1000,
   "ai-interview-practice": 1100,
@@ -92,8 +87,6 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "ai-code-reviewer": 900,
   "ai-bug-finder": 900,
   "ai-json-formatter": 800,
-  "ai-math-solver": 900,
-  "ai-jamb-cbt-practice": 1000,
   "ai-event-assistant": 1200,
   "ai-event-itinerary": 900,
   "ai-event-checklist": 900,
@@ -104,9 +97,6 @@ const COMPLEX_TOOL_IDS = new Set([
   "ai-resume-builder",
   "ai-cover-letter",
   "ai-essay-generator",
-  "ai-study-notes",
-  "ai-homework-helper",
-  "ai-study-planner",
   "ai-story-writer",
   "ai-book-outline-generator",
   "ai-chapter-generator",
@@ -115,8 +105,6 @@ const COMPLEX_TOOL_IDS = new Set([
   "ai-interview-practice",
   "ai-resume-summary",
   "ai-resume-bullet-points",
-  "ai-jamb-cbt-practice",
-  "ai-math-solver",
 ]);
 
 function getOutputTokenBudget(toolId: string): number {
@@ -164,16 +152,11 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-code-reviewer":      { required: ["code"],       maxLengths: { code: 15000 } },
   "ai-bug-finder":         { required: ["code"],       maxLengths: { code: 15000 } },
   "ai-json-formatter":     { required: ["json"],       maxLengths: { json: 20000 } },
-  "ai-study-notes":        { required: ["topic"],      maxLengths: { topic: 300 } },
-  "ai-homework-helper":    { required: ["topic"],      maxLengths: { topic: 300, subject: 100 } },
-  "ai-study-planner":      { required: ["topic"],      maxLengths: { topic: 300, days: 20 } },
   "ai-essay-generator":    { required: ["topic"],      maxLengths: { topic: 300, style: 50 } },
   "ai-story-writer":       { required: ["prompt"],      maxLengths: { prompt: 1000, tone: 50 } },
   "ai-book-outline-generator": { required: ["topic"], maxLengths: { topic: 300 } },
   "ai-chapter-generator":  { required: ["topic"],      maxLengths: { topic: 300, chapter: 200 } },
   "ai-speech-writer":      { required: ["topic"],      maxLengths: { topic: 300, audience: 200 } },
-  "ai-quiz-generator":     { required: ["topic"],      maxLengths: { topic: 300 } },
-  "ai-flashcard-generator":{ required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-interview-questions":{ required: ["role"],       maxLengths: { role: 200 } },
   "ai-meeting-notes":      { required: ["transcript"], maxLengths: { transcript: 20000 } },
   "ai-interview-practice": { required: ["role", "question", "answer"], maxLengths: { role: 200, question: 2000, answer: 5000 } },
@@ -219,8 +202,6 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-shorten-text": { required: ["text"], maxLengths: {"text":10000} },
   "ai-proofreader":    { required: ["text"],  maxLengths: {"text":10000} },
   "ai-ghostwriting":   { required: ["topic"], maxLengths: {"topic":3000} },
-  "ai-math-solver":    { required: ["problem"], maxLengths: {"problem": 1000} },
-  "ai-jamb-cbt-practice": { required: ["subject"], maxLengths: {"subject": 100} },
   "ai-event-assistant": { required: ["event_type", "theme"], maxLengths: { event_type: 100, theme: 200, guest_count: 100, budget: 100, details: 2000 } },
   "ai-event-itinerary": { required: ["event_name", "flow"], maxLengths: { event_name: 200, duration: 100, flow: 4000 } },
   "ai-event-checklist": { required: ["event_name", "timeline"], maxLengths: { event_name: 200, details: 3000 } },
@@ -503,13 +484,6 @@ Tone: ${i.tone || "warm"}
 Additional details: ${i.details || "None provided"}
 
 Return a short invitation message with a warm opening, key event details, and a polished sign-off. Keep it concise and ready to copy into a message or card.`;
-
-    case "ai-homework-helper":
-      return `Help with homework for the topic: "${i.topic}"${i.subject ? ` (${i.subject})` : ""}\n\nProvide:\n1. **Concept Explanation** — clear explanation of the key concept\n2. **Step-by-Step Solution** — break down how to solve similar problems\n3. **Real Examples** — provide 2-3 worked examples with full working\n4. **Key Tips** — common mistakes to avoid and study strategies\n5. **Practice Questions** — suggest 3 similar questions for practice\n\nMake it educational and suitable for a student learning this topic.`;
-
-
-    case "ai-study-planner":
-      return `Create a practical ${i.days || "7"}-day study schedule for: "${i.topic}"\n\nProvide:\n1. Daily breakdown of topics to cover\n2. Estimated time per topic\n3. Review sessions scheduled\n4. Key milestones and checkpoints\n5. Tips for staying on track\n\nMake it realistic and achievable within the timeframe.`;
 
     case "ai-essay-generator":
       return `Generate a polished essay draft about: "${i.topic}"\nStyle: ${i.style || "Academic"}\n\nInclude:\n1. Engaging introduction with thesis statement\n2. 3-4 well-developed body paragraphs with clear arguments\n3. Topic sentences and supporting evidence\n4. Smooth transitions between paragraphs\n5. Strong conclusion that reinforces the thesis\n\nMake it academic and well-structured for submission.`;

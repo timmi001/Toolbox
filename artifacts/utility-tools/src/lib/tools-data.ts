@@ -1,4 +1,4 @@
-export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar' | 'ai-study-exams' | 'ai-ghostwriting' | 'ai-events';
+export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar' | 'ai-ghostwriting' | 'ai-events';
 
 export type Tool = {
   slug: string;
@@ -155,16 +155,7 @@ export const toolsData: Tool[] = [
   { slug: 'ai-seo-title', name: 'AI SEO Meta Title Generator', description: 'Generate click-worthy, SEO-optimized page titles for better search rankings.', category: 'ai-blogging-seo', keywords: ['ai', 'seo', 'title', 'meta title', 'search engine'], new: true, icon: 'TrendingUp' },
   { slug: 'ai-meta-description', name: 'AI SEO Meta Description Generator', description: 'Create concise, keyword-rich meta descriptions to improve click-through rates.', category: 'ai-blogging-seo', keywords: ['ai', 'meta description', 'seo', 'snippet'], new: true, icon: 'AlignLeft' },
   { slug: 'ai-keyword-generator', name: 'AI Keyword Generator', description: 'Discover high-value keywords and search terms for your content and SEO strategy.', category: 'ai-blogging-seo', keywords: ['ai', 'keywords', 'seo', 'research'], new: true, icon: 'Tags' },
-  { slug: 'ai-study-notes', name: 'AI Study Notes Generator', description: 'Turn any topic into structured, easy-to-review study notes and summaries.', category: 'ai-study-exams', keywords: ['ai', 'study notes', 'education', 'learning'], new: true, icon: 'NotebookPen' },
-  { slug: 'ai-quiz-generator', name: 'AI Quiz Generator', description: 'Generate quiz questions with multiple choice answers on any topic or difficulty.', category: 'ai-study-exams', keywords: ['ai', 'quiz', 'questions', 'education', 'test'], new: true, icon: 'HelpCircle' },
-  { slug: 'ai-flashcard-generator', name: 'AI Flashcard Generator', description: 'Create flashcards for memorization and spaced repetition on any subject.', category: 'ai-study-exams', keywords: ['ai', 'flashcards', 'study', 'memorize', 'education'], new: true, icon: 'Layers' },
-  { slug: 'ai-homework-helper', name: 'Homework Helper', description: 'Break down assignments into clear steps, examples, and study guidance.', category: 'ai-study-exams', keywords: ['homework', 'study', 'assignment', 'education'], new: true, icon: 'BookOpen' },
-  { slug: 'ai-essay-writer', name: 'Essay Writer', description: 'Draft structured essays with clear introductions, arguments, and conclusions.', category: 'ai-study-exams', keywords: ['essay', 'writing', 'school', 'education'], new: true, icon: 'PenSquare' },
-  { slug: 'ai-essay-improver', name: 'Essay Improver', description: 'Refine essays for clarity, structure, and stronger academic writing.', category: 'ai-study-exams', keywords: ['essay', 'improve', 'writing', 'school'], new: true, icon: 'Sparkles' },
   { slug: 'ai-essay-generator', name: 'Essay Generator', description: 'Generate polished essay drafts from a topic, tone, and length preference.', category: 'ai-ghostwriting', keywords: ['essay', 'generator', 'academic', 'writing'], new: true, icon: 'FileText' },
-  { slug: 'ai-paraphrasing-tool', name: 'Paraphrasing Tool', description: 'Rewrite academic or creative text while preserving the original meaning.', category: 'ai-study-exams', keywords: ['paraphrase', 'rewrite', 'study', 'writing'], new: true, icon: 'Repeat2' },
-  { slug: 'ai-math-solver', name: 'Math Solver', description: 'Solve simple math problems step by step with clear explanations.', category: 'ai-study-exams', keywords: ['math', 'solver', 'equation', 'study'], new: true, icon: 'Calculator' },
-  { slug: 'ai-study-planner', name: 'Study Planner', description: 'Build a practical study schedule for exams, assignments, and revision goals.', category: 'ai-study-exams', keywords: ['study', 'planner', 'schedule', 'exam'], new: true, icon: 'CalendarDays' },
   { slug: 'ai-ghostwriting', name: 'Ghostwriting Assistant', description: 'Create polished draft content for articles, speeches, and personal writing projects.', category: 'ai-ghostwriting', keywords: ['ghostwriting', 'writing', 'draft', 'content'], new: true, icon: 'PenLine' },
   { slug: 'ai-story-writer', name: 'Story Writer', description: 'Generate short creative story prompts and story drafts with a chosen tone.', category: 'ai-ghostwriting', keywords: ['story', 'creative writing', 'fiction', 'prompt'], new: true, icon: 'BookText' },
   { slug: 'ai-book-outline-generator', name: 'Book Outline Generator', description: 'Create a simple book structure with chapters and major sections.', category: 'ai-ghostwriting', keywords: ['book', 'outline', 'writing', 'chapter'], new: true, icon: 'NotebookPen' },
@@ -296,7 +287,6 @@ const ROUTE_CATEGORY: Partial<Record<ToolCategory, string>> = {
   'ai-blogging-seo': 'ai',
   'ai-email': 'ai',
   'ai-grammar': 'ai',
-  'ai-study-exams': 'ai',
   'ai-ghostwriting': 'ai',
   'ai-events': 'ai',
 };

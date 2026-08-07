@@ -112,24 +112,6 @@ export const ai = {
     }),
 };
 
-export interface StudyGenerateRequest {
-  action: 'notes' | 'quiz' | 'flashcards' | 'planner' | 'homework' | 'tutor';
-  input: Record<string, string>;
-}
-
-export interface StudyGenerateResponse {
-  success: boolean;
-  result: string;
-}
-
-export const study = {
-  generate: (payload: StudyGenerateRequest) =>
-    request<StudyGenerateResponse>('/study/' + payload.action, {
-      method: 'POST',
-      body: payload.input,
-    }),
-};
-
 /**
  * Strips markdown syntax (headers, bold/italic asterisks, bullet markers)
  * from Gemini's raw output so results render as clean plain text instead of
