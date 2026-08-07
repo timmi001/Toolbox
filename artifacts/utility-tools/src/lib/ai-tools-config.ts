@@ -647,6 +647,105 @@ const configs: Record<string, AiToolConfig> = {
       { key: "tone", label: "Voice & Tone", type: "select", options: ["Professional", "Conversational", "Inspiring", "Academic", "Casual"] },
     ],
   },
+  "ai-practice-questions": {
+    toolId: "ai-practice-questions",
+    buttonLabel: "Generate Practice Questions",
+    fields: [
+      { key: "topic", label: "Topic or Subject", type: "text", placeholder: "e.g. Algebra, World History, Biology", required: true },
+      { key: "exam", label: "Exam or Course", type: "text", placeholder: "e.g. GCSE, SAT, Medical School" },
+      { key: "difficulty", label: "Difficulty", type: "select", options: ["Beginner", "Intermediate", "Advanced", "Mixed"] },
+      { key: "count", label: "Number of Questions", type: "select", options: ["5", "10", "15", "20"] },
+    ],
+  },
+  "ai-mock-exam-generator": {
+    toolId: "ai-mock-exam-generator",
+    buttonLabel: "Generate Mock Exam",
+    fields: [
+      { key: "topic", label: "Subject or Topic", type: "text", placeholder: "e.g. Physics, Economics, JavaScript", required: true },
+      { key: "duration", label: "Exam Duration", type: "text", placeholder: "e.g. 60 minutes" },
+      { key: "difficulty", label: "Difficulty", type: "select", options: ["Easy", "Moderate", "Hard", "Mixed"] },
+      { key: "count", label: "Question Count", type: "select", options: ["10", "15", "20", "25"] },
+    ],
+  },
+  "ai-tutor-chat": {
+    toolId: "ai-tutor-chat",
+    buttonLabel: "Explain This Topic",
+    fields: [
+      { key: "topic", label: "Topic to Learn", type: "text", placeholder: "e.g. Photosynthesis, Calculus derivatives", required: true },
+      { key: "level", label: "Learner Level", type: "select", options: ["Beginner", "Intermediate", "Advanced"] },
+      { key: "question", label: "What do you want help with?", type: "textarea", placeholder: "Ask for examples, step-by-step help, or a quick explanation...", required: true, rows: 4 },
+    ],
+  },
+  "ai-flashcard-generator": {
+    toolId: "ai-flashcard-generator",
+    buttonLabel: "Generate Flashcards",
+    fields: [
+      { key: "topic", label: "Topic or Chapter", type: "text", placeholder: "e.g. Cell structure, World War II", required: true },
+      { key: "level", label: "Study Level", type: "select", options: ["Beginner", "Intermediate", "Advanced"] },
+      { key: "count", label: "Number of Flashcards", type: "select", options: ["10", "15", "20", "25"] },
+    ],
+  },
+  "ai-study-notes-generator": {
+    toolId: "ai-study-notes-generator",
+    buttonLabel: "Generate Study Notes",
+    fields: [
+      { key: "topic", label: "Topic or Subject", type: "text", placeholder: "e.g. Organic Chemistry, Machine Learning", required: true },
+      { key: "level", label: "Learner Level", type: "select", options: ["Beginner", "Intermediate", "Advanced"] },
+      { key: "format", label: "Notes Style", type: "select", options: ["Detailed Notes", "Revision Notes", "Formula Sheet", "Exam Summary"] },
+    ],
+  },
+  "ai-weak-topic-analyzer": {
+    toolId: "ai-weak-topic-analyzer",
+    buttonLabel: "Analyze Weak Topics",
+    fields: [
+      { key: "topic", label: "Subject / Topic Area", type: "text", placeholder: "e.g. Mathematics, Biology, Programming", required: true },
+      { key: "details", label: "Performance Notes", type: "textarea", placeholder: "Share past mistakes, low scores, or recurring problem areas...", required: true, rows: 5 },
+    ],
+  },
+  "ai-study-planner": {
+    toolId: "ai-study-planner",
+    buttonLabel: "Create Study Plan",
+    fields: [
+      { key: "topic", label: "Exam or Goal", type: "text", placeholder: "e.g. IELTS, CFA Level 1, Final exam", required: true },
+      { key: "date", label: "Target Date", type: "text", placeholder: "e.g. 4 weeks from now" },
+      { key: "hours", label: "Daily Study Hours", type: "text", placeholder: "e.g. 2 hours" },
+    ],
+  },
+  "ai-previous-question-generator": {
+    toolId: "ai-previous-question-generator",
+    buttonLabel: "Generate Exam-Style Questions",
+    fields: [
+      { key: "topic", label: "Subject or Topic", type: "text", placeholder: "e.g. Statistics, Literature, React", required: true },
+      { key: "exam", label: "Exam / Board", type: "text", placeholder: "e.g. JAMB, NEET, UPSC" },
+      { key: "count", label: "Number of Questions", type: "select", options: ["5", "10", "15"] },
+    ],
+  },
+  "ai-performance-analytics": {
+    toolId: "ai-performance-analytics",
+    buttonLabel: "Analyze Performance",
+    fields: [
+      { key: "topic", label: "Subject or Exam", type: "text", placeholder: "e.g. Biology, Mock Exam 1", required: true },
+      { key: "details", label: "Scores / Notes", type: "textarea", placeholder: "Paste your scores, accuracy, mistakes, and study history...", required: true, rows: 5 },
+    ],
+  },
+  "ai-pdf-practice-papers": {
+    toolId: "ai-pdf-practice-papers",
+    buttonLabel: "Create Practice Papers",
+    fields: [
+      { key: "topic", label: "Subject or Topic", type: "text", placeholder: "e.g. English Literature, Accounting", required: true },
+      { key: "level", label: "Level / Class", type: "text", placeholder: "e.g. Grade 10, Undergraduate" },
+      { key: "count", label: "Number of Papers", type: "select", options: ["1", "2", "3"] },
+    ],
+  },
+  "ai-daily-practice": {
+    toolId: "ai-daily-practice",
+    buttonLabel: "Generate Daily Practice",
+    fields: [
+      { key: "topic", label: "Subject or Topic", type: "text", placeholder: "e.g. Vocabulary, Calculus", required: true },
+      { key: "goal", label: "Daily Goal", type: "text", placeholder: "e.g. 20 minutes, 1 chapter" },
+      { key: "difficulty", label: "Difficulty", type: "select", options: ["Easy", "Moderate", "Challenging"] },
+    ],
+  },
   "ai-jamb-cbt-practice": {
     toolId: "ai-jamb-cbt-practice",
     buttonLabel: "Generate Questions",

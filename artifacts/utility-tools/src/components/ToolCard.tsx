@@ -26,6 +26,7 @@ const categoryColors: Record<ToolCategory, { bubble: string; hover: string; titl
   'ai-grammar':      { bubble: 'bg-slate-500/10 text-slate-500',    hover: 'group-hover:bg-slate-500 group-hover:text-white',     title: 'group-hover:text-slate-500' },
   'ai-ghostwriting': { bubble: 'bg-indigo-500/10 text-indigo-600',  hover: 'group-hover:bg-indigo-500 group-hover:text-white',    title: 'group-hover:text-indigo-600' },
   'ai-events':       { bubble: 'bg-orange-500/10 text-orange-600',  hover: 'group-hover:bg-orange-500 group-hover:text-white',    title: 'group-hover:text-orange-600' },
+  'ai-study':        { bubble: 'bg-blue-500/10 text-blue-600',     hover: 'group-hover:bg-blue-500 group-hover:text-white',     title: 'group-hover:text-blue-600' },
 };
 
 export function ToolCard({ tool }: ToolCardProps) {

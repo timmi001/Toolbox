@@ -25,6 +25,7 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'ai-grammar-tools': { title: 'AI Grammar & Writing Tools', desc: 'Check grammar, improve tone, summarize, paraphrase, and proofread any text.' },
   'ai-ghostwriting-tools': { title: 'AI Ghostwriting', desc: 'Create polished essays, stories, book outlines, chapters, and speeches with a guided writing workflow.' },
   'ai-event-tools': { title: 'AI Events & Ticketing', desc: 'Create polished event concepts, day-of itineraries, checklists, and guest-ready invites for launches, weddings, birthdays, and professional gatherings.' },
+  'ai-study-exams': { title: 'AI Study & Exams', desc: 'Generate practice questions, mock exams, study plans, notes, flashcards, and revision resources for exams and certifications.' },
 };
 
 export default function CategoryPage() {
@@ -51,6 +52,7 @@ export default function CategoryPage() {
     categoryPath === 'ai-grammar-tools' ? 'ai-grammar' :
     categoryPath === 'ai-ghostwriting-tools' ? 'ai-ghostwriting' :
     categoryPath === 'ai-event-tools' ? 'ai-events' :
+    categoryPath === 'ai-study-exams' ? 'ai-study' :
     'calculators';
 
   useSEO(

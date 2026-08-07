@@ -326,6 +326,17 @@ const AiEventAssistant = L(() => import("@/pages/tools/ai/ai-event-assistant"));
 const AiEventItinerary = L(() => import("@/pages/tools/ai/ai-event-itinerary"));
 const AiEventChecklist = L(() => import("@/pages/tools/ai/ai-event-checklist"));
 const AiEventInvitation = L(() => import("@/pages/tools/ai/ai-event-invitation"));
+const AiPracticeQuestions = L(() => import("@/pages/tools/ai/ai-practice-questions"));
+const AiMockExamGenerator = L(() => import("@/pages/tools/ai/ai-mock-exam-generator"));
+const AiTutorChat = L(() => import("@/pages/tools/ai/ai-tutor-chat"));
+const AiFlashcardGenerator = L(() => import("@/pages/tools/ai/ai-flashcard-generator"));
+const AiStudyNotesGenerator = L(() => import("@/pages/tools/ai/ai-study-notes-generator"));
+const AiWeakTopicAnalyzer = L(() => import("@/pages/tools/ai/ai-weak-topic-analyzer"));
+const AiStudyPlanner = L(() => import("@/pages/tools/ai/ai-study-planner"));
+const AiPreviousQuestionGenerator = L(() => import("@/pages/tools/ai/ai-previous-question-generator"));
+const AiPerformanceAnalytics = L(() => import("@/pages/tools/ai/ai-performance-analytics"));
+const AiPdfPracticePapers = L(() => import("@/pages/tools/ai/ai-pdf-practice-papers"));
+const AiDailyPractice = L(() => import("@/pages/tools/ai/ai-daily-practice"));
 
 const queryClient = new QueryClient();
 
@@ -354,6 +365,7 @@ function Router() {
         <Route path="/ai-grammar-tools" component={CategoryPage} />
         <Route path="/ai-ghostwriting-tools" component={CategoryPage} />
         <Route path="/ai-event-tools" component={CategoryPage} />
+        <Route path="/ai-study-exams" component={CategoryPage} />
         <Route path="/audio-tools" component={CategoryPage} />
         <Route path="/video-tools" component={CategoryPage} />
 
@@ -600,6 +612,17 @@ function Router() {
         <Route path="/tools/ai/ai-event-itinerary" component={AiEventItinerary} />
         <Route path="/tools/ai/ai-event-checklist" component={AiEventChecklist} />
         <Route path="/tools/ai/ai-event-invitation" component={AiEventInvitation} />
+        <Route path="/tools/ai/ai-practice-questions" component={AiPracticeQuestions} />
+        <Route path="/tools/ai/ai-mock-exam-generator" component={AiMockExamGenerator} />
+        <Route path="/tools/ai/ai-tutor-chat" component={AiTutorChat} />
+        <Route path="/tools/ai/ai-flashcard-generator" component={AiFlashcardGenerator} />
+        <Route path="/tools/ai/ai-study-notes-generator" component={AiStudyNotesGenerator} />
+        <Route path="/tools/ai/ai-weak-topic-analyzer" component={AiWeakTopicAnalyzer} />
+        <Route path="/tools/ai/ai-study-planner" component={AiStudyPlanner} />
+        <Route path="/tools/ai/ai-previous-question-generator" component={AiPreviousQuestionGenerator} />
+        <Route path="/tools/ai/ai-performance-analytics" component={AiPerformanceAnalytics} />
+        <Route path="/tools/ai/ai-pdf-practice-papers" component={AiPdfPracticePapers} />
+        <Route path="/tools/ai/ai-daily-practice" component={AiDailyPractice} />
 
         {/* Audio Tools */}
         <Route path="/tools/audio/mp3-converter" component={Mp3Converter} />

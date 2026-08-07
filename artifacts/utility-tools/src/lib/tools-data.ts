@@ -1,4 +1,4 @@
-export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar' | 'ai-ghostwriting' | 'ai-events';
+export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar' | 'ai-ghostwriting' | 'ai-events' | 'ai-study';
 
 export type Tool = {
   slug: string;
@@ -171,6 +171,18 @@ export const toolsData: Tool[] = [
   { slug: 'ai-sales-copy-generator', name: 'AI Sales Copy Generator', description: 'Write persuasive sales copy for emails, landing pages, and product offers.', category: 'marketing', keywords: ['ai', 'sales copy', 'conversion', 'marketing', 'copywriting'], new: true, icon: 'TrendingUp' },
   { slug: 'ai-landing-page-copy-generator', name: 'AI Landing Page Copy Generator', description: 'Generate conversion-focused landing page sections, headlines, and benefits.', category: 'marketing', keywords: ['ai', 'landing page', 'copywriting', 'marketing', 'conversion'], new: true, icon: 'LayoutPanelTop' },
   { slug: 'ai-cta-generator', name: 'AI CTA Generator', description: 'Generate clear, compelling call-to-action text for ads, emails, and landing pages.', category: 'marketing', keywords: ['ai', 'cta', 'call to action', 'conversion', 'marketing'], new: true, icon: 'MousePointerSquare' },
+  // AI Study & Exams Tools
+  { slug: 'ai-practice-questions', name: 'AI Practice Questions', description: 'Generate targeted practice questions for any exam, subject, topic, and difficulty level.', category: 'ai-study', keywords: ['ai', 'study', 'practice questions', 'exam prep'], new: true, icon: 'BookOpen' },
+  { slug: 'ai-mock-exam-generator', name: 'AI Mock Exam Generator', description: 'Create full timed mock exams with scoring, review, and readiness insights.', category: 'ai-study', keywords: ['ai', 'mock exam', 'exam practice', 'timed test'], new: true, icon: 'ClipboardCheck' },
+  { slug: 'ai-tutor-chat', name: 'AI Tutor Chat', description: 'Get clear explanations, examples, simplified breakdowns, and follow-up questions in a guided study chat.', category: 'ai-study', keywords: ['ai', 'tutor', 'study help', 'explain'], new: true, icon: 'MessagesSquare' },
+  { slug: 'ai-flashcard-generator', name: 'AI Flashcard Generator', description: 'Turn topics, notes, and study material into review-ready flashcards.', category: 'ai-study', keywords: ['ai', 'flashcards', 'revision', 'memorization'], new: true, icon: 'Cards' },
+  { slug: 'ai-study-notes-generator', name: 'AI Study Notes Generator', description: 'Create detailed notes, quick revision notes, summaries, formula sheets, and memory tricks.', category: 'ai-study', keywords: ['ai', 'study notes', 'revision', 'summary'], new: true, icon: 'NotebookPen' },
+  { slug: 'ai-weak-topic-analyzer', name: 'AI Weak Topic Analyzer', description: 'Identify weak subjects, weak topics, and study gaps from performance patterns.', category: 'ai-study', keywords: ['ai', 'weak topics', 'analyze', 'study gaps'], new: true, icon: 'TrendingDown' },
+  { slug: 'ai-study-planner', name: 'AI Study Planner', description: 'Build personalized study schedules with daily goals, weekly milestones, and revision blocks.', category: 'ai-study', keywords: ['ai', 'study plan', 'schedule', 'exam prep'], new: true, icon: 'CalendarRange' },
+  { slug: 'ai-previous-question-generator', name: 'AI Previous Question Generator', description: 'Generate realistic exam-style questions that mirror common patterns for a chosen exam.', category: 'ai-study', keywords: ['ai', 'previous questions', 'exam style', 'practice'], new: true, icon: 'History' },
+  { slug: 'ai-performance-analytics', name: 'AI Performance Analytics', description: 'Review scores, accuracy, streaks, and readiness to see what to improve next.', category: 'ai-study', keywords: ['ai', 'analytics', 'progress', 'readiness'], new: true, icon: 'BarChart3' },
+  { slug: 'ai-pdf-practice-papers', name: 'AI PDF Practice Papers', description: 'Create printable practice papers with answer sheets and marking schemes.', category: 'ai-study', keywords: ['ai', 'pdf', 'practice papers', 'exam sheets'], new: true, icon: 'FileText' },
+  { slug: 'ai-daily-practice', name: 'AI Daily Practice', description: 'Create daily challenges, streak goals, XP-style progress, and motivational study routines.', category: 'ai-study', keywords: ['ai', 'daily practice', 'streaks', 'motivation'], new: true, icon: 'Sparkles' },
   // AI Event Planning Tools
   { slug: 'ai-event-assistant', name: 'AI Event Assistant', description: 'Plan full event concepts, guest experience, theme ideas, and logistics from a simple brief.', category: 'ai-events', keywords: ['ai', 'event planning', 'party', 'wedding', 'launch'], new: true, icon: 'CalendarDays' },
   { slug: 'ai-event-itinerary', name: 'AI Event Itinerary Builder', description: 'Create a polished day-of schedule with timings, transitions, and hosting notes.', category: 'ai-events', keywords: ['ai', 'itinerary', 'schedule', 'event timeline'], new: true, icon: 'CalendarRange' },
@@ -289,6 +301,7 @@ const ROUTE_CATEGORY: Partial<Record<ToolCategory, string>> = {
   'ai-grammar': 'ai',
   'ai-ghostwriting': 'ai',
   'ai-events': 'ai',
+  'ai-study': 'ai',
 };
 export const getToolRoutePath = (tool: Pick<Tool, 'category' | 'slug'>) =>
   `/tools/${ROUTE_CATEGORY[tool.category] ?? tool.category}/${tool.slug}`;

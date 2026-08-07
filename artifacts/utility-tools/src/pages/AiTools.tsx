@@ -111,6 +111,17 @@ const AI_CATEGORIES = [
     border: 'border-[#F59E0B]/15',
     hoverShadow: 'rgba(245,158,11,0.12)',
   },
+  {
+    emoji: '📚',
+    name: 'AI Study & Exams',
+    description: 'Generate practice questions, mock exams, notes, flashcards, and study plans for school, certification, and competitive prep.',
+    href: '/ai-study-exams',
+    filterCategories: ['ai-study'],
+    accent: '#2563EB',
+    bg: 'from-[#2563EB]/8 to-[#2563EB]/3',
+    border: 'border-[#2563EB]/15',
+    hoverShadow: 'rgba(37,99,235,0.12)',
+  },
 ] as const;
 
 // Quick-access popular AI tools
@@ -124,7 +135,7 @@ export default function AiTools() {
 
   const totalAiTools = toolsData.filter(t =>
     ['ai-blogging-seo', 'ai-resume', 'ai-social', 'ai-email', 'ai-grammar',
-     'ai-ghostwriting', 'marketing', 'business', 'ai-events'].includes(t.category)
+     'ai-ghostwriting', 'marketing', 'business', 'ai-events', 'ai-study'].includes(t.category)
   ).length;
 
   const visibleCategories = AI_CATEGORIES.filter(c =>

@@ -91,6 +91,17 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "ai-event-itinerary": 900,
   "ai-event-checklist": 900,
   "ai-event-invitation": 800,
+  "ai-practice-questions": 1000,
+  "ai-mock-exam-generator": 1400,
+  "ai-tutor-chat": 900,
+  "ai-flashcard-generator": 900,
+  "ai-study-notes-generator": 1200,
+  "ai-weak-topic-analyzer": 900,
+  "ai-study-planner": 900,
+  "ai-previous-question-generator": 1000,
+  "ai-performance-analytics": 900,
+  "ai-pdf-practice-papers": 1400,
+  "ai-daily-practice": 900,
 };
 
 const COMPLEX_TOOL_IDS = new Set([
@@ -206,6 +217,17 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-event-itinerary": { required: ["event_name", "flow"], maxLengths: { event_name: 200, duration: 100, flow: 4000 } },
   "ai-event-checklist": { required: ["event_name", "timeline"], maxLengths: { event_name: 200, details: 3000 } },
   "ai-event-invitation": { required: ["event_name", "tone"], maxLengths: { event_name: 200, audience: 200, details: 2000 } },
+  "ai-practice-questions": { required: ["topic"], maxLengths: { topic: 300, exam: 200, difficulty: 50, count: 20 } },
+  "ai-mock-exam-generator": { required: ["topic"], maxLengths: { topic: 300, duration: 100, difficulty: 50, count: 20 } },
+  "ai-tutor-chat": { required: ["topic", "question"], maxLengths: { topic: 300, question: 3000, level: 50 } },
+  "ai-flashcard-generator": { required: ["topic"], maxLengths: { topic: 300, level: 50, count: 20 } },
+  "ai-study-notes-generator": { required: ["topic"], maxLengths: { topic: 300, level: 50, format: 100 } },
+  "ai-weak-topic-analyzer": { required: ["topic", "details"], maxLengths: { topic: 300, details: 4000 } },
+  "ai-study-planner": { required: ["topic"], maxLengths: { topic: 300, date: 100, hours: 100 } },
+  "ai-previous-question-generator": { required: ["topic"], maxLengths: { topic: 300, exam: 200, count: 20 } },
+  "ai-performance-analytics": { required: ["topic", "details"], maxLengths: { topic: 300, details: 4000 } },
+  "ai-pdf-practice-papers": { required: ["topic"], maxLengths: { topic: 300, level: 100, count: 20 } },
+  "ai-daily-practice": { required: ["topic"], maxLengths: { topic: 300, goal: 200, difficulty: 50 } },
 };
 
 // ---------------------------------------------------------------------------
@@ -484,6 +506,131 @@ Tone: ${i.tone || "warm"}
 Additional details: ${i.details || "None provided"}
 
 Return a short invitation message with a warm opening, key event details, and a polished sign-off. Keep it concise and ready to copy into a message or card.`;
+
+    case "ai-practice-questions":
+      return `Generate ${i.count || "10"} practice questions about "${i.topic}" for ${i.exam || "a general exam"}. Difficulty: ${i.difficulty || "Mixed"}.
+
+For each question provide:
+1. The question text
+2. 4 options (A-D) where relevant
+3. The correct answer
+4. A brief explanation
+
+Make the questions clear, varied, and useful for studying.`;
+
+    case "ai-mock-exam-generator":
+      return `Create a ${i.duration || "60 minutes"} mock exam on "${i.topic}" with ${i.count || "10"} questions. Difficulty: ${i.difficulty || "Mixed"}.
+
+Structure the exam with:
+1. Clear instructions
+2. Questions in a realistic exam style
+3. Answer key
+4. Brief scoring guidance and study tips
+
+Make it suitable for self-testing and revision.`;
+
+    case "ai-tutor-chat":
+      return `Act as a patient tutor and explain the topic: "${i.topic}" for a ${i.level || "Beginner"} learner.
+
+The learner asks: "${i.question}"
+
+Provide:
+1. A clear explanation
+2. A simple example
+3. A step-by-step breakdown if needed
+4. A follow-up question or next step for deeper learning
+
+Keep the tone encouraging and easy to follow.`;
+
+    case "ai-flashcard-generator":
+      return `Create ${i.count || "15"} flashcards for the topic "${i.topic}" for a ${i.level || "Intermediate"} learner.
+
+Format each flashcard as:
+Front: [term/question]
+Back: [definition/answer]
+
+Make the cards focused on the most important concepts and useful for revision.`;
+
+    case "ai-study-notes-generator":
+      return `Create ${i.format || "Detailed Notes"} for the topic "${i.topic}" for a ${i.level || "Intermediate"} learner.
+
+Include:
+1. Key concepts
+2. Important definitions
+3. Example points
+4. Quick summary bullets
+5. Helpful memory tips
+
+Make the notes organized, concise, and revision-friendly.`;
+
+    case "ai-weak-topic-analyzer":
+      return `Analyze the weak areas for the subject/topic "${i.topic}" based on the following performance notes:
+
+${i.details}
+
+Provide:
+1. The main weak topics or recurring gaps
+2. Why they might be challenging
+3. A targeted study plan to improve them
+4. Suggested practice exercises
+
+Make the response practical and encouraging.`;
+
+    case "ai-study-planner":
+      return `Create a study plan for the goal "${i.topic}" with a target date of ${i.date || "soon"} and ${i.hours || "2 hours"} of daily study time.
+
+Include:
+1. A weekly study schedule
+2. Daily focus areas
+3. Revision checkpoints
+4. A realistic roadmap to reach the goal
+
+Make the plan balanced and manageable.`;
+
+    case "ai-previous-question-generator":
+      return `Generate ${i.count || "10"} exam-style questions on "${i.topic}" for ${i.exam || "the relevant exam"}.
+
+For each question provide:
+1. The question text
+2. A short answer key or marking note
+3. A brief explanation
+
+Make the questions realistic and exam-focused.`;
+
+    case "ai-performance-analytics":
+      return `Analyze the following study/performance data for "${i.topic}":
+
+${i.details}
+
+Provide:
+1. Overall strengths
+2. Weaknesses and recurring issues
+3. Suggested improvement priorities
+4. A short readiness summary
+
+Make it useful for planning the next study phase.`;
+
+    case "ai-pdf-practice-papers":
+      return `Create a printable practice paper for "${i.topic}" at ${i.level || "an intermediate level"} with ${i.count || "1"} paper version(s).
+
+Include:
+1. A clean question paper layout
+2. A short instructions section
+3. An answer key and marking notes
+4. A brief study tip section
+
+Format it so it can be copied into a PDF-ready document.`;
+
+    case "ai-daily-practice":
+      return `Create a daily practice routine for the topic "${i.topic}" with a goal of ${i.goal || "20 minutes"}. Difficulty: ${i.difficulty || "Moderate"}.
+
+Include:
+1. One short practice task
+2. One challenge question
+3. One revision reminder
+4. A motivational closing note
+
+Make it simple enough to follow every day.`;
 
     case "ai-essay-generator":
       return `Generate a polished essay draft about: "${i.topic}"\nStyle: ${i.style || "Academic"}\n\nInclude:\n1. Engaging introduction with thesis statement\n2. 3-4 well-developed body paragraphs with clear arguments\n3. Topic sentences and supporting evidence\n4. Smooth transitions between paragraphs\n5. Strong conclusion that reinforces the thesis\n\nMake it academic and well-structured for submission.`;

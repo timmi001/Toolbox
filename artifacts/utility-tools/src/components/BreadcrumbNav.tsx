@@ -26,6 +26,7 @@ const CATEGORY_NAMES: Record<ToolCategory, string> = {
   'ai-grammar': 'AI Grammar & Writing Tools',
   'ai-ghostwriting': 'AI Ghostwriting',
   'ai-events': 'AI Event Planning',
+  'ai-study': 'AI Study & Exams',
 };
 
 const CATEGORY_LINKS: Record<ToolCategory, string> = {
@@ -47,6 +48,7 @@ const CATEGORY_LINKS: Record<ToolCategory, string> = {
   'ai-grammar': '/ai-grammar-tools',
   'ai-ghostwriting': '/ai-ghostwriting-tools',
   'ai-events': '/ai-event-tools',
+  'ai-study': '/ai-study-exams',
 };
 
 export function BreadcrumbNav({ category, toolName }: BreadcrumbNavProps) {
