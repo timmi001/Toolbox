@@ -1,6 +1,6 @@
 import { getToolBySlug } from '@/lib/tools-data';
-import { AiToolShell } from '@/components/AiToolShell';
+import { StudyToolShell } from '@/components/StudyToolShell';
 
 export default function AiHomeworkHelper() {
-  return <AiToolShell tool={getToolBySlug('ai-homework-helper')!} />;
+  return <StudyToolShell tool={getToolBySlug('ai-homework-helper')!} />;
 }

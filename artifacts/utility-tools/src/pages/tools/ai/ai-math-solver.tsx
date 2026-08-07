@@ -1,9 +1,9 @@
 import { getToolBySlug } from '@/lib/tools-data';
-import { AiToolShell } from '@/components/AiToolShell';
+import { StudyToolShell } from '@/components/StudyToolShell';
 
 export default function AiMathSolver() {
   return (
-    <AiToolShell
+    <StudyToolShell
       tool={getToolBySlug('ai-math-solver')!}
     />
   );

@@ -1,6 +1,6 @@
 import { getToolBySlug } from '@/lib/tools-data';
-import { AiToolShell } from '@/components/AiToolShell';
+import { StudyToolShell } from '@/components/StudyToolShell';
 
 export default function AiQuizGenerator() {
-  return <AiToolShell tool={getToolBySlug('ai-quiz-generator')!} />;
+  return <StudyToolShell tool={getToolBySlug('ai-quiz-generator')!} />;
 }

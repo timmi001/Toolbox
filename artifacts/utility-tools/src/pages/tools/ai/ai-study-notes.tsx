@@ -1,6 +1,6 @@
 import { getToolBySlug } from '@/lib/tools-data';
-import { AiToolShell } from '@/components/AiToolShell';
+import { StudyToolShell } from '@/components/StudyToolShell';
 
 export default function AiStudyNotes() {
-  return <AiToolShell tool={getToolBySlug('ai-study-notes')!} />;
+  return <StudyToolShell tool={getToolBySlug('ai-study-notes')!} />;
 }
