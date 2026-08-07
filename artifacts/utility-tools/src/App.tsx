@@ -9,6 +9,7 @@ import Home from "@/pages/Home";
 import AiTools from "@/pages/AiTools";
 import UtilityTools from "@/pages/UtilityTools";
 import CategoryPage from "@/pages/CategoryPage";
+import StudyExamsHub from "@/pages/StudyExamsHub";
 import HistoryPage from "@/pages/History";
 import NotFound from "@/pages/not-found";
 import BlogIndex from "@/pages/blog/BlogIndex";
@@ -345,6 +346,7 @@ function Router() {
         <Switch>
         <Route path="/" component={Home} />
         <Route path="/ai-tools" component={AiTools} />
+        <Route path="/study-exams-hub" component={StudyExamsHub} />
         <Route path="/utility-tools" component={UtilityTools} />
 
         {/* Categories */}
