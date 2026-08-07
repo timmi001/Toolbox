@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildStudyPrompt } from "./study-prompts";
+import { buildStudyPrompt } from "./study-prompts.ts";
 
 test("buildStudyPrompt returns a structured prompt for study notes", () => {
   const prompt = buildStudyPrompt("notes", {
