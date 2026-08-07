@@ -326,6 +326,18 @@ const AiEventAssistant = L(() => import("@/pages/tools/ai/ai-event-assistant"));
 const AiEventItinerary = L(() => import("@/pages/tools/ai/ai-event-itinerary"));
 const AiEventChecklist = L(() => import("@/pages/tools/ai/ai-event-checklist"));
 const AiEventInvitation = L(() => import("@/pages/tools/ai/ai-event-invitation"));
+const AiTicketFinder = L(() => import("@/pages/tools/ai/ai-ticket-finder"));
+const AiEventSearch = L(() => import("@/pages/tools/ai/ai-event-search"));
+const AiPriceComparison = L(() => import("@/pages/tools/ai/ai-price-comparison"));
+const AiPriceTracker = L(() => import("@/pages/tools/ai/ai-price-tracker"));
+const AiTicketAlerts = L(() => import("@/pages/tools/ai/ai-ticket-alerts"));
+const AiArtistTourFinder = L(() => import("@/pages/tools/ai/ai-artist-tour-finder"));
+const AiSportsTickets = L(() => import("@/pages/tools/ai/ai-sports-tickets"));
+const AiFestivalFinder = L(() => import("@/pages/tools/ai/ai-festival-finder"));
+const AiTheatreShows = L(() => import("@/pages/tools/ai/ai-theatre-shows"));
+const AiNearbyEvents = L(() => import("@/pages/tools/ai/ai-nearby-events"));
+const AiSeatFinder = L(() => import("@/pages/tools/ai/ai-seat-finder"));
+const AiEventTripPlanner = L(() => import("@/pages/tools/ai/ai-event-trip-planner"));
 const AiPracticeQuestions = L(() => import("@/pages/tools/ai/ai-practice-questions"));
 const AiMockExamGenerator = L(() => import("@/pages/tools/ai/ai-mock-exam-generator"));
 const AiTutorChat = L(() => import("@/pages/tools/ai/ai-tutor-chat"));
@@ -612,6 +624,18 @@ function Router() {
         <Route path="/tools/ai/ai-event-itinerary" component={AiEventItinerary} />
         <Route path="/tools/ai/ai-event-checklist" component={AiEventChecklist} />
         <Route path="/tools/ai/ai-event-invitation" component={AiEventInvitation} />
+        <Route path="/tools/ai/ai-ticket-finder" component={AiTicketFinder} />
+        <Route path="/tools/ai/ai-event-search" component={AiEventSearch} />
+        <Route path="/tools/ai/ai-price-comparison" component={AiPriceComparison} />
+        <Route path="/tools/ai/ai-price-tracker" component={AiPriceTracker} />
+        <Route path="/tools/ai/ai-ticket-alerts" component={AiTicketAlerts} />
+        <Route path="/tools/ai/ai-artist-tour-finder" component={AiArtistTourFinder} />
+        <Route path="/tools/ai/ai-sports-tickets" component={AiSportsTickets} />
+        <Route path="/tools/ai/ai-festival-finder" component={AiFestivalFinder} />
+        <Route path="/tools/ai/ai-theatre-shows" component={AiTheatreShows} />
+        <Route path="/tools/ai/ai-nearby-events" component={AiNearbyEvents} />
+        <Route path="/tools/ai/ai-seat-finder" component={AiSeatFinder} />
+        <Route path="/tools/ai/ai-event-trip-planner" component={AiEventTripPlanner} />
         <Route path="/tools/ai/ai-practice-questions" component={AiPracticeQuestions} />
         <Route path="/tools/ai/ai-mock-exam-generator" component={AiMockExamGenerator} />
         <Route path="/tools/ai/ai-tutor-chat" component={AiTutorChat} />

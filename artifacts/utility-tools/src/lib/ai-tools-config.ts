@@ -647,6 +647,112 @@ const configs: Record<string, AiToolConfig> = {
       { key: "tone", label: "Voice & Tone", type: "select", options: ["Professional", "Conversational", "Inspiring", "Academic", "Casual"] },
     ],
   },
+  "ai-ticket-finder": {
+    toolId: "ai-ticket-finder",
+    buttonLabel: "Find Tickets",
+    fields: [
+      { key: "query", label: "Event or Artist", type: "text", placeholder: "e.g. Taylor Swift, comedy night, local festival", required: true },
+      { key: "location", label: "City or Region", type: "text", placeholder: "e.g. London, New York" },
+      { key: "budget", label: "Budget", type: "text", placeholder: "e.g. under $150" },
+    ],
+  },
+  "ai-event-search": {
+    toolId: "ai-event-search",
+    buttonLabel: "Search Events",
+    fields: [
+      { key: "query", label: "What are you looking for?", type: "text", placeholder: "e.g. rooftop party, jazz night, family event", required: true },
+      { key: "location", label: "Location", type: "text", placeholder: "e.g. Chicago" },
+      { key: "date", label: "Preferred Date", type: "text", placeholder: "e.g. this weekend" },
+    ],
+  },
+  "ai-price-comparison": {
+    toolId: "ai-price-comparison",
+    buttonLabel: "Compare Prices",
+    fields: [
+      { key: "event", label: "Event Name", type: "text", placeholder: "e.g. NBA game", required: true },
+      { key: "location", label: "Venue or City", type: "text", placeholder: "e.g. Madison Square Garden" },
+      { key: "budget", label: "Budget", type: "text", placeholder: "e.g. $100-$250" },
+    ],
+  },
+  "ai-price-tracker": {
+    toolId: "ai-price-tracker",
+    buttonLabel: "Track Prices",
+    fields: [
+      { key: "event", label: "Event Name", type: "text", placeholder: "e.g. festival pass", required: true },
+      { key: "budget", label: "Budget Target", type: "text", placeholder: "e.g. under $80" },
+      { key: "notes", label: "Notes", type: "textarea", placeholder: "Mention dates, seat preferences, or urgency...", rows: 4 }],
+  },
+  "ai-ticket-alerts": {
+    toolId: "ai-ticket-alerts",
+    buttonLabel: "Create Alerts",
+    fields: [
+      { key: "event", label: "Event or Artist", type: "text", placeholder: "e.g. football match", required: true },
+      { key: "location", label: "Location", type: "text", placeholder: "e.g. Los Angeles" },
+      { key: "frequency", label: "Alert Frequency", type: "select", options: ["Daily", "Weekly", "When prices drop"] },
+    ],
+  },
+  "ai-artist-tour-finder": {
+    toolId: "ai-artist-tour-finder",
+    buttonLabel: "Find Tour Dates",
+    fields: [
+      { key: "artist", label: "Artist or Band", type: "text", placeholder: "e.g. Dua Lipa", required: true },
+      { key: "location", label: "Preferred City", type: "text", placeholder: "e.g. Seattle" },
+      { key: "date", label: "Preferred Timeframe", type: "text", placeholder: "e.g. next 3 months" },
+    ],
+  },
+  "ai-sports-tickets": {
+    toolId: "ai-sports-tickets",
+    buttonLabel: "Find Sports Tickets",
+    fields: [
+      { key: "sport", label: "Sport or Team", type: "text", placeholder: "e.g. football, Lakers", required: true },
+      { key: "location", label: "City or Venue", type: "text", placeholder: "e.g. Miami" },
+      { key: "date", label: "Date or Upcoming Match", type: "text", placeholder: "e.g. this month" },
+    ],
+  },
+  "ai-festival-finder": {
+    toolId: "ai-festival-finder",
+    buttonLabel: "Find Festivals",
+    fields: [
+      { key: "genre", label: "Genre or Theme", type: "text", placeholder: "e.g. EDM, food, film", required: true },
+      { key: "location", label: "Location", type: "text", placeholder: "e.g. Austin" },
+      { key: "date", label: "Timeframe", type: "text", placeholder: "e.g. summer" },
+    ],
+  },
+  "ai-theatre-shows": {
+    toolId: "ai-theatre-shows",
+    buttonLabel: "Find Shows",
+    fields: [
+      { key: "genre", label: "Type of Show", type: "text", placeholder: "e.g. comedy, musical, drama", required: true },
+      { key: "location", label: "City", type: "text", placeholder: "e.g. Toronto" },
+      { key: "budget", label: "Budget", type: "text", placeholder: "e.g. under $100" },
+    ],
+  },
+  "ai-nearby-events": {
+    toolId: "ai-nearby-events",
+    buttonLabel: "Find Nearby Events",
+    fields: [
+      { key: "location", label: "Your Location", type: "text", placeholder: "e.g. downtown Seattle", required: true },
+      { key: "interest", label: "Interests", type: "text", placeholder: "e.g. live music, food, nightlife" },
+      { key: "date", label: "Date Range", type: "text", placeholder: "e.g. this weekend" },
+    ],
+  },
+  "ai-seat-finder": {
+    toolId: "ai-seat-finder",
+    buttonLabel: "Find Best Seats",
+    fields: [
+      { key: "event", label: "Event or Venue", type: "text", placeholder: "e.g. concert at Red Rocks", required: true },
+      { key: "preference", label: "Seat Preference", type: "text", placeholder: "e.g. close to stage, under $80" },
+      { key: "notes", label: "Notes", type: "textarea", placeholder: "Mention accessibility or view preferences...", rows: 4 }],
+  },
+  "ai-event-trip-planner": {
+    toolId: "ai-event-trip-planner",
+    buttonLabel: "Plan the Trip",
+    fields: [
+      { key: "event", label: "Event Name", type: "text", placeholder: "e.g. weekend festival", required: true },
+      { key: "location", label: "Destination", type: "text", placeholder: "e.g. Austin" },
+      { key: "budget", label: "Trip Budget", type: "text", placeholder: "e.g. $500" },
+    ],
+  },
   "ai-practice-questions": {
     toolId: "ai-practice-questions",
     buttonLabel: "Generate Practice Questions",
