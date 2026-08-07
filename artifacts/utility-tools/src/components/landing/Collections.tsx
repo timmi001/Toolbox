@@ -114,14 +114,6 @@ const AI_COLLECTIONS = [
     accent: '#3B82F6',
   },
   {
-    emoji: '📚',
-    name: 'Study & Exams',
-    href: '/ai-study-exams-tools',
-    categories: ['ai-study-exams'],
-    gradient: 'linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%)',
-    accent: '#F97316',
-  },
-  {
     emoji: '👻',
     name: 'Ghostwriting',
     href: '/ai-ghostwriting-tools',
@@ -155,7 +147,6 @@ const CATEGORY_ACCENT: Record<string, string> = {
   'ai-social': '#EC4899',
   'ai-blogging-seo': '#059669',
   'ai-email': '#3B82F6',
-  'ai-study-exams': '#F97316',
   'ai-ghostwriting': '#475569',
   business: '#0EA5E9',
   marketing: '#DC2626',

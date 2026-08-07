@@ -10,7 +10,6 @@ const CATEGORIES = [
   { id: 'ai-blogging-seo', name: 'AI Blogging & SEO Tools', icon: Newspaper, path: '/ai-blogging-seo-tools', desc: 'Write blog titles, outlines, articles, and SEO meta tags with AI.' },
   { id: 'ai-email', name: 'AI Email Tools', icon: Mail, path: '/ai-email-tools', desc: 'Draft cold emails, sales emails, follow-ups, support replies, and thank-you notes.' },
   { id: 'ai-grammar', name: 'AI Grammar & Writing Tools', icon: SpellCheck2, path: '/ai-grammar-tools', desc: 'Check grammar, improve tone, summarize, paraphrase, and proofread any text.' },
-  { id: 'ai-study-exams', name: 'AI Study & Exams', icon: GraduationCap, path: '/ai-study-exams-tools', desc: 'Study notes, quizzes, flashcards, planners, and exam-prep tools.' },
   { id: 'ai-ghostwriting', name: 'AI Ghostwriting', icon: PenLine, path: '/ai-ghostwriting-tools', desc: 'Create polished essays, stories, book outlines, chapters, and speeches.' },
   { id: 'text', name: 'Text Tools', icon: Type, path: '/text-tools', desc: 'Format, count, and clean text effortlessly.' },
   { id: 'developer', name: 'Developer Tools', icon: Code, path: '/developer-tools', desc: 'JSON, Base64, Hash, and more dev utilities.' },

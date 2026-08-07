@@ -361,7 +361,6 @@ function Router() {
         <Route path="/ai-blogging-seo-tools" component={CategoryPage} />
         <Route path="/ai-email-tools" component={CategoryPage} />
         <Route path="/ai-grammar-tools" component={CategoryPage} />
-        <Route path="/ai-study-exams-tools" component={CategoryPage} />
         <Route path="/ai-ghostwriting-tools" component={CategoryPage} />
         <Route path="/ai-event-tools" component={CategoryPage} />
         <Route path="/audio-tools" component={CategoryPage} />

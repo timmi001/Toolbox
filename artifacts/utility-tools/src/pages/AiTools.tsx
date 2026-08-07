@@ -68,17 +68,6 @@ const AI_CATEGORIES = [
     hoverShadow: 'rgba(217,119,6,0.12)',
   },
   {
-    emoji: '🎓',
-    name: 'AI Study & Exams',
-    description: 'Study notes, quizzes, flashcards, homework help, planners and exam-prep tools.',
-    href: '/ai-study-exams-tools',
-    filterCategories: ['ai-study-exams'],
-    accent: '#0891B2',
-    bg: 'from-[#0891B2]/8 to-[#0891B2]/3',
-    border: 'border-[#0891B2]/15',
-    hoverShadow: 'rgba(8,145,178,0.12)',
-  },
-  {
     emoji: '🖊',
     name: 'AI Ghostwriting',
     description: 'Essays, stories, book outlines, chapters and speeches.',
@@ -135,7 +124,7 @@ export default function AiTools() {
 
   const totalAiTools = toolsData.filter(t =>
     ['ai-blogging-seo', 'ai-resume', 'ai-social', 'ai-email', 'ai-grammar',
-     'ai-study-exams', 'ai-ghostwriting', 'marketing', 'business', 'ai-events'].includes(t.category)
+     'ai-ghostwriting', 'marketing', 'business', 'ai-events'].includes(t.category)
   ).length;
 
   const visibleCategories = AI_CATEGORIES.filter(c =>
