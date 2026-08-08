@@ -70,45 +70,14 @@ export default function CategoryPage() {
     t.description.toLowerCase().includes(search.toLowerCase())
   );
 
-  const eventHighlights = [
-    {
-      title: 'Concept to execution',
-      text: 'Turn a simple idea into a complete event plan with theme direction, flow, and logistics.'
-    },
-    {
-      title: 'Guest-ready messaging',
-      text: 'Draft polished invites, announcements, and reminders for every audience and tone.'
-    },
-    {
-      title: 'Day-of confidence',
-      text: 'Build schedules, checklists, and hosting notes so your event runs smoothly from start to finish.'
-    },
-  ];
-
   return (
     <div className="py-5 animate-in fade-in duration-500">
       <BreadcrumbNav category={mappedCategory} />
 
       <header className="mb-6 space-y-4">
-        <div className="rounded-[24px] border border-border/60 bg-gradient-to-br from-[#F59E0B]/10 via-white to-[#7C3AED]/10 p-5 shadow-sm dark:bg-card/80">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-[#F59E0B]/25 bg-[#F59E0B]/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#B45309]">
-              Premium planning suite
-            </span>
-            <span className="rounded-full border border-border/50 bg-white/70 px-3 py-1 text-xs text-muted-foreground dark:bg-card/70">
-              {categoryTools.length} specialized tools
-            </span>
-          </div>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground">{details.title}</h1>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{details.title}</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{details.desc}</p>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {eventHighlights.map((item) => (
-              <div key={item.title} className="rounded-2xl border border-border/50 bg-white/80 p-3 text-sm shadow-sm dark:bg-background/60">
-                <p className="font-semibold text-foreground">{item.title}</p>
-                <p className="mt-1 leading-6 text-muted-foreground">{item.text}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div className="relative max-w-sm">
