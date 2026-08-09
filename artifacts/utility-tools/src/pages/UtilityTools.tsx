@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { motion } from 'framer-motion';
-import { ArrowRight, Search, Wrench, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search, Wrench, Zap } from 'lucide-react';
 import { toolsData, getToolRoutePath } from '@/lib/tools-data';
 
 const fadeUp = (delay = 0) => ({
@@ -123,6 +123,16 @@ export default function UtilityTools() {
 
   return (
     <div className="pb-20">
+      <div className="mx-auto max-w-[1400px] px-4 pt-4 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign('/')}
+          className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
+      </div>
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden px-4 py-16 text-center">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">

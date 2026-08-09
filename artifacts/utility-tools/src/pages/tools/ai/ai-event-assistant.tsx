@@ -356,7 +356,7 @@ export default function AiEventAssistant() {
           </p>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="grid gap-6">
           <div className="space-y-6">
             <section className="rounded-[24px] border border-border/70 bg-card/70 p-5 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -459,139 +459,8 @@ export default function AiEventAssistant() {
               </div>
             </section>
 
-            <section className="rounded-[24px] border border-border/70 bg-card/70 p-5 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">Generated toolkit</h3>
-                  <p className="text-sm text-muted-foreground">Search across sections and regenerate any one of them independently.</p>
-                </div>
-                <div className="relative w-full max-w-sm">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search generated content" className="pl-9" />
-                </div>
-              </div>
-
-              {error && <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
-
-              {loading && !markdown ? (
-                <div className="mt-5 space-y-3">
-                  {[...Array(4)].map((_, index) => <div key={index} className="h-16 animate-pulse rounded-2xl bg-muted/70" />)}
-                </div>
-              ) : null}
-
-              {!loading && !markdown && !error ? (
-                <div className="mt-5 rounded-[20px] border border-dashed border-border/70 p-10 text-center text-sm text-muted-foreground">
-                  Your generated event toolkit will appear here with sections for planning, promotion, invitations, speeches, and more.
-                </div>
-              ) : null}
-
-              {markdown && (
-                <div className="mt-5 space-y-3">
-                  {visibleSections.map(section => {
-                    const Icon = section.icon;
-                    const isOpen = openSections[section.key];
-                    const content = sections[section.key]?.trim();
-                    const matchesSearch = !search || content.toLowerCase().includes(search.toLowerCase()) || section.title.toLowerCase().includes(search.toLowerCase());
-                    if (!matchesSearch) return null;
-
-                    return (
-                      <div key={section.key} className="rounded-[20px] border border-border/60 bg-background/70">
-                        <button className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left" onClick={() => toggleSection(section.key)}>
-                          <span className="flex items-center gap-2 font-medium text-foreground">
-                            {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                            <Icon className="h-4 w-4 text-primary" />
-                            {section.title}
-                          </span>
-                          <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{content ? 'Ready' : 'Empty'}</span>
-                        </button>
-                        {isOpen && (
-                          <div className="border-t border-border/60 p-4">
-                            <div className="mb-3 flex flex-wrap gap-2">
-                              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => copySection(section.key)}>
-                                {copiedSection === section.key ? <Sparkles className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                                {copiedSection === section.key ? 'Copied' : 'Copy'}
-                              </Button>
-                              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => generateToolkit(section.key)} disabled={loading}>
-                                {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                                Regenerate
-                              </Button>
-                            </div>
-                            <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:mt-4 prose-headings:mb-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1">
-                              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} skipHtml>
-                                {content || `Generate this section to populate your ${section.title.toLowerCase()} content.`}
-                              </ReactMarkdown>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
           </div>
 
-          <aside className="space-y-6">
-            <section className="rounded-[24px] border border-border/70 bg-card/70 p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">Toolkit actions</h3>
-                  <p className="text-sm text-muted-foreground">Share, export, or keep the current plan handy.</p>
-                </div>
-              </div>
-              <div className="mt-4 space-y-2">
-                <Button className="w-full justify-start gap-2" onClick={saveCurrentToolkit}>
-                  <Save className="h-4 w-4" /> Save current toolkit
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2" onClick={copyAll}>
-                  <Copy className="h-4 w-4" /> Copy full toolkit
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2" onClick={printToolkit}>
-                  <Printer className="h-4 w-4" /> Print / export PDF
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2" onClick={exportDocx}>
-                  <Download className="h-4 w-4" /> Export DOCX
-                </Button>
-              </div>
-            </section>
-
-            <section className="rounded-[24px] border border-border/70 bg-card/70 p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">Saved toolkits</h3>
-                  <p className="text-sm text-muted-foreground">Reopen, duplicate, rename, or remove previous event plans.</p>
-                </div>
-              </div>
-              <div className="mt-4 space-y-3">
-                {history.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-border/70 p-4 text-sm text-muted-foreground">No saved toolkits yet. Generate one and it will appear here.</div>
-                ) : history.map(entry => (
-                  <div key={entry.id} className="rounded-2xl border border-border/60 p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-medium text-foreground">{entry.name}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(entry.createdAt).toLocaleString()}</p>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => loadToolkit(entry)} title="Open toolkit">
-                          <BookOpenCheck className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => duplicateToolkit(entry)} title="Duplicate toolkit">
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => renameToolkit(entry)} title="Rename toolkit">
-                          <PenSquare className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => deleteToolkit(entry.id)} title="Delete toolkit">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </aside>
         </div>
       </div>
     </ToolLayout>
