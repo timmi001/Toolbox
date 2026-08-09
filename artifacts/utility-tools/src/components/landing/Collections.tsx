@@ -9,7 +9,7 @@ const UTILITY_COLLECTIONS = [
     name: 'PDF Tools',
     href: '/pdf-tools',
     categories: ['pdf'],
-    gradient: 'linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%)',
+    gradient: 'linear-gradient(135deg, rgba(127, 29, 29, 0.72) 0%, rgba(69, 10, 10, 0.92) 100%)',
     accent: '#EF4444',
   },
   {
@@ -17,7 +17,7 @@ const UTILITY_COLLECTIONS = [
     name: 'Image Tools',
     href: '/image-tools',
     categories: ['image'],
-    gradient: 'linear-gradient(135deg, #FFFBEB 0%, #FDE68A 100%)',
+    gradient: 'linear-gradient(135deg, rgba(120, 83, 10, 0.72) 0%, rgba(66, 32, 6, 0.92) 100%)',
     accent: '#F59E0B',
   },
   {
@@ -25,7 +25,7 @@ const UTILITY_COLLECTIONS = [
     name: 'Video Tools',
     href: '/video-tools',
     categories: ['video'],
-    gradient: 'linear-gradient(135deg, #F5F3FF 0%, #DDD6FE 100%)',
+    gradient: 'linear-gradient(135deg, rgba(76, 29, 149, 0.72) 0%, rgba(46, 16, 101, 0.92) 100%)',
     accent: '#7C3AED',
   },
   {
@@ -33,7 +33,7 @@ const UTILITY_COLLECTIONS = [
     name: 'Audio Tools',
     href: '/audio-tools',
     categories: ['audio'],
-    gradient: 'linear-gradient(135deg, #FDF2F8 0%, #FBCFE8 100%)',
+    gradient: 'linear-gradient(135deg, rgba(131, 24, 67, 0.72) 0%, rgba(80, 7, 36, 0.92) 100%)',
     accent: '#EC4899',
   },
   {
@@ -41,7 +41,7 @@ const UTILITY_COLLECTIONS = [
     name: 'Developer Tools',
     href: '/developer-tools',
     categories: ['developer'],
-    gradient: 'linear-gradient(135deg, #ECFDF5 0%, #A7F3D0 100%)',
+    gradient: 'linear-gradient(135deg, rgba(6, 95, 70, 0.72) 0%, rgba(2, 44, 34, 0.92) 100%)',
     accent: '#10B981',
   },
   {
@@ -49,7 +49,7 @@ const UTILITY_COLLECTIONS = [
     name: 'Text Tools',
     href: '/text-tools',
     categories: ['text'],
-    gradient: 'linear-gradient(135deg, #EFF6FF 0%, #BFDBFE 100%)',
+    gradient: 'linear-gradient(135deg, rgba(30, 64, 175, 0.72) 0%, rgba(15, 36, 88, 0.92) 100%)',
     accent: '#3B82F6',
   },
   {
@@ -57,7 +57,7 @@ const UTILITY_COLLECTIONS = [
     name: 'Calculators',
     href: '/calculators',
     categories: ['calculators'],
-    gradient: 'linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%)',
+    gradient: 'linear-gradient(135deg, rgba(154, 52, 18, 0.72) 0%, rgba(67, 20, 7, 0.92) 100%)',
     accent: '#F97316',
   },
   {
@@ -65,7 +65,7 @@ const UTILITY_COLLECTIONS = [
     name: 'File Conversion',
     href: '/file-conversion-tools',
     categories: ['file-conversion'],
-    gradient: 'linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%)',
+    gradient: 'linear-gradient(135deg, rgba(75, 85, 99, 0.72) 0%, rgba(31, 35, 42, 0.92) 100%)',
     accent: '#6B7280',
   },
 ];
@@ -76,7 +76,7 @@ const AI_COLLECTIONS = [
     name: 'Grammar & Writing',
     href: '/ai-grammar-tools',
     categories: ['ai-grammar'],
-    gradient: 'linear-gradient(135deg, #F3E8FF 0%, #DDD6FE 100%)',
+    gradient: 'linear-gradient(135deg, rgba(107, 33, 168, 0.72) 0%, rgba(59, 18, 92, 0.92) 100%)',
     accent: '#7C3AED',
   },
   {
@@ -84,7 +84,7 @@ const AI_COLLECTIONS = [
     name: 'Resume Builder',
     href: '/ai-resume-tools',
     categories: ['ai-resume'],
-    gradient: 'linear-gradient(135deg, #EDE9FE 0%, #C4B5FD 100%)',
+    gradient: 'linear-gradient(135deg, rgba(91, 33, 182, 0.72) 0%, rgba(49, 22, 105, 0.92) 100%)',
     accent: '#6D28D9',
   },
   {
@@ -92,7 +92,7 @@ const AI_COLLECTIONS = [
     name: 'Social Media',
     href: '/ai-social-media-tools',
     categories: ['ai-social'],
-    gradient: 'linear-gradient(135deg, #FDF2F8 0%, #FBCFE8 100%)',
+    gradient: 'linear-gradient(135deg, rgba(131, 24, 67, 0.72) 0%, rgba(80, 7, 36, 0.92) 100%)',
     accent: '#EC4899',
   },
   {
@@ -100,7 +100,7 @@ const AI_COLLECTIONS = [
     name: 'Blogging & SEO',
     href: '/ai-blogging-seo-tools',
     categories: ['ai-blogging-seo'],
-    gradient: 'linear-gradient(135deg, #ECFDF5 0%, #A7F3D0 100%)',
+    gradient: 'linear-gradient(135deg, rgba(6, 95, 70, 0.72) 0%, rgba(2, 44, 34, 0.92) 100%)',
     accent: '#059669',
   },
   {
@@ -108,7 +108,7 @@ const AI_COLLECTIONS = [
     name: 'Email Tools',
     href: '/ai-email-tools',
     categories: ['ai-email'],
-    gradient: 'linear-gradient(135deg, #EFF6FF 0%, #BFDBFE 100%)',
+    gradient: 'linear-gradient(135deg, rgba(30, 64, 175, 0.72) 0%, rgba(15, 36, 88, 0.92) 100%)',
     accent: '#3B82F6',
   },
   {
@@ -116,7 +116,7 @@ const AI_COLLECTIONS = [
     name: 'Ghostwriting',
     href: '/ai-ghostwriting-tools',
     categories: ['ai-ghostwriting'],
-    gradient: 'linear-gradient(135deg, #F1F5F9 0%, #CBD5E1 100%)',
+    gradient: 'linear-gradient(135deg, rgba(71, 85, 105, 0.72) 0%, rgba(30, 41, 59, 0.92) 100%)',
     accent: '#475569',
   },
   {
@@ -124,7 +124,7 @@ const AI_COLLECTIONS = [
     name: 'Marketing',
     href: '/ai-marketing-advertising',
     categories: ['marketing'],
-    gradient: 'linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%)',
+    gradient: 'linear-gradient(135deg, rgba(127, 29, 29, 0.72) 0%, rgba(69, 10, 10, 0.92) 100%)',
     accent: '#DC2626',
   },
 ];
@@ -193,16 +193,16 @@ export function Collections() {
                   >
                     <Link href={col.href}>
                       <div
-                        className="group cursor-pointer overflow-hidden rounded-xl p-2.5 text-center transition-all duration-200 hover:shadow-[0_6px_20px_rgba(0,0,0,0.09)]"
-                        style={{ background: col.gradient }}
+                        className="group cursor-pointer overflow-hidden rounded-xl border border-white/15 p-2.5 text-center text-white shadow-sm transition-all duration-200 hover:border-white/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+                        style={{ background: col.gradient, boxShadow: `inset 0 1px 0 ${col.accent}45` }}
                       >
                         <div className="mb-1 text-2xl leading-none transition-transform duration-200 group-hover:scale-110">
                           {col.emoji}
                         </div>
-                        <p className="text-[11px] font-bold leading-tight text-foreground">
+                        <p className="text-[11px] font-bold leading-tight text-white drop-shadow-sm">
                           {col.name}
                         </p>
-                        <p className="mt-0.5 text-[10px] font-medium" style={{ color: col.accent }}>
+                        <p className="mt-0.5 text-[10px] font-semibold" style={{ color: '#DDE7FF' }}>
                           {count > 0 ? `${count} tools` : 'Explore →'}
                         </p>
                       </div>
