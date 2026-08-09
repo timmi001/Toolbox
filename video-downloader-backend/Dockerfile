@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN python3 --version && \
     python3 -m pip --version && \
-    python3 -m pip install --no-cache-dir --break-system-packages yt-dlp && \
+    pip3 install --no-cache-dir -U --break-system-packages yt-dlp && \
     yt-dlp --version && \
     ffmpeg -version | head -n 1 && \
     which yt-dlp && \

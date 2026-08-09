@@ -1,6 +1,39 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { validateGeminiEnv } from "./lib/ai-service";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
+
+async function logDownloaderDiagnostics(): Promise<void> {
+  const versionOf = async (command: string, args: string[]): Promise<string> => {
+    try {
+      const { stdout } = await execFileAsync(command, args, { timeout: 10_000 });
+      return stdout.trim().split(/\r?\n/)[0] || "unknown";
+    } catch (error) {
+      return `unavailable (${error instanceof Error ? error.message : String(error)})`;
+    }
+  };
+
+  const [ytDlpVersion, ytDlpPath, ffmpegVersion, ffmpegPath] = await Promise.all([
+    versionOf("yt-dlp", ["--version"]),
+    versionOf("sh", ["-c", "command -v yt-dlp"]),
+    versionOf("ffmpeg", ["-version"]),
+    versionOf("sh", ["-c", "command -v ffmpeg"]),
+  ]);
+
+  logger.info(
+    {
+      ytDlpVersion,
+      ytDlpExecutablePath: ytDlpPath,
+      ffmpegVersion,
+      ffmpegExecutablePath: ffmpegPath,
+      nodeVersion: process.version,
+    },
+    "Downloader runtime diagnostics",
+  );
+}
 
 // Validate Gemini only when a Gemini-style key is actually configured.
 // This avoids preventing AgentRouter-only deployments from starting.
@@ -75,6 +108,7 @@ if (Number.isNaN(port) || port <= 0) {
 // ensures startup failures are captured in the Pino log before process exit.
 const server = app.listen(port, () => {
   logger.info({ port }, "Server listening");
+  void logDownloaderDiagnostics();
 });
 
 server.on("error", (err) => {

@@ -318,7 +318,7 @@ function classifyFailure(
 ): { status: number; message: string; reason: FailureReason } {
   if (isMissingBinaryError(err)) {
     return {
-      status: 500,
+      status: 503,
       message: `Missing required binary "${missingBinaryName()}" — it is not installed or not on PATH in this environment.`,
       reason: "missing_binary",
     };
@@ -338,7 +338,9 @@ function classifyFailure(
   // reported as "login required" — that misleads users into thinking the video
   // itself is restricted.
   if (
-    /sign in to confirm you.?re not a bot|Precondition check failed|Please sign in to confirm your age/i.test(stderr)
+    /sign in to confirm you.?re not a bot|confirm you.?re not a bot|precondition check failed|automated queries|unusual traffic/i.test(
+      stderr,
+    )
   ) {
     return {
       status: 429,
@@ -379,7 +381,11 @@ function classifyFailure(
   // ── Login / age-gate ──────────────────────────────────────────────────────
   // Must come AFTER the bot-check test, because YouTube's sign-in challenge
   // also contains the word "sign in" — the bot-check variant is more specific.
-  if (/private video|sign.?in|log.?in required|authentication required|This video is age-restricted|cookies/i.test(stderr)) {
+  if (
+    /private video|this video is private|login required|log-in required|authentication required|this video is age-restricted|confirm your age|age.?restricted/i.test(
+      stderr,
+    )
+  ) {
     return {
       status: 422,
       message: "This video is private, age-restricted, or requires login — it can't be downloaded here.",
@@ -406,7 +412,7 @@ function classifyFailure(
     };
   }
   return {
-    status: 502,
+    status: 500,
     message: "Could not fetch this video from the source platform. Please check the link and try again.",
     reason: "unknown_extractor_error",
   };
@@ -783,14 +789,14 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
     );
     if (!started && !res.headersSent) {
       if (!isDev) {
-        res.status(missingBinary ? 500 : 502).json({
+        res.status(503).json({
           error: missingBinary
             ? `Missing required binary "${missingBinaryName()}" — it is not installed or not on PATH in this environment.`
             : "Failed to start the download. Please try again.",
         });
         return;
       }
-      res.status(missingBinary ? 500 : 502).json({
+      res.status(503).json({
         error: err.message,
         stack: err.stack,
         ...(missingBinary
@@ -1033,7 +1039,7 @@ router.get("/video/audio", audioLimiter, async (req, res) => {
       clearTimeout(killTimer);
       logger.error({ requestId, platform, err: err.message }, "[video/audio] spawn error");
       if (!started && !res.headersSent) {
-        res.status(isMissingBinaryError(err) ? 500 : 502).json({ error: "Failed to start audio extraction." });
+        res.status(503).json({ error: "The downloader is temporarily unavailable. Please try again shortly." });
       } else if (!res.writableEnded) {
         res.end();
       }
