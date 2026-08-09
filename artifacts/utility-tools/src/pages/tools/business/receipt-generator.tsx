@@ -34,7 +34,7 @@ export default function ReceiptGenerator() {
     <title>${receiptNumber || 'Receipt'}</title>
     <style>
       body { font-family: Arial, sans-serif; background: #f5f7fb; color: #0f172a; padding: 32px; }
-      .card { max-width: 760px; margin: 0 auto; background: white; border: 1px solid #e2e8f0; border-radius: 18px; padding: 32px; box-shadow: 0 12px 32px rgba(0,0,0,0.06); }
+      .card { max-width: 760px; margin: 0 auto; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 18px; padding: 32px; box-shadow: 0 12px 32px rgba(0,0,0,0.35); }
       .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; }
       .title { font-size: 26px; font-weight: 700; text-transform: uppercase; }
       .muted { color: #64748b; font-size: 13px; }
@@ -109,7 +109,7 @@ export default function ReceiptGenerator() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border/60 bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Receipt className="w-4 h-4" /> Receipt Preview
         </div>

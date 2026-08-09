@@ -47,11 +47,11 @@ export default function SvgViewer() {
         </div>
         <div>
           <label className="text-sm text-muted-foreground mb-2 block">Preview</label>
-          <div className="min-h-[300px] border border-border/50 rounded-lg p-4 bg-white flex items-center justify-center">
+          <div className="min-h-[300px] border border-border/50 rounded-lg p-4 bg-card flex items-center justify-center">
             {isValid ? (
               <div dangerouslySetInnerHTML={{ __html: code }} className="max-w-full max-h-full" />
             ) : (
-              <span className="text-gray-400 text-sm">Enter valid SVG code</span>
+              <span className="text-muted-foreground text-sm">Enter valid SVG code</span>
             )}
           </div>
         </div>

@@ -46,7 +46,7 @@ export default function ConvertIco() {
           <div className="flex gap-6 flex-wrap mb-4">
             {previews.map(({ size, url }) => (
               <div key={size} className="text-center">
-                <div className="border border-border/50 rounded-lg p-2 bg-white mb-2 inline-block">
+                <div className="border border-border/50 rounded-lg p-2 bg-card mb-2 inline-block">
                   <img src={url} width={size} height={size} alt={`${size}px`} />
                 </div>
                 <div className="text-xs text-muted-foreground">{size}×{size}px</div>

@@ -50,7 +50,7 @@ function GmailIcon() {
 
 export function Footer() {
   return (
-    <footer className="bg-[#111827] text-white">
+    <footer className="border-t border-border/60 bg-sidebar text-sidebar-foreground">
       <div className="mx-auto max-w-[1400px] px-4 pt-10 pb-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-7 md:grid-cols-5">
 
@@ -60,7 +60,7 @@ export function Footer() {
               <img src="/logo.png" alt="ToolboXX logo" className="h-9 w-9 object-contain" />
               <span className="text-base font-bold text-white">Toolbuxx</span>
             </Link>
-            <p className="max-w-xs text-sm leading-relaxed text-gray-400">
+            <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
               200+ free AI and utility tools for creators, students, developers and businesses. No sign-up. No tracking.
             </p>
 
@@ -70,7 +70,7 @@ export function Footer() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/8 text-gray-400 transition-colors hover:bg-white/15 hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-sidebar-accent text-muted-foreground transition-colors hover:bg-sidebar-primary/20 hover:text-sidebar-foreground"
                 aria-label="Twitter / X"
               >
                 <TwitterIcon />
@@ -79,14 +79,14 @@ export function Footer() {
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/8 text-gray-400 transition-colors hover:bg-white/15 hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-sidebar-accent text-muted-foreground transition-colors hover:bg-sidebar-primary/20 hover:text-sidebar-foreground"
                 aria-label="LinkedIn"
               >
                 <LinkedInIcon />
               </a>
               <a
                 href="mailto:hello@toolboxx.app"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/8 text-gray-400 transition-colors hover:bg-white/15 hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-sidebar-accent text-muted-foreground transition-colors hover:bg-sidebar-primary/20 hover:text-sidebar-foreground"
                 aria-label="Email"
               >
                 <GmailIcon />
@@ -103,7 +103,7 @@ export function Footer() {
                   <li key={label}>
                     <Link
                       href={href}
-                      className="text-sm text-gray-400 transition-colors hover:text-white"
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {label}
                     </Link>
@@ -116,7 +116,7 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 sm:flex-row">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Toolbuxx © {new Date().getFullYear()} · All rights reserved.
           </p>
 
@@ -126,7 +126,7 @@ export function Footer() {
               href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 transition-colors hover:text-gray-300"
+              className="text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Twitter"
             >
               <TwitterIcon />
@@ -135,14 +135,14 @@ export function Footer() {
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 transition-colors hover:text-gray-300"
+              className="text-muted-foreground transition-colors hover:text-foreground"
               aria-label="LinkedIn"
             >
               <LinkedInIcon />
             </a>
             <a
               href="mailto:hello@toolboxx.app"
-              className="text-gray-500 transition-colors hover:text-gray-300"
+              className="text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Email"
             >
               <GmailIcon />

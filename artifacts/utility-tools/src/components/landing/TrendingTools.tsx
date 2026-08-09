@@ -49,7 +49,7 @@ export function TrendingTools() {
               whileHover={{ y: -5 }}
             >
               <Link href={tool.href}>
-                <div className="group flex min-w-[160px] cursor-pointer flex-col gap-3 rounded-[20px] border border-border/60 bg-white p-5 transition-all duration-300 hover:border-transparent hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] dark:bg-card">
+                <div className="group flex min-w-[160px] cursor-pointer flex-col gap-3 rounded-[20px] border border-border/60 bg-card p-5 transition-all duration-300 hover:border-transparent hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
                   <div
                     className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform group-hover:scale-110"
                     style={{ backgroundColor: tool.bg, color: tool.color }}

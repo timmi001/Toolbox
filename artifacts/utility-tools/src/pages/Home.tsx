@@ -4,7 +4,7 @@ import { Collections } from '@/components/landing/Collections';
 
 export default function Home() {
   return (
-    <div className="bg-white dark:bg-background">
+    <div className="bg-background">
       <Hero />
       <HistorySection />
       <Collections />

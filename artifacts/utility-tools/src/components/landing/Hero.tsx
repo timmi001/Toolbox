@@ -14,14 +14,14 @@ export function Hero() {
     <section
       className="w-full px-4 pb-5 pt-4 sm:px-6 lg:px-8"
       style={{
-        background: 'linear-gradient(135deg, #F3E8FF 0%, #EDE9FE 45%, #F0FDF4 100%)',
+        background: 'linear-gradient(135deg, #120c22 0%, #17132a 45%, #0b1d18 100%)',
       }}
     >
       <div className="mx-auto max-w-[1400px]">
 
         {/* Badge */}
         <motion.div {...fadeUp(0)} className="mb-4 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#4B0082]/20 bg-white/80 px-4 py-1.5 text-sm font-medium text-[#4B0082] shadow-sm backdrop-blur-sm">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-card/90 px-4 py-1.5 text-sm font-medium text-primary shadow-sm backdrop-blur-sm">
             <Zap className="h-3.5 w-3.5" />
             200+ free tools — no sign up required
           </span>
@@ -57,7 +57,7 @@ export function Hero() {
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-[#4B0082] shadow-md transition-all hover:shadow-lg"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white shadow-md ring-1 ring-white/20 transition-all hover:bg-white/20 hover:shadow-lg"
                 >
                   Explore
                   <ArrowRight className="h-3 w-3" />
@@ -93,7 +93,7 @@ export function Hero() {
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-[#059669] shadow-md transition-all hover:shadow-lg"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white shadow-md ring-1 ring-white/20 transition-all hover:bg-white/20 hover:shadow-lg"
                 >
                   Explore
                   <ArrowRight className="h-3 w-3" />

@@ -40,7 +40,7 @@ export default function InvoiceGenerator() {
     <title>${invoiceNumber || 'Invoice'}</title>
     <style>
       body { font-family: Arial, sans-serif; background: #f5f7fb; color: #111827; padding: 32px; }
-      .card { max-width: 850px; margin: 0 auto; background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 12px 32px rgba(0,0,0,0.06); }
+      .card { max-width: 850px; margin: 0 auto; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 16px; padding: 32px; box-shadow: 0 12px 32px rgba(0,0,0,0.35); }
       .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
       .title { font-size: 28px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #111827; }
       .muted { color: #6b7280; font-size: 13px; }
@@ -133,7 +133,7 @@ export default function InvoiceGenerator() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border/60 bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <FileText className="w-4 h-4" /> Invoice Preview
         </div>

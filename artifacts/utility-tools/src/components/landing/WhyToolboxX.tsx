@@ -67,7 +67,7 @@ export function WhyToolboxX() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.07 }}
               whileHover={{ y: -5 }}
-              className="rounded-[22px] border border-border/60 bg-white p-6 transition-all hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:bg-card"
+              className="rounded-[22px] border border-border/60 bg-card p-6 transition-all hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)]"
             >
               <div
                 className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl"

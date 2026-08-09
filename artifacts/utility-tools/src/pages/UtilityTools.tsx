@@ -155,13 +155,13 @@ export default function UtilityTools() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search utility categories..."
-                className="w-full rounded-2xl border border-border/60 bg-white py-3 pl-10 pr-4 text-sm shadow-sm outline-none transition focus:border-[#10B981]/40 focus:ring-2 focus:ring-[#10B981]/10 dark:bg-card"
+                className="w-full rounded-2xl border border-border/60 bg-input py-3 pl-10 pr-4 text-sm text-foreground shadow-sm outline-none transition focus:border-[#10B981]/40 focus:ring-2 focus:ring-[#10B981]/10"
               />
             </div>
           </motion.div>
           <motion.div {...fadeUp(0.24)} className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
             {[`${totalUtilityTools} utility tools`, `${UTILITY_CATEGORIES.length} categories`, '100% browser-based'].map(s => (
-              <span key={s} className="rounded-full border border-border/50 bg-white/80 px-3 py-1 text-[#6B7280] dark:bg-card">
+              <span key={s} className="rounded-full border border-border/50 bg-card px-3 py-1 text-muted-foreground">
                 {s}
               </span>
             ))}
@@ -181,7 +181,7 @@ export default function UtilityTools() {
                 return (
                   <motion.div key={cat.href} {...fadeUp(i * 0.04)} whileHover={{ y: -5 }}>
                     <Link href={cat.href}>
-                      <div className={`group cursor-pointer rounded-[22px] border bg-gradient-to-br ${cat.bg} ${cat.border} p-6 transition-all duration-300 bg-white dark:bg-card`}
+                      <div className={`group cursor-pointer rounded-[22px] border bg-gradient-to-br ${cat.bg} ${cat.border} p-6 transition-all duration-300 bg-card`}
                            style={{ '--hover-shadow': cat.hoverShadow } as React.CSSProperties}
                            onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.boxShadow = `0 16px 48px ${cat.hoverShadow}`}
                            onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.boxShadow = ''}>
@@ -222,7 +222,7 @@ export default function UtilityTools() {
             {featuredTools.map((tool, i) => (
               <motion.div key={tool.slug} {...fadeUp(i * 0.04)} whileHover={{ y: -4 }}>
                 <Link href={getToolRoutePath(tool)}>
-                  <div className="group flex cursor-pointer items-start gap-3 rounded-[18px] border border-border/60 bg-white p-4 transition-all hover:border-[#10B981]/30 hover:shadow-[0_8px_24px_rgba(16,185,129,0.08)] dark:bg-card">
+                  <div className="group flex cursor-pointer items-start gap-3 rounded-[18px] border border-border/60 bg-card p-4 transition-all hover:border-[#10B981]/30 hover:shadow-[0_8px_24px_rgba(16,185,129,0.14)]">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#10B981]/10">
                       <Zap className="h-4 w-4 text-[#10B981]" />
                     </div>

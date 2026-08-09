@@ -57,7 +57,7 @@ export default function ScientificCalculator() {
       <div className="max-w-xs mx-auto">
         <div className="flex justify-end gap-2 mb-2">
           {(['deg', 'rad'] as const).map(m => (
-            <button key={m} onClick={() => setAngleMode(m)} className={`text-xs px-2 py-1 rounded ${angleMode === m ? 'bg-primary text-black' : 'bg-muted/30 text-muted-foreground'}`}>{m.toUpperCase()}</button>
+            <button key={m} onClick={() => setAngleMode(m)} className={`text-xs px-2 py-1 rounded ${angleMode === m ? 'bg-primary text-primary-foreground' : 'bg-muted/30 text-muted-foreground'}`}>{m.toUpperCase()}</button>
           ))}
         </div>
         <div className="bg-muted/30 border border-border/50 rounded-xl p-4 mb-2 text-right">

@@ -146,7 +146,7 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
           </div>
 
           {/* URL input */}
-          <div className="p-4 space-y-3 bg-white dark:bg-gray-950">
+          <div className="p-4 space-y-3 bg-card">
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

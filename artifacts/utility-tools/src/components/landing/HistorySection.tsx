@@ -64,23 +64,23 @@ function KebabMenu({ onDelete }: { onDelete: () => void }) {
     <div className="relative" ref={ref}>
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(v => !v); }}
-        className="flex h-6 w-6 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+        className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         aria-label="Options"
       >
         <MoreVertical className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="absolute right-0 top-7 z-20 w-40 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl">
+        <div className="absolute right-0 top-7 z-20 w-40 overflow-hidden rounded-xl border border-border bg-popover shadow-xl">
           <Link href="/history">
             <button
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-popover-foreground transition-colors hover:bg-muted"
               onClick={(e) => { e.stopPropagation(); setOpen(false); }}
             >
               <ExternalLink className="h-3 w-3 text-gray-400" />
               View in History
             </button>
           </Link>
-          <div className="h-px bg-gray-100" />
+          <div className="h-px bg-border" />
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
             className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-500 transition-colors hover:bg-red-50"
@@ -118,7 +118,7 @@ export function HistorySection() {
           <div className="mb-4 flex items-end justify-between">
             <div>
               <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-[#4B0082]">Recent</p>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Continue Working</h2>
+              <h2 className="text-lg font-bold text-foreground">Continue Working</h2>
             </div>
             <Link href="/history" className="text-sm font-medium text-[#4B0082] transition-opacity hover:opacity-70">
               View all →
@@ -126,7 +126,7 @@ export function HistorySection() {
           </div>
 
           {items.length === 0 ? (
-            <div className="flex items-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 dark:border-border dark:bg-card">
+            <div className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-5">
               <Clock className="h-4 w-4 shrink-0 text-gray-300" />
               <p className="text-sm text-gray-400">Tools you use will appear here so you can pick up where you left off.</p>
             </div>
@@ -144,7 +144,7 @@ export function HistorySection() {
                     whileHover={{ y: -3 }}
                   >
                     <Link href="/history">
-                      <div className="group relative cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#4B0082]/20 hover:shadow-[0_6px_24px_rgba(75,0,130,0.09)] dark:bg-card dark:border-border/50">
+                      <div className="group relative cursor-pointer overflow-hidden rounded-xl border border-border/50 bg-card p-4 shadow-sm transition-all hover:border-primary/40 hover:shadow-[0_6px_24px_rgba(124,58,237,0.18)]">
                         <div
                           className="pointer-events-none absolute right-3 top-2 select-none text-6xl"
                           style={{ opacity: 0.055 }}
@@ -159,7 +159,7 @@ export function HistorySection() {
                             </div>
                             <KebabMenu onDelete={() => handleDelete(item.id)} />
                           </div>
-                          <p className="mb-1 text-sm font-semibold text-gray-900 dark:text-white">{item.toolName}</p>
+                          <p className="mb-1 text-sm font-semibold text-foreground">{item.toolName}</p>
                           <span className="mb-2 inline-block rounded-full bg-[#4B0082]/8 px-2 py-0.5 text-[11px] font-medium text-[#4B0082]">
                             AI Tools
                           </span>

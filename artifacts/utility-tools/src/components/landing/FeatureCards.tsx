@@ -52,7 +52,7 @@ export function FeatureCards() {
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-[#7C3AED] shadow-lg shadow-black/20 transition-all hover:shadow-xl"
+                className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/20 ring-1 ring-white/20 transition-all hover:bg-white/20 hover:shadow-xl"
               >
                 Explore AI Tools
                 <ArrowRight className="h-4 w-4" />
@@ -96,7 +96,7 @@ export function FeatureCards() {
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-[#059669] shadow-lg shadow-black/20 transition-all hover:shadow-xl"
+                className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/20 ring-1 ring-white/20 transition-all hover:bg-white/20 hover:shadow-xl"
               >
                 Explore Utility Tools
                 <ArrowRight className="h-4 w-4" />

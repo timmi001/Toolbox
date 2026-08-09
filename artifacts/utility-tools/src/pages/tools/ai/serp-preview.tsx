@@ -27,7 +27,7 @@ export default function SerpPreview() {
         </div>
 
         <div className="rounded-2xl border border-border/60 bg-background p-4">
-          <div className="max-w-xl rounded-xl border border-border/50 bg-white p-4 text-left shadow-sm dark:bg-zinc-950">
+          <div className="max-w-xl rounded-xl border border-border/50 bg-card p-4 text-left shadow-sm">
             <div className="text-sm text-blue-700 dark:text-blue-400">{url}</div>
             <div className="text-xl font-medium text-blue-800 hover:underline dark:text-blue-300">{title}</div>
             <div className="mt-1 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{description}</div>

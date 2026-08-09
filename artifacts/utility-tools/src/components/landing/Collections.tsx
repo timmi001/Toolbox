@@ -210,10 +210,10 @@ export function Collections() {
         >
           <div>
             <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-[#4B0082]">Browse</p>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Tool Categories</h2>
+            <h2 className="text-lg font-bold text-foreground">Tool Categories</h2>
           </div>
           {/* Mode toggle pills */}
-          <div className="flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 p-0.5 dark:border-border dark:bg-card">
+          <div className="flex items-center gap-1 rounded-full border border-border bg-card p-0.5">
             {(['utility', 'ai'] as const).map(m => (
               <button
                 key={m}
@@ -221,7 +221,7 @@ export function Collections() {
                 className={`rounded-full px-3 py-1 text-[11px] font-semibold transition-all duration-200 ${
                   mode === m
                     ? 'bg-[#4B0082] text-white shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {m === 'utility' ? 'Utility' : 'AI'}
@@ -257,7 +257,7 @@ export function Collections() {
                         <div className="mb-1 text-2xl leading-none transition-transform duration-200 group-hover:scale-110">
                           {col.emoji}
                         </div>
-                        <p className="text-[11px] font-bold leading-tight text-gray-900 dark:text-gray-800">
+                        <p className="text-[11px] font-bold leading-tight text-foreground">
                           {col.name}
                         </p>
                         <p className="mt-0.5 text-[10px] font-medium" style={{ color: col.accent }}>
@@ -284,7 +284,7 @@ export function Collections() {
           <div className="mb-2 flex items-center justify-between">
             <div>
               <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-[#4B0082]">All Tools</p>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Explore Tools</h2>
+              <h2 className="text-lg font-bold text-foreground">Explore Tools</h2>
             </div>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(totalBatches, 10) }).map((_, i) => (
@@ -329,14 +329,14 @@ export function Collections() {
                   const responsiveClass = idx >= 6 ? 'hidden sm:block' : '';
                   return (
                     <Link key={tool.slug} href={`/tools/${tool.slug}`} className={responsiveClass}>
-                      <div className="group cursor-pointer rounded-xl border border-gray-100 bg-white p-3 text-center transition-all duration-200 hover:border-transparent hover:shadow-[0_6px_20px_rgba(0,0,0,0.10)] dark:bg-card dark:border-border/50">
+                      <div className="group cursor-pointer rounded-xl border border-border/50 bg-card p-3 text-center transition-all duration-200 hover:border-transparent hover:shadow-[0_6px_20px_rgba(0,0,0,0.35)]">
                         <div
                           className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-110"
                           style={{ background: `${accent}15` }}
                         >
                           <Icon className="h-4 w-4" style={{ color: accent }} />
                         </div>
-                        <p className="line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                        <p className="line-clamp-2 text-[11px] font-semibold leading-tight text-foreground">
                           {tool.name}
                         </p>
                       </div>
