@@ -108,34 +108,34 @@
   --elevate-1: rgba(255,255,255, .06);
   --elevate-2: rgba(255,255,255, .11);
 
-  --background: 240 10% 5%;
-  --foreground: 0 0% 95%;
-  --border: 240 6% 22%;
-  --card: 240 8% 10%;
+  --background: 240 12% 5%;
+  --foreground: 0 0% 96%;
+  --border: 240 8% 26%;
+  --card: 240 10% 11%;
   --card-foreground: 0 0% 95%;
   --card-border: 240 6% 22%;
-  --sidebar: 240 8% 7%;
-  --sidebar-foreground: 0 0% 90%;
-  --sidebar-border: 240 6% 22%;
+  --sidebar: 240 10% 8%;
+  --sidebar-foreground: 0 0% 94%;
+  --sidebar-border: 240 8% 25%;
   --sidebar-primary: 251 100% 70%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 251 100% 65%;
   --sidebar-accent-foreground: 0 0% 100%;
   --sidebar-ring: 251 100% 65%;
-  --popover: 240 8% 7%;
+  --popover: 240 10% 9%;
   --popover-foreground: 0 0% 95%;
   --popover-border: 240 6% 22%;
   --primary: 251 100% 70%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 240 6% 14%;
-  --secondary-foreground: 0 0% 90%;
-  --muted: 240 6% 14%;
-  --muted-foreground: 0 0% 72%;
+  --secondary: 240 8% 16%;
+  --secondary-foreground: 0 0% 94%;
+  --muted: 240 8% 16%;
+  --muted-foreground: 0 0% 76%;
   --accent: 251 100% 70%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --input: 240 7% 14%;
+  --input: 240 9% 14%;
   --ring: 251 100% 70%;
   --chart-1: 251 100% 70%;
   --chart-2: 0 0% 70%;
@@ -170,34 +170,34 @@
   --elevate-1: rgba(255,255,255, .06);
   --elevate-2: rgba(255,255,255, .11);
 
-  --background: 240 10% 5%;
-  --foreground: 0 0% 95%;
-  --border: 240 6% 22%;
-  --card: 240 8% 10%;
+  --background: 240 12% 5%;
+  --foreground: 0 0% 96%;
+  --border: 240 8% 26%;
+  --card: 240 10% 11%;
   --card-foreground: 0 0% 95%;
   --card-border: 240 6% 22%;
-  --sidebar: 240 8% 7%;
-  --sidebar-foreground: 0 0% 90%;
-  --sidebar-border: 240 6% 22%;
+  --sidebar: 240 10% 8%;
+  --sidebar-foreground: 0 0% 94%;
+  --sidebar-border: 240 8% 25%;
   --sidebar-primary: 251 100% 70%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 251 100% 70%;
   --sidebar-accent-foreground: 0 0% 100%;
   --sidebar-ring: 251 100% 70%;
-  --popover: 240 8% 7%;
+  --popover: 240 10% 9%;
   --popover-foreground: 0 0% 95%;
   --popover-border: 240 6% 22%;
   --primary: 251 100% 70%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 240 6% 14%;
-  --secondary-foreground: 0 0% 90%;
-  --muted: 240 6% 14%;
-  --muted-foreground: 0 0% 72%;
+  --secondary: 240 8% 16%;
+  --secondary-foreground: 0 0% 94%;
+  --muted: 240 8% 16%;
+  --muted-foreground: 0 0% 76%;
   --accent: 251 100% 70%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --input: 240 7% 14%;
+  --input: 240 9% 14%;
   --ring: 251 100% 70%;
   --chart-1: 251 100% 70%;
   --chart-2: 0 0% 70%;
@@ -246,6 +246,24 @@
   option {
     background-color: hsl(var(--popover));
     color: hsl(var(--popover-foreground));
+  }
+
+  input,
+  textarea,
+  select {
+    color: hsl(var(--foreground));
+    caret-color: hsl(var(--primary));
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 1;
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring) / 0.75);
+    outline-offset: 2px;
   }
 
   ::-webkit-scrollbar {

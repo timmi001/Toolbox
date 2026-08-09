@@ -64,7 +64,7 @@ export default function IpLookup() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 text-sm mb-4">
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm mb-4">
           <AlertCircle className="h-4 w-4 shrink-0" />{error}
         </div>
       )}

@@ -53,7 +53,7 @@ export function Footer() {
           <div className="md:col-span-2">
             <Link href="/" className="mb-6 inline-flex items-center gap-2.5">
               <img src="/logo.png" alt="ToolboXX logo" className="h-9 w-9 object-contain" />
-              <span className="text-base font-bold text-white">Toolbuxx</span>
+              <span className="text-base font-bold text-sidebar-foreground">Toolbuxx</span>
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
               200+ free AI and utility tools for creators, students, developers and businesses. No sign-up. No tracking.
@@ -92,7 +92,7 @@ export function Footer() {
           {/* Link columns */}
           {(Object.entries(LINKS) as [string, { label: string; href: string }[]][]).map(([group, links]) => (
             <div key={group}>
-              <h4 className="mb-4 text-sm font-semibold text-white">{group}</h4>
+              <h4 className="mb-4 text-sm font-semibold text-sidebar-foreground">{group}</h4>
               <ul className="space-y-2.5">
                 {links.map(({ label, href }) => (
                   <li key={label}>
@@ -110,7 +110,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-sidebar-border pt-6 sm:flex-row">
           <p className="text-sm text-muted-foreground">
             Toolbuxx © {new Date().getFullYear()} · All rights reserved.
           </p>

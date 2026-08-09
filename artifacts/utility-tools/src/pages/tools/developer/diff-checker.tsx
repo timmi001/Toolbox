@@ -36,8 +36,8 @@ function diffLines(a: string, b: string): DiffLine[] {
 
 const BG: Record<DiffLine['type'], string> = {
   same: '',
-  add: 'bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300',
-  remove: 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300',
+  add: 'bg-green-500/10 text-green-300',
+  remove: 'bg-red-500/10 text-red-300',
 };
 const PREFIX: Record<DiffLine['type'], string> = { same: '  ', add: '+ ', remove: '- ' };
 

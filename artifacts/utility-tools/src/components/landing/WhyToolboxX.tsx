@@ -52,8 +52,8 @@ export function WhyToolboxX() {
           className="mb-10 text-center"
         >
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#7C3AED]">Why ToolboxX</p>
-          <h2 className="text-3xl font-bold text-[#111827] dark:text-white">Built different</h2>
-          <p className="mt-3 text-[#6B7280] dark:text-neutral-400">
+          <h2 className="text-3xl font-bold text-foreground">Built different</h2>
+          <p className="mt-3 text-muted-foreground">
             Everything we build starts with one question: is this genuinely useful?
           </p>
         </motion.div>
@@ -75,8 +75,8 @@ export function WhyToolboxX() {
               >
                 {f.icon}
               </div>
-              <h3 className="mb-2 font-bold text-[#111827] dark:text-white">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-[#6B7280] dark:text-muted-foreground">
+              <h3 className="mb-2 font-bold text-foreground">{f.title}</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 {f.description}
               </p>
             </motion.div>

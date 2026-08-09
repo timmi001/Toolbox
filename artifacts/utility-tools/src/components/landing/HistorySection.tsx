@@ -76,14 +76,14 @@ function KebabMenu({ onDelete }: { onDelete: () => void }) {
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-popover-foreground transition-colors hover:bg-muted"
               onClick={(e) => { e.stopPropagation(); setOpen(false); }}
             >
-              <ExternalLink className="h-3 w-3 text-gray-400" />
+              <ExternalLink className="h-3 w-3 text-muted-foreground" />
               View in History
             </button>
           </Link>
           <div className="h-px bg-border" />
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-500 transition-colors hover:bg-red-50"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-400 transition-colors hover:bg-red-500/10"
           >
             <Trash2 className="h-3 w-3" />
             Remove
@@ -127,8 +127,8 @@ export function HistorySection() {
 
           {items.length === 0 ? (
             <div className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-5">
-              <Clock className="h-4 w-4 shrink-0 text-gray-300" />
-              <p className="text-sm text-gray-400">Tools you use will appear here so you can pick up where you left off.</p>
+              <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Tools you use will appear here so you can pick up where you left off.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -163,9 +163,9 @@ export function HistorySection() {
                           <span className="mb-2 inline-block rounded-full bg-[#4B0082]/8 px-2 py-0.5 text-[11px] font-medium text-[#4B0082]">
                             AI Tools
                           </span>
-                          <p className="mb-3 line-clamp-1 text-xs text-gray-500">{item.prompt}</p>
+                          <p className="mb-3 line-clamp-1 text-xs text-muted-foreground">{item.prompt}</p>
                           <div className="flex items-center justify-between">
-                            <span className="flex items-center gap-1 text-xs text-gray-400">
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Clock className="h-3 w-3" />
                               {timeAgo(item.createdAt)}
                             </span>

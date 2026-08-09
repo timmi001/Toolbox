@@ -45,7 +45,7 @@ export default function BreakEvenCalculator() {
       </div>
 
       {!valid && cm <= 0 && (sp > 0 || vc > 0) && (
-        <div className="p-4 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 text-sm mb-4">
+        <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-sm mb-4">
           Selling price must be greater than variable cost per unit.
         </div>
       )}

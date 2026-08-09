@@ -237,8 +237,8 @@ export default function UtilityTools() {
                       <Zap className="h-4 w-4 text-[#10B981]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-[#111827] dark:text-white">{tool.name}</p>
-                      <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#6B7280] dark:text-muted-foreground">
+                      <p className="truncate text-sm font-semibold text-foreground">{tool.name}</p>
+                      <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                         {tool.description}
                       </p>
                     </div>

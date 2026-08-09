@@ -17,17 +17,17 @@ interface HistoryCardProps {
 }
 
 const categoryTone: Record<string, string> = {
-  text: 'bg-blue-500/10 text-blue-600',
-  developer: 'bg-violet-500/10 text-violet-600',
-  image: 'bg-pink-500/10 text-pink-600',
-  pdf: 'bg-red-500/10 text-red-600',
-  calculators: 'bg-amber-500/10 text-amber-600',
-  'file-conversion': 'bg-indigo-500/10 text-indigo-600',
-  business: 'bg-emerald-500/10 text-emerald-600',
-  ai: 'bg-purple-500/10 text-purple-600',
-  marketing: 'bg-fuchsia-500/10 text-fuchsia-600',
-  audio: 'bg-orange-500/10 text-orange-600',
-  video: 'bg-cyan-500/10 text-cyan-600',
+  text: 'bg-blue-500/10 text-blue-300',
+  developer: 'bg-violet-500/10 text-violet-300',
+  image: 'bg-pink-500/10 text-pink-300',
+  pdf: 'bg-red-500/10 text-red-300',
+  calculators: 'bg-amber-500/10 text-amber-300',
+  'file-conversion': 'bg-indigo-500/10 text-indigo-300',
+  business: 'bg-emerald-500/10 text-emerald-300',
+  ai: 'bg-purple-500/10 text-purple-300',
+  marketing: 'bg-fuchsia-500/10 text-fuchsia-300',
+  audio: 'bg-orange-500/10 text-orange-300',
+  video: 'bg-cyan-500/10 text-cyan-300',
 };
 
 export function HistoryCard({ entry, expanded, onToggleExpanded, onToggleFavorite, onDelete, onCopyPrompt, onCopyResponse, onDownload }: HistoryCardProps) {
@@ -47,8 +47,8 @@ export function HistoryCard({ entry, expanded, onToggleExpanded, onToggleFavorit
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {entry.favorite && <Badge className="rounded-full bg-amber-500/10 text-amber-600">Favorite</Badge>}
-          <Badge className={`rounded-full ${categoryTone[entry.toolCategory] ?? 'bg-slate-500/10 text-slate-600'}`}>{entry.toolCategory}</Badge>
+          {entry.favorite && <Badge className="rounded-full bg-amber-500/10 text-amber-300">Favorite</Badge>}
+          <Badge className={`rounded-full ${categoryTone[entry.toolCategory] ?? 'bg-slate-500/10 text-slate-300'}`}>{entry.toolCategory}</Badge>
         </div>
       </div>
 

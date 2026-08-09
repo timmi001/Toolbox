@@ -34,7 +34,7 @@ export function TrendingTools() {
           className="mb-8"
         >
           <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-[#7C3AED]">Trending</p>
-          <h2 className="text-2xl font-bold text-[#111827] dark:text-white">Popular Right Now</h2>
+          <h2 className="text-2xl font-bold text-foreground">Popular Right Now</h2>
         </motion.div>
 
         {/* Horizontal scroll cards */}
@@ -57,7 +57,7 @@ export function TrendingTools() {
                     {tool.icon}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#111827] dark:text-white">{tool.name}</p>
+                    <p className="text-sm font-semibold text-foreground">{tool.name}</p>
                     <ArrowRight
                       className="mt-1 h-3.5 w-3.5 opacity-0 transition-all duration-200 group-hover:opacity-100"
                       style={{ color: tool.color }}
