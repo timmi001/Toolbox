@@ -118,12 +118,12 @@ export function Navbar() {
                       href={href}
                       className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                         isActive
-                          ? 'bg-sidebar-accent text-sidebar-primary'
-                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                          ? 'bg-sidebar-primary/20 text-sidebar-foreground ring-1 ring-sidebar-primary/35'
+                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/35 hover:text-sidebar-foreground'
                       }`}
                     >
                       <Icon
-                        className={`h-4 w-4 shrink-0 ${isActive ? 'text-sidebar-primary' : 'text-muted-foreground'}`}
+                        className={`h-4 w-4 shrink-0 ${isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/65'}`}
                       />
                       {label}
                     </Link>

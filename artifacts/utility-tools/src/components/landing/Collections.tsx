@@ -196,8 +196,11 @@ export function Collections() {
                         className="group cursor-pointer overflow-hidden rounded-xl border border-white/15 p-2.5 text-center text-white shadow-sm transition-all duration-200 hover:border-white/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
                         style={{ background: col.gradient, boxShadow: `inset 0 1px 0 ${col.accent}45` }}
                       >
-                        <div className="mb-1 text-2xl leading-none transition-transform duration-200 group-hover:scale-110">
-                          {col.emoji}
+                        <div
+                          className="mx-auto mb-1 flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-black/20 text-2xl leading-none shadow-inner transition-transform duration-200 group-hover:scale-110"
+                          style={{ boxShadow: `0 0 18px ${col.accent}35, inset 0 1px 0 rgba(255,255,255,0.12)` }}
+                        >
+                          <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.65)]">{col.emoji}</span>
                         </div>
                         <p className="text-[11px] font-bold leading-tight text-white drop-shadow-sm">
                           {col.name}

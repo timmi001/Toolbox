@@ -196,7 +196,12 @@ export default function UtilityTools() {
                            onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.boxShadow = `0 16px 48px ${cat.hoverShadow}`}
                            onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.boxShadow = ''}>
                         <div className="flex items-start justify-between">
-                          <div className="text-3xl">{cat.emoji}</div>
+                          <div
+                            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-black/20 text-3xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+                            style={{ boxShadow: `0 0 20px ${cat.accent}30` }}
+                          >
+                            {cat.emoji}
+                          </div>
                           <span className="rounded-full px-2.5 py-1 text-xs font-semibold"
                                 style={{ backgroundColor: `${cat.accent}18`, color: cat.accent }}>
                             {count} tools
