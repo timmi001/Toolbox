@@ -147,20 +147,20 @@ export default function UtilityTools() {
             </span>
           </motion.div>
           <motion.h1 {...fadeUp(0.06)}
-            className="mt-3 text-4xl font-extrabold tracking-tight text-[#111827] dark:text-white sm:text-5xl lg:text-6xl">
+            className="mt-3 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Everyday Tools That{' '}
             <span className="bg-gradient-to-r from-[#10B981] to-[#059669] bg-clip-text text-transparent">
               Save Time
             </span>
           </motion.h1>
           <motion.p {...fadeUp(0.12)}
-            className="mx-auto mt-4 max-w-xl text-lg text-[#6B7280] dark:text-neutral-400">
+            className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
             {totalUtilityTools}+ free utility tools for PDFs, images, code, media, files and calculations.
           </motion.p>
           {/* Search */}
           <motion.div {...fadeUp(0.18)} className="mx-auto mt-8 max-w-md">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]" />
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
@@ -183,7 +183,7 @@ export default function UtilityTools() {
       <section className="px-4 pb-16">
         <div className="mx-auto max-w-[1400px]">
           {visibleCategories.length === 0 ? (
-            <p className="py-20 text-center text-[#6B7280]">No categories match "{search}"</p>
+            <p className="py-20 text-center text-muted-foreground">No categories match "{search}"</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {visibleCategories.map((cat, i) => {
@@ -202,8 +202,8 @@ export default function UtilityTools() {
                             {count} tools
                           </span>
                         </div>
-                        <h3 className="mt-4 text-base font-bold text-[#111827] dark:text-white">{cat.name}</h3>
-                        <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-[#6B7280] dark:text-muted-foreground">
+                        <h3 className="mt-4 text-base font-bold text-foreground">{cat.name}</h3>
+                        <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                           {cat.description}
                         </p>
                         <div className="mt-4 flex items-center gap-1.5 text-sm font-medium transition-all duration-200"
@@ -226,7 +226,7 @@ export default function UtilityTools() {
         <div className="mx-auto max-w-[1400px]">
           <motion.div {...fadeUp(0)} className="mb-7">
             <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-[#10B981]">Popular</p>
-            <h2 className="text-2xl font-bold text-[#111827] dark:text-white">Most-used Utility Tools</h2>
+            <h2 className="text-2xl font-bold text-foreground">Most-used Utility Tools</h2>
           </motion.div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {featuredTools.map((tool, i) => (

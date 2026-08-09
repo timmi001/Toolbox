@@ -39,7 +39,7 @@ export default function HttpHeadersChecker() {
     : 0;
 
   const statusColor = result
-    ? result.status < 300 ? 'text-green-500' : result.status < 400 ? 'text-yellow-500' : 'text-red-500'
+    ? result.status < 300 ? 'text-emerald-300' : result.status < 400 ? 'text-amber-300' : 'text-red-300'
     : '';
 
   return (
@@ -78,7 +78,7 @@ export default function HttpHeadersChecker() {
               <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                 {securityScore >= 5
                   ? <><ShieldCheck className="h-3.5 w-3.5 text-green-500" /> Good</>
-                  : <><ShieldAlert className="h-3.5 w-3.5 text-yellow-500" /> Could improve</>}
+                  : <><ShieldAlert className="h-3.5 w-3.5 text-amber-300" /> Could improve</>}
               </p>
             </div>
           </div>
@@ -100,11 +100,11 @@ export default function HttpHeadersChecker() {
 
           {/* Missing security headers */}
           {securityScore < SECURITY_HEADERS.length && (
-            <div className="rounded-lg border border-yellow-200 dark:border-yellow-900 bg-yellow-50 dark:bg-yellow-950/30 p-4">
-              <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400 mb-2">Missing security headers:</p>
+            <div className="rounded-lg border border-amber-400/30 bg-amber-950/30 p-4">
+              <p className="text-sm font-medium text-amber-200 mb-2">Missing security headers:</p>
               <div className="flex flex-wrap gap-2">
                 {SECURITY_HEADERS.filter(h => !result.headers[h]).map(h => (
-                  <span key={h} className="text-xs font-mono bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 rounded px-2 py-0.5">{h}</span>
+                  <span key={h} className="text-xs font-mono bg-amber-400/15 text-amber-200 rounded px-2 py-0.5">{h}</span>
                 ))}
               </div>
             </div>

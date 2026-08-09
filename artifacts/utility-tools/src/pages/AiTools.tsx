@@ -172,20 +172,20 @@ export default function AiTools() {
             </span>
           </motion.div>
           <motion.h1 {...fadeUp(0.06)}
-            className="mt-3 text-3xl font-extrabold tracking-tight text-[#111827] dark:text-white sm:text-4xl">
+            className="mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
             Powerful AI Tools,{' '}
             <span className="bg-gradient-to-r from-[#7C3AED] to-[#9F67FF] bg-clip-text text-transparent">
               One Place
             </span>
           </motion.h1>
           <motion.p {...fadeUp(0.12)}
-            className="mx-auto mt-4 max-w-xl text-lg text-[#6B7280] dark:text-neutral-400">
+            className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
             {totalAiTools}+ AI tools for writing, career, social media, SEO, email, and more.
           </motion.p>
           {/* Search */}
           <motion.div {...fadeUp(0.18)} className="mx-auto mt-8 max-w-md">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]" />
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
@@ -209,7 +209,7 @@ export default function AiTools() {
       <section className="px-4 pb-10">
         <div className="mx-auto max-w-[1400px]">
           {visibleCategories.length === 0 ? (
-            <p className="py-16 text-center text-[#6B7280]">No categories match "{search}"</p>
+            <p className="py-16 text-center text-muted-foreground">No categories match "{search}"</p>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {visibleCategories.map((cat, i) => {
@@ -226,8 +226,8 @@ export default function AiTools() {
                             {count} tools
                           </span>
                         </div>
-                        <h3 className="mt-4 text-lg font-bold text-[#111827] dark:text-white">{cat.name}</h3>
-                        <p className="mt-1.5 text-sm leading-relaxed text-[#6B7280] dark:text-muted-foreground line-clamp-2">
+                        <h3 className="mt-4 text-lg font-bold text-foreground">{cat.name}</h3>
+                        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2">
                           {cat.description}
                         </p>
                         <div className="mt-4 flex items-center gap-1.5 text-sm font-medium transition-all duration-200"

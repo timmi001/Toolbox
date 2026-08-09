@@ -42,16 +42,16 @@ function parseScore(feedback: string): { text: string; score: number | null } {
 
 function scoreColor(s: number | null) {
   if (s === null) return 'text-muted-foreground';
-  if (s >= 8) return 'text-emerald-500';
-  if (s >= 6) return 'text-yellow-500';
-  return 'text-red-500';
+  if (s >= 8) return 'text-emerald-300';
+  if (s >= 6) return 'text-amber-300';
+  return 'text-red-300';
 }
 
 function scoreBg(s: number | null) {
   if (s === null) return 'bg-muted';
-  if (s >= 8) return 'bg-emerald-500/10 border-emerald-500/30';
-  if (s >= 6) return 'bg-yellow-500/10 border-yellow-500/30';
-  return 'bg-red-500/10 border-red-500/30';
+  if (s >= 8) return 'bg-emerald-950/35 border-emerald-400/35';
+  if (s >= 6) return 'bg-amber-950/35 border-amber-400/35';
+  return 'bg-red-950/35 border-red-400/35';
 }
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
@@ -254,7 +254,7 @@ export default function AiInterviewPractice() {
             </div>
 
             {error && (
-              <div className="flex items-start gap-2 text-sm text-red-500 bg-red-500/10 rounded-lg px-3 py-2">
+              <div className="flex items-start gap-2 text-sm text-red-300 bg-red-950/35 border border-red-400/25 rounded-lg px-3 py-2">
                 <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                 {error}
               </div>
@@ -309,7 +309,7 @@ export default function AiInterviewPractice() {
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 text-sm text-red-500 bg-red-500/10 rounded-lg px-3 py-2">
+            <div className="flex items-start gap-2 text-sm text-red-300 bg-red-950/35 border border-red-400/25 rounded-lg px-3 py-2">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               {error}
             </div>
@@ -357,7 +357,7 @@ export default function AiInterviewPractice() {
           <div className={`rounded-2xl border p-5 space-y-3 ${scoreBg(currentFeedback.score)}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
                 <span className="text-sm font-semibold">Interviewer's reaction</span>
               </div>
               {currentFeedback.score !== null && (

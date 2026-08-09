@@ -177,7 +177,7 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
 
         {/* Error */}
         {error && (
-          <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 p-4 text-sm text-red-700 dark:text-red-400">
+          <div className="flex items-start gap-3 rounded-lg border border-red-400/30 bg-red-950/30 p-4 text-sm text-red-300">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -207,7 +207,7 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
                     {formatDuration(result.duration)}
                   </p>
                 )}
-                <div className="mt-2 flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                <div className="mt-2 flex items-center gap-1 text-xs text-emerald-300">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   {result.formats.length} format{result.formats.length !== 1 ? 's' : ''} available
                 </div>

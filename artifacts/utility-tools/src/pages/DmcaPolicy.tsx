@@ -12,8 +12,8 @@ export default function DmcaPolicy() {
       <div className="space-y-8">
         {/* Header */}
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#4B0082]/10">
-            <ShieldCheck className="h-6 w-6 text-[#4B0082]" />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+            <ShieldCheck className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-foreground">DMCA &amp; Copyright Policy</h1>
