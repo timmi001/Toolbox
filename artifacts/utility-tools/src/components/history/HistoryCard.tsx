@@ -88,7 +88,7 @@ export function HistoryCard({ entry, expanded, onToggleExpanded, onToggleFavorit
         </Button>
         <Button variant="ghost" size="sm" onClick={onToggleExpanded} className="gap-1.5 ml-auto">
           {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          {expanded ? 'Less' : 'More'}
+          {expanded ? 'Close' : 'View/Open'}
         </Button>
       </div>
 

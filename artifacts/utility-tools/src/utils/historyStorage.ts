@@ -1,14 +1,16 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import type { HistoryEntry, HistoryExportFormat } from '@/types/history';
 
-const MAX_HISTORY_ITEMS = 200;
+const HISTORY_STORAGE_KEY = 'toolboxx_history_v1';
+const LEGACY_STORAGE_KEY_PREFIX = 'toolboxx-ai-history:';
+const MAX_HISTORY_ITEMS = 100;
 
 function getStorageKey() {
   const origin = typeof window !== 'undefined' && typeof window.location?.origin === 'string'
     ? window.location.origin
     : 'toolboxx-local';
 
-  return `toolboxx-ai-history:${origin}`;
+  return `${LEGACY_STORAGE_KEY_PREFIX}${origin}`;
 }
 
 function isValidHistoryEntry(value: unknown): value is HistoryEntry {
@@ -31,7 +33,14 @@ function safeStorageGet(): HistoryEntry[] {
   if (typeof window === 'undefined' || !window.localStorage) return [];
 
   try {
-    const raw = window.localStorage.getItem(getStorageKey());
+    const storage = window.localStorage;
+    let raw = storage.getItem(HISTORY_STORAGE_KEY);
+    if (!raw) {
+      raw = storage.getItem(getStorageKey());
+      if (raw) {
+        try { storage.setItem(HISTORY_STORAGE_KEY, raw); } catch { /* quota/private mode */ }
+      }
+    }
     if (!raw) return [];
 
     const parsed = JSON.parse(raw) as unknown;
@@ -47,7 +56,7 @@ function safeStorageSet(entries: HistoryEntry[]) {
   if (typeof window === 'undefined' || !window.localStorage) return;
 
   try {
-    window.localStorage.setItem(getStorageKey(), JSON.stringify(entries));
+    window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(entries.slice(0, MAX_HISTORY_ITEMS)));
   } catch {
     // Gracefully ignore Local Storage quota issues.
   }
@@ -56,6 +65,8 @@ function safeStorageSet(entries: HistoryEntry[]) {
 export function loadHistory(): HistoryEntry[] {
   return safeStorageGet();
 }
+
+export const getHistory = loadHistory;
 
 export function saveHistoryEntry(entry: Omit<HistoryEntry, 'id'> & { id?: string }): HistoryEntry[] {
   const id = entry.id ?? (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -71,6 +82,10 @@ export function saveHistoryEntry(entry: Omit<HistoryEntry, 'id'> & { id?: string
   return next;
 }
 
+export function saveHistory(entry: Omit<HistoryEntry, 'id'> & { id?: string }): HistoryEntry[] {
+  return saveHistoryEntry(entry);
+}
+
 export function updateHistoryEntry(id: string, updates: Partial<HistoryEntry>): HistoryEntry[] {
   const current = safeStorageGet();
   const next = current.map(item => (item.id === id ? { ...item, ...updates } : item));
@@ -78,12 +93,16 @@ export function updateHistoryEntry(id: string, updates: Partial<HistoryEntry>): 
   return next;
 }
 
+export const updateHistoryItem = updateHistoryEntry;
+
 export function deleteHistoryEntry(id: string): HistoryEntry[] {
   const current = safeStorageGet();
   const next = current.filter(item => item.id !== id);
   safeStorageSet(next);
   return next;
 }
+
+export const deleteHistoryItem = deleteHistoryEntry;
 
 export function clearHistory(): HistoryEntry[] {
   safeStorageSet([]);

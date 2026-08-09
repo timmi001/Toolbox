@@ -7,6 +7,9 @@ export type HistoryEntry = {
   toolCategory: ToolCategory;
   prompt: string;
   response: string;
+  inputs?: Record<string, string>;
+  title?: string;
+  status?: 'success';
   createdAt: string;
   characterCount: number;
   favorite: boolean;

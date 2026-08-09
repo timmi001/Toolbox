@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { ai } from '@/lib/api';
+import { useHistory } from '@/hooks/useHistory';
 import {
   Mic, ChevronRight, RotateCcw, CheckCircle2,
   Loader2, AlertCircle, Trophy, Target,
@@ -92,6 +93,7 @@ export default function AiInterviewPractice() {
   const [history, setHistory] = useState<QA[]>([]);
   const [currentFeedback, setCurrentFeedback] = useState<{ text: string; score: number | null } | null>(null);
   const [error, setError] = useState('');
+  const { addEntry } = useHistory();
 
   const totalQ = questions.length || parseInt(count, 10);
 
@@ -144,6 +146,22 @@ export default function AiInterviewPractice() {
   function advance() {
     const next = currentIndex + 1;
     if (next >= questions.length) {
+      const completedAt = new Date().toISOString();
+      const scoreValues = history.map(item => item.score).filter((score): score is number => score !== null);
+      const average = scoreValues.length ? scoreValues.reduce((sum, score) => sum + score, 0) / scoreValues.length : null;
+      addEntry({
+        toolSlug: tool.slug,
+        toolName: tool.name,
+        toolCategory: tool.category,
+        prompt: `${role} · ${level} · ${type} · ${questions.length} questions`,
+        response: JSON.stringify({ segment: 'Interview Practice', subcategory: type, difficulty: level, questions, answers: history, averageScore: average, completedAt }, null, 2),
+        inputs: { role, level, type, count },
+        title: `${role} interview practice`,
+        status: 'success',
+        createdAt: completedAt,
+        characterCount: history.reduce((total, item) => total + item.feedback.length, 0),
+        favorite: false,
+      });
       setPhase('done');
     } else {
       setCurrentIndex(next);

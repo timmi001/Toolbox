@@ -40,6 +40,18 @@ export default function HistoryPage() {
         }}
       />
 
+      <div className="space-y-4">
+        <SearchBar value={query} onChange={setQuery} />
+        <FilterBar category={category} setCategory={setCategory} sort={sort} setSort={setSort} categories={categories} />
+        <HistoryToolbar
+          onImportClick={onImportClick}
+          onExportJson={() => exportHistory('json', 'toolboxx-history.json')}
+          onExportTxt={() => exportHistory('txt', 'toolboxx-history.txt')}
+          onExportPdf={() => exportHistory('pdf', 'toolboxx-history.pdf')}
+          onClear={clearAllHistory}
+        />
+      </div>
+
       {loading ? (
         <div className="rounded-2xl border border-border/60 bg-card/50 p-8 text-sm text-muted-foreground animate-pulse">Loading history…</div>
       ) : visibleEntries.length === 0 ? (
