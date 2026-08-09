@@ -656,6 +656,31 @@ Include:
 
 Make it simple enough to follow every day.`;
 
+    case "ai-ticket-finder":
+      return `Recommend practical ways to find tickets for "${i.query}"${i.location ? ` in ${i.location}` : ""}${i.budget ? ` within a budget of ${i.budget}` : ""}. Do not invent live availability, prices, or ticket links. Explain what to compare and where the user should verify current inventory.`;
+    case "ai-event-search":
+      return `Help the user search for events matching "${i.query}"${i.location ? ` in ${i.location}` : ""}${i.date ? ` around ${i.date}` : ""}. Do not claim live event results. Provide search strategy, useful filters, and details to verify on official event pages.`;
+    case "ai-price-comparison":
+      return `Create a ticket price-comparison checklist for "${i.event}"${i.location ? ` in ${i.location}` : ""}${i.budget ? ` with a budget of ${i.budget}` : ""}. Do not fabricate current prices or sellers. Include fees, refund rules, seating, and verification steps.`;
+    case "ai-price-tracker":
+      return `Create a price-tracking plan for "${i.event}"${i.budget ? ` with a target budget of ${i.budget}` : ""}. Do not claim to monitor prices or send alerts. Recommend safe official sources, alert thresholds, and what information to record.`;
+    case "ai-ticket-alerts":
+      return `Design an alert setup for "${i.event}"${i.location ? ` in ${i.location}` : ""} with a ${i.frequency || "daily"} check frequency. Do not claim that alerts were created or that live availability is known. Provide criteria and official-source recommendations.`;
+    case "ai-artist-tour-finder":
+      return `Help find tour dates and ticket sources for the artist "${i.artist}"${i.location ? ` near ${i.location}` : ""}. Do not invent dates or ticket links. Explain how to verify dates through official artist, venue, and promoter pages.`;
+    case "ai-sports-tickets":
+      return `Help plan a safe ticket search for "${i.sport}"${i.location ? ` in ${i.location}` : ""}${i.date ? ` around ${i.date}` : ""}. Do not fabricate fixtures, prices, or availability. Include official sources and seating considerations.`;
+    case "ai-festival-finder":
+      return `Help discover festivals matching "${i.genre}"${i.location ? ` near ${i.location}` : ""}${i.date ? ` around ${i.date}` : ""}. Do not claim live festival listings. Provide search criteria and official verification steps.`;
+    case "ai-theatre-shows":
+      return `Help search for theatre and shows matching "${i.genre}"${i.location ? ` in ${i.location}` : ""}${i.budget ? ` within ${i.budget}` : ""}. Do not invent schedules, prices, or availability. Explain how to verify through official venues.`;
+    case "ai-nearby-events":
+      return `Suggest a process for finding events near ${i.location || "the user's location"}${i.interest ? ` related to ${i.interest}` : ""}${i.date ? ` around ${i.date}` : ""}. Do not fabricate live results. Include filters and safety/verification tips.`;
+    case "ai-seat-finder":
+      return `Create a seat-selection guide for "${i.event}" with preferences "${i.preference || "best value"}"${i.notes ? `. Additional notes: ${i.notes}` : ""}. Do not claim access to a venue map or current inventory. Explain sightline, accessibility, fees, and official checkout verification.`;
+    case "ai-event-trip-planner":
+      return `Plan a trip around "${i.event}"${i.location ? ` in ${i.location}` : ""}${i.budget ? ` with a budget of ${i.budget}` : ""}. Do not invent event details, ticket availability, or live prices. Structure transport, lodging, timing, and verification steps.`;
+
     case "ai-essay-generator":
       return `Generate a polished essay draft about: "${i.topic}"\nStyle: ${i.style || "Academic"}\n\nInclude:\n1. Engaging introduction with thesis statement\n2. 3-4 well-developed body paragraphs with clear arguments\n3. Topic sentences and supporting evidence\n4. Smooth transitions between paragraphs\n5. Strong conclusion that reinforces the thesis\n\nMake it academic and well-structured for submission.`;
 
@@ -697,9 +722,9 @@ function isRateLimitError(err: unknown): boolean {
 function getSafeStatus(err: unknown): number {
   if (err && typeof err === "object") {
     const status = (err as { status?: number }).status;
-    if (typeof status === "number") return status;
+    if (typeof status === "number" && Number.isInteger(status) && status >= 400 && status <= 599) return status;
     const code = (err as { code?: number }).code;
-    if (typeof code === "number") return code;
+    if (typeof code === "number" && Number.isInteger(code) && code >= 400 && code <= 599) return code;
   }
 
   if (!(err instanceof Error)) return 500;
@@ -739,7 +764,6 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
   const requestId = String(req.id ?? Math.random().toString(36).slice(2, 8));
   const tRequestStart = nowMs();
   const timings: Record<string, number> = {};
-  const requestBodySnapshot = req.body;
   let resolvedToolId: string | undefined;
   let resolvedModel: string | undefined;
 
@@ -934,11 +958,13 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
       return;
     }
 
-    if (!resultText) {
+    if (!resultText.trim()) {
       logger.warn(
         { requestId, toolId, provider: providerUsed },
         `[ai/generate][${requestId}] ${providerUsed} response was empty`,
       );
+      res.status(502).json({ success: false, message: "The AI provider returned an empty response. Please try again." });
+      return;
     }
 
     logger.info(
@@ -988,7 +1014,6 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     res.json(payload);
   } catch (err) {
     timings.totalMs = nowMs() - tRequestStart;
-    const stack = err instanceof Error ? err.stack : undefined;
     const errorName = err instanceof Error ? err.name : undefined;
     const errorMessage = err instanceof Error ? err.message : String(err);
     const errorCode = (err as { code?: unknown })?.code;
@@ -996,28 +1021,15 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
     const serverStatus = getSafeStatus(err);
     const clientMessage = getSafeClientMessage(err);
 
-    // Extract provider SDK fields (Groq/OpenAI SDK: .status, .error, .headers).
-    // These are not part of the standard Error interface but contain the raw
-    // provider response body — the most useful field for diagnosing a 500.
-    const sdkErr = err && typeof err === "object" ? (err as Record<string, unknown>) : {};
-    const sdkResponseBody = sdkErr["error"] ?? sdkErr["response"] ?? sdkErr["body"] ?? undefined;
-    const sdkHeaders = sdkErr["headers"] ?? undefined;
-
     logger.error(
       {
         requestId,
         toolId: resolvedToolId,
         model: resolvedModel,
-        requestBody: requestBodySnapshot,
         errorName,
-        message: errorMessage,
-        stack,
-        cause: (err as { cause?: unknown }).cause,
-        response: (err as { response?: unknown }).response,
-        errorCode,
+        message: errorMessage.slice(0, 240),
+        errorCode: typeof errorCode === "string" || typeof errorCode === "number" ? errorCode : undefined,
         httpStatus: errorStatus ?? serverStatus,
-        sdkResponseBody,
-        sdkHeaders,
         totalServerMs: Number(timings.totalMs.toFixed(1)),
         stageReachedMs: timings,
         ts: new Date().toISOString(),

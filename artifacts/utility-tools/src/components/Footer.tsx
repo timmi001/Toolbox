@@ -7,11 +7,6 @@ const LINKS = {
     { label: 'Developer Tools', href: '/developer-tools' },
     { label: 'History',         href: '/history' },
   ],
-  Resources: [
-    { label: 'Blog',   href: '/blog' },
-    { label: 'API',    href: '/api' },
-    { label: 'Status', href: '/status' },
-  ],
   Company: [
     { label: 'About',   href: '/about' },
     { label: 'Contact', href: '/contact' },

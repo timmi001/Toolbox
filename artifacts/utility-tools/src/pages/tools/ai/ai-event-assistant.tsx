@@ -177,7 +177,11 @@ export default function AiEventAssistant() {
   useEffect(() => {
     const storage = getSafeStorage();
     if (!storage) return;
-    storage.setItem('toolboxx-event-toolkits', JSON.stringify(history));
+    try {
+      storage.setItem('toolboxx-event-toolkits', JSON.stringify(history.slice(0, 8)));
+    } catch {
+      // Local persistence is best-effort; generation must continue if storage is full or blocked.
+    }
   }, [history]);
 
   const visibleSections = useMemo(() => {

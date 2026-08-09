@@ -16,7 +16,12 @@ function parseMarkdown(md: string): string {
     .replace(/^\> (.+)$/gm, '<blockquote class="border-l-4 border-primary pl-4 text-muted-foreground italic my-4">$1</blockquote>')
     .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
     .replace(/^(\d+)\. (.+)$/gm, '<li class="ml-4 list-decimal">$2</li>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary underline" target="_blank">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label: string, rawUrl: string) => {
+      const url = rawUrl.trim();
+      const isSafeUrl = /^(https?:|mailto:|#|\/)/i.test(url);
+      const safeUrl = isSafeUrl ? url : '#';
+      return `<a href="${safeUrl}" class="text-primary underline" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    })
     .replace(/\n\n+/g, '</p><p class="my-3">')
     .replace(/^(?!<[h|p|b|l|c|a|e|s|u])/gm, '')
     .replace(/\n/g, '<br>');

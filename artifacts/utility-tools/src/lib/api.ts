@@ -84,6 +84,7 @@ async function request<T>(path: string, options: RequestOptionsWithTimeout = {})
   if (!response.ok) {
     const message =
       (data as { error?: string })?.error ??
+      (data as { message?: string })?.message ??
       `Request failed with status ${response.status}`;
     if (isDev) console.debug(`[api] ✗ ${path} (${response.status})`, message);
     throw new Error(message);
@@ -109,6 +110,7 @@ export const ai = {
     request<AiGenerateResponse>('/ai/generate', {
       method: 'POST',
       body: payload,
+      timeoutMs: 120_000,
     }),
 };
 

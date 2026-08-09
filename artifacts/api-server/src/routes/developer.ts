@@ -103,11 +103,38 @@ router.post("/http-headers", headersLimiter, async (req, res) => {
   logger.info({ targetHost: parsed.hostname }, "[http-headers] fetching headers");
 
   try {
-    const response = await fetch(parsed.href, {
-      method: "HEAD",
-      redirect: "follow",
-      signal: AbortSignal.timeout(10_000),
-    });
+    let currentUrl = parsed.href;
+    let response: Response | undefined;
+    for (let redirectCount = 0; redirectCount <= 3; redirectCount += 1) {
+      response = await fetch(currentUrl, {
+        method: "HEAD",
+        redirect: "manual",
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      if (![301, 302, 303, 307, 308].includes(response.status)) break;
+      const location = response.headers.get("location");
+      if (!location) break;
+      const nextUrl = new URL(location, currentUrl);
+      if (nextUrl.protocol !== "http:" && nextUrl.protocol !== "https:") {
+        res.status(502).json({ error: "The URL redirected to an unsupported protocol." });
+        return;
+      }
+      if (!(await resolvesSafeAddress(nextUrl.hostname))) {
+        res.status(400).json({ error: "The URL redirected to a private or internal address." });
+        return;
+      }
+      currentUrl = nextUrl.href;
+      if (redirectCount === 3) {
+        res.status(502).json({ error: "Too many redirects." });
+        return;
+      }
+    }
+
+    if (!response) {
+      res.status(502).json({ error: "Failed to reach the URL." });
+      return;
+    }
 
     const headers: Record<string, string> = {};
     response.headers.forEach((value, key) => {

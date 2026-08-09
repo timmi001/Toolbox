@@ -56,7 +56,9 @@ function safeStorageSet(entries: HistoryEntry[]) {
   if (typeof window === 'undefined' || !window.localStorage) return;
 
   try {
-    window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(entries.slice(0, MAX_HISTORY_ITEMS)));
+    const limited = entries.slice(0, MAX_HISTORY_ITEMS);
+    window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(limited));
+    window.dispatchEvent(new CustomEvent('toolboxx-history-updated'));
   } catch {
     // Gracefully ignore Local Storage quota issues.
   }
@@ -118,7 +120,7 @@ export function importHistoryFromText(rawText: string): HistoryEntry[] {
     id: entry.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`,
   }));
 
-  const merged = [...next, ...loadHistory()].slice(0, MAX_HISTORY_ITEMS);
+  const merged = [...next, ...loadHistory()].filter((entry, index, all) => all.findIndex(item => item.id === entry.id) === index).slice(0, MAX_HISTORY_ITEMS);
   safeStorageSet(merged);
   return merged;
 }

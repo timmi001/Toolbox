@@ -23,6 +23,16 @@ export function useHistory() {
 
   useEffect(() => {
     refresh();
+    const onHistoryUpdated = () => refresh();
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === 'toolboxx_history_v1') refresh();
+    };
+    window.addEventListener('toolboxx-history-updated', onHistoryUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('toolboxx-history-updated', onHistoryUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
   }, [refresh]);
 
   const addEntry = useCallback((entry: Omit<HistoryEntry, 'id'> & { id?: string }) => {
