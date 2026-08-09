@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, Search, Home, Clock, Bookmark, FileText, Shield, Copyright } from 'lucide-react';
+import { Menu, X, Search, Home, Clock, FileText, Shield, Copyright } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SIDEBAR_LINKS = [
   { label: 'Home',             href: '/',         icon: Home },
   { label: 'History',          href: '/history',  icon: Clock },
-  { label: 'Collections',      href: '/utility-tools', icon: Bookmark },
   { label: 'Terms of Service', href: '/terms',    icon: FileText },
   { label: 'Privacy Policy',   href: '/privacy',  icon: Shield },
   { label: 'DMCA Copyright',   href: '/dmca',     icon: Copyright },
