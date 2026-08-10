@@ -17,3 +17,7 @@ services:
         value: https://toolboxx.site,https://www.toolboxx.site,https://toolbox-ashy-six.vercel.app
       - key: MAX_REQUEST_BODY_SIZE
         value: 10mb
+      - key: COBALT_API_URL
+        value: https://YOUR-COBALT-DOMAIN/
+      - key: COBALT_API_KEY
+        value: YOUR-COBALT-API-KEY

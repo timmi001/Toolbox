@@ -1,18 +1,8 @@
-const fs = require('fs');
-const path = require('path');
 const { Readable } = require('node:stream');
-
-const tempDir = path.join(__dirname, '..', 'temp');
-const downloadsDir = path.join(__dirname, '..', 'downloads');
 
 const COBALT_API_URL = (process.env['COBALT_API_URL'] ?? '').trim().replace(/\/$/, '');
 const COBALT_API_KEY = process.env['COBALT_API_KEY']?.trim();
 const COBALT_TIMEOUT_MS = Number(process.env['COBALT_TIMEOUT_MS'] ?? 120_000);
-
-function ensureDirectories() {
-  fs.mkdirSync(tempDir, { recursive: true });
-  fs.mkdirSync(downloadsDir, { recursive: true });
-}
 
 function createError(message, statusCode, code) {
   const error = new Error(message);
@@ -227,29 +217,15 @@ async function downloadAudio(url, format = 'mp3') {
   };
 }
 
-async function cleanupTempFiles(files = []) {
-  for (const file of files) {
-    try {
-      if (file && fs.existsSync(file)) fs.unlinkSync(file);
-    } catch (error) {
-      console.error(`[cleanup] ${error.message}`);
-    }
-  }
-}
-
 async function verifyDependencies(options = {}) {
-  ensureDirectories();
   const result = { ok: true, diagnostics: { node: process.version }, missing: [] };
   if (options.log) console.log(`[deps] Node version: ${result.diagnostics.node}`);
   return result;
 }
 
-ensureDirectories();
-
 module.exports = {
   inspectUrl,
   downloadVideo,
   downloadAudio,
-  cleanupTempFiles,
   verifyDependencies,
 };

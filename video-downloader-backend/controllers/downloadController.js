@@ -1,7 +1,6 @@
-const fs = require('fs');
 const path = require('path');
 const { validateUrl, validateDownloadRequest } = require('../utils/validator');
-const { inspectUrl, downloadVideo, downloadAudio, cleanupTempFiles } = require('../services/downloader');
+const { inspectUrl, downloadVideo, downloadAudio } = require('../services/downloader');
 
 function getMimeType(filename) {
   const ext = path.extname(filename).toLowerCase();

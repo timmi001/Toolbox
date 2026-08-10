@@ -1,8 +1,7 @@
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
 const { validateUrl } = require('../utils/validator');
-const { inspectUrl, downloadVideo, downloadAudio, cleanupTempFiles } = require('../services/downloader');
+const { inspectUrl, downloadVideo, downloadAudio } = require('../services/downloader');
 
 const router = express.Router();
 
@@ -166,8 +165,8 @@ router.get('/audio', async (req, res, next) => {
       return res.json({ direct: true, url: result.url, fileName: result.fileName });
     }
 
-    console.log(`[video][audio] streaming file from: ${result.filePath}`);
-    const mimeType = getMimeType(result.filePath);
+    console.log(`[video][audio] streaming content, fileName=${result.fileName}`);
+    const mimeType = result.contentType || getMimeType(result.fileName);
     const fileName = title ? `${title}.mp3` : result.fileName;
 
     res.setHeader('Content-Type', mimeType);
@@ -176,22 +175,13 @@ router.get('/audio', async (req, res, next) => {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
-    const stream = fs.createReadStream(result.filePath);
+    const stream = result.stream;
     stream.on('error', (err) => {
       console.error(`[video][audio] read stream error: ${err.message}`);
       if (!res.headersSent) {
         res.status(500).json({ error: 'Failed to stream file.' });
       }
       next(err);
-    });
-    stream.on('close', async () => {
-      console.log(`[video][audio] stream closed, cleaning up ${result.filePath}`);
-      await cleanupTempFiles([result.filePath]).catch((err) => {
-        console.warn(`[video][audio] cleanup error: ${err.message}`);
-      });
-    });
-    stream.on('end', () => {
-      console.log(`[video][audio] stream ended successfully`);
     });
     stream.pipe(res);
   } catch (error) {
