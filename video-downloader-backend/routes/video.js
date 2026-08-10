@@ -106,8 +106,8 @@ router.get('/stream', async (req, res, next) => {
       return res.json({ direct: true, url: result.url, fileName: result.fileName });
     }
 
-    console.log(`[video][stream] streaming file from: ${result.filePath}`);
-    const mimeType = getMimeType(result.filePath);
+    console.log(`[video][stream] streaming content, fileName=${result.fileName}`);
+    const mimeType = result.contentType || getMimeType(result.fileName);
     const fileName = title && ext ? `${title}.${ext}` : result.fileName;
 
     res.setHeader('Content-Type', mimeType);
@@ -116,24 +116,14 @@ router.get('/stream', async (req, res, next) => {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
-    const stream = fs.createReadStream(result.filePath);
-    stream.on('error', (err) => {
+    result.stream.on('error', (err) => {
       console.error(`[video][stream] read stream error: ${err.message}`);
       if (!res.headersSent) {
         res.status(500).json({ error: 'Failed to stream file.' });
       }
       next(err);
     });
-    stream.on('close', async () => {
-      console.log(`[video][stream] stream closed, cleaning up ${result.filePath}`);
-      await cleanupTempFiles([result.filePath]).catch((err) => {
-        console.warn(`[video][stream] cleanup error: ${err.message}`);
-      });
-    });
-    stream.on('end', () => {
-      console.log(`[video][stream] stream ended successfully`);
-    });
-    stream.pipe(res);
+    result.stream.pipe(res);
   } catch (error) {
     console.error(`[video][stream] error: ${error.message}`);
     if (!res.headersSent) {

@@ -2,6 +2,10 @@
 
 A Node.js + Express backend with stable video and audio download API boundaries. A replacement provider can be integrated without changing the routes.
 
+The active provider is self-hosted Cobalt. Configure `COBALT_API_URL` with the
+instance URL (including `https://`) and optionally set `COBALT_API_KEY`. The
+key is used only by the backend and is never sent to the frontend.
+
 ## Features
 
 - Secure Express server with Helmet, CORS, compression and rate limiting

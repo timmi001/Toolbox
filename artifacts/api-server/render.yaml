@@ -24,6 +24,10 @@ services:
         sync: false   # optional fallback provider key
       - key: ALLOWED_ORIGINS
         value: https://toolboxx.site,https://www.toolboxx.site,https://toolbox-ashy-six.vercel.app
+      - key: COBALT_API_URL
+        sync: false
+      - key: COBALT_API_KEY
+        sync: false
       # Optional video timeout overrides (defaults are generous for most videos)
       # - key: VIDEO_INFO_TIMEOUT_MS
       #   value: "45000"
