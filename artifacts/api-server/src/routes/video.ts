@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import rateLimit from "express-rate-limit";
 import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
@@ -493,9 +493,9 @@ function selectFormats(info: YtDlpInfo): OutFormat[] {
 }
 
 // ---------------------------------------------------------------------------
-// POST /video/download — resolve title/thumbnail/duration + available formats
+// POST /video/info — resolve title/thumbnail/duration + available formats
 // ---------------------------------------------------------------------------
-router.post("/video/download", videoInfoLimiter, async (req, res) => {
+router.post("/video/info", videoInfoLimiter, async (req, res) => {
   const requestId = nextRequestId();
   const startedAt = Date.now();
   const { url, platform } = req.body as { url?: unknown; platform?: unknown };
@@ -534,7 +534,7 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
 
     logger.info(
       { requestId, platform, step: "extract_info", stage: "start", command },
-      "[video/download] extracting video info via yt-dlp",
+      "[video/info] extracting video info via yt-dlp",
     );
 
     // Retry loop with exponential backoff for transient upstream errors.
@@ -571,7 +571,7 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
 
     logger.info(
       { requestId, platform, step: "extract_info", stage: "done", ms: Date.now() - startedAt },
-      "[video/download] video info extracted",
+      "[video/info] video info extracted",
     );
 
     let info: YtDlpInfo;
@@ -597,7 +597,7 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
     if (formats.length === 0) {
       logger.warn(
         { requestId, platform, step: "select_formats", rawFormatCount: info.formats?.length ?? 0 },
-        "[video/download] no usable progressive formats after filtering",
+        "[video/info] no usable progressive formats after filtering",
       );
       res.status(422).json({
         error: "No downloadable video was found for this link — it may only contain non-video content.",
@@ -606,12 +606,12 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
     }
     logger.info(
       { requestId, platform, step: "select_formats", stage: "done", formatCount: formats.length },
-      "[video/download] formats selected",
+      "[video/info] formats selected",
     );
 
     logger.info(
       { requestId, platform, step: "return_response", formatCount: formats.length, ms: Date.now() - startedAt },
-      "[video/download] DONE",
+      "[video/info] DONE",
     );
     res.json({
       title: info.title ?? "video",
@@ -638,7 +638,7 @@ router.post("/video/download", videoInfoLimiter, async (req, res) => {
         stderr: stderr || undefined,
         ...(body["reason"] === "missing_binary" ? { missingBinary: missingBinaryName(), ...runtimeDiagnostics() } : {}),
       },
-      "[video/download] failed",
+      "[video/info] failed",
     );
     // Tell the client how long to wait before retrying when the failure is a
     // rate-limit or bot-check from the upstream platform (NOT our Express
@@ -663,16 +663,18 @@ const EXT_MIME: Record<string, string> = {
   mp3: "audio/mpeg",
 };
 
-router.get("/video/stream", videoStreamLimiter, (req, res) => {
+const streamVideo = (req: Request, res: Response) => {
   const requestId = nextRequestId();
   const startedAt = Date.now();
-  const { src, format, platform, ext, title } = req.query as Record<string, string | undefined>;
+  const input = req.method === "POST" ? req.body : req.query;
+  const { src, url, format, platform, ext, title } = input as Record<string, string | undefined>;
+  const sourceUrl = src ?? url;
 
   if (!isValidPlatform(platform)) {
     res.status(400).json({ error: "Unsupported or unknown platform." });
     return;
   }
-  const validation = validateVideoUrl(src, platform);
+  const validation = validateVideoUrl(sourceUrl, platform);
   if (!validation.ok) {
     res.status(400).json({ error: validation.error });
     return;
@@ -852,7 +854,12 @@ router.get("/video/stream", videoStreamLimiter, (req, res) => {
     }
     if (!res.writableEnded) res.end();
   });
-});
+};
+
+// Legacy GET endpoint remains available for internal callers. The public UI
+// uses POST /video/download so it never has to construct or display a URL.
+router.get("/video/stream", videoStreamLimiter, streamVideo);
+router.post("/video/download", videoStreamLimiter, streamVideo);
 
 // ---------------------------------------------------------------------------
 // POST /video/audio — extract and stream the best audio track from any

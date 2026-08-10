@@ -209,52 +209,43 @@ export interface VideoDownloadResponse {
 export const videoDownload = {
   /** Step 1: resolve title/thumbnail/duration + available formats. */
   fetch: (payload: VideoDownloadRequest) =>
-    request<VideoDownloadResponse>('/video/download', {
+    request<VideoDownloadResponse>('/video/info', {
       method: 'POST',
       body: payload,
       timeoutMs: 50_000,
     }),
 
-  /**
-   * Step 2: build the same-origin URL that actually streams the file.
-   * The backend re-fetches from the source platform with the right
-   * headers/cookies and pipes bytes straight through — the browser never
-   * talks to the third-party CDN directly, so this works even for
-   * platforms (e.g. TikTok) whose direct links require session cookies.
-   */
-  buildStreamUrl: (opts: {
-    sourceUrl: string;
-    platform: VideoPlatform;
-    format: VideoFormat;
-    title: string;
-  }) => {
-    const params = new URLSearchParams({
-      src: opts.sourceUrl,
-      platform: opts.platform,
-      format: opts.format.formatId,
-      ext: opts.format.ext,
-      title: opts.title,
+  /** Step 2: submit the download as a native browser attachment request. */
+  start: (payload: VideoDownloadRequest & { format: VideoFormat }) => {
+    const frame = document.createElement('iframe');
+    frame.name = 'toolboxx-video-download';
+    frame.title = 'Download';
+    frame.style.display = 'none';
+    document.body.appendChild(frame);
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `${API_BASE}/video/download`;
+    form.target = 'toolboxx-video-download';
+    form.style.display = 'none';
+    const fields = {
+      url: payload.url,
+      platform: payload.platform,
+      format: payload.format.formatId,
+      ext: payload.format.ext,
+    };
+    Object.entries(fields).forEach(([name, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
     });
-    return `${API_BASE}/video/stream?${params.toString()}`;
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+    window.setTimeout(() => frame.remove(), 10 * 60 * 1000);
   },
 
-  /**
-   * Build the URL for the audio-only extraction endpoint.
-   * Returns a GET URL so the browser can trigger a download directly via
-   * an <a href> — no JS blob dance required.
-   */
-  buildAudioUrl: (opts: {
-    sourceUrl: string;
-    platform: VideoPlatform;
-    title: string;
-  }) => {
-    const params = new URLSearchParams({
-      src: opts.sourceUrl,
-      platform: opts.platform,
-      title: opts.title,
-    });
-    return `${API_BASE}/video/audio?${params.toString()}`;
-  },
 };
 
 // ─── Add more endpoint groups here as the app grows ────────────────────────

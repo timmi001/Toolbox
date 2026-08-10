@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link2, Download, AlertCircle, Loader2, CheckCircle2, FileVideo, Clock } from 'lucide-react';
 import { ToolLayout } from '@/components/ToolLayout';
 import { Button } from '@/components/ui/button';
@@ -39,8 +39,15 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
   const [url, setUrl] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadState, setDownloadState] = useState<'idle' | 'started'>('idle');
   const [error, setError] = useState('');
   const [result, setResult] = useState<VideoDownloadResponse | null>(null);
+  const [selectedFormatId, setSelectedFormatId] = useState('');
+
+  useEffect(() => {
+    if (result?.formats[0]) setSelectedFormatId(result.formats[0].formatId);
+  }, [result]);
 
   async function handleFetch() {
     const trimmed = url.trim();
@@ -48,6 +55,7 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
     setLoading(true);
     setError('');
     setResult(null);
+    setDownloadState('idle');
     try {
       console.log(`[frontend][handleFetch] fetching metadata for url=${trimmed} platform=${config.platform}`);
       const data = await videoDownload.fetch({ url: trimmed, platform: config.platform });
@@ -76,59 +84,25 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
     }
   }
 
-  async function downloadFile(format: VideoFormat) {
-    if (!result || !sourceUrl) return;
-
-    const downloadUrl = videoDownload.buildStreamUrl({
-      sourceUrl,
-      platform: config.platform,
-      format,
-      title: result.title,
-    });
-
-    console.log(`[frontend][downloadFile] starting download: format=${format.formatId} url=${sourceUrl}`);
-    console.log(`[frontend][downloadFile] stream URL: ${downloadUrl}`);
-
+  async function downloadFile() {
+    const format = result?.formats.find(item => item.formatId === selectedFormatId);
+    if (!result || !sourceUrl || !format || downloading) return;
+    setDownloading(true);
+    setDownloadState('idle');
+    setError('');
     try {
-      const response = await fetch(downloadUrl, {
-        credentials: 'same-origin',
-        cache: 'no-store',
+      videoDownload.start({
+        url: sourceUrl,
+        platform: config.platform,
+        format,
       });
-
-      console.log(`[frontend][downloadFile] fetch response status=${response.status} contentType=${response.headers.get('content-type')}`);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let message = `Download failed with status ${response.status}`;
-        try {
-          const parsed = JSON.parse(errorText);
-          if (parsed?.error) message = parsed.error;
-        } catch {
-          // Ignore JSON parse errors and fall back to the default message.
-        }
-        console.error(`[frontend][downloadFile] HTTP error response: ${message}`);
-        throw new Error(message);
-      }
-
-      console.log(`[frontend][downloadFile] creating blob from response`);
-      const blob = await response.blob();
-      console.log(`[frontend][downloadFile] blob created: size=${blob.size} type=${blob.type}`);
-
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `${result.title}.${format.ext}`;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      console.log(`[frontend][downloadFile] triggering download: filename=${a.download}`);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-      console.log(`[frontend][downloadFile] download triggered successfully`);
+      setDownloadState('started');
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to download the file.';
       console.error(`[frontend][downloadFile] error: ${errorMsg}`);
       setError(errorMsg);
+    } finally {
+      setDownloading(false);
     }
   }
 
@@ -170,7 +144,7 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
             >
               {loading
                 ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Fetching video info…</>
-                : <><Download className="mr-2 h-4 w-4" /> Get Download Links</>}
+                : <><Download className="mr-2 h-4 w-4" /> Get Video</>}
             </Button>
           </div>
         </div>
@@ -214,25 +188,34 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
               </div>
             </div>
 
-            {/* Format list */}
-            <div className="divide-y">
-              {result.formats.map((fmt, i) => (
-                <div key={i} className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium uppercase tracking-wide">
-                      {fmt.ext}
-                    </span>
-                    <span className="text-sm font-medium">{fmt.quality}</span>
-                    {fmt.filesize && (
-                      <span className="text-xs text-muted-foreground">{formatSize(fmt.filesize)}</span>
-                    )}
-                  </div>
-                  <Button size="sm" variant="outline" onClick={() => downloadFile(fmt)}>
-                    <Download className="mr-1.5 h-3.5 w-3.5" />
-                    Download
-                  </Button>
-                </div>
-              ))}
+            <div className="p-4 space-y-3">
+              <p className="flex items-center gap-2 text-sm text-emerald-300">
+                <CheckCircle2 className="h-4 w-4" /> Video ready
+              </p>
+              <label className="text-sm font-medium" htmlFor="video-quality">Quality</label>
+              <select
+                id="video-quality"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                value={selectedFormatId}
+                onChange={e => setSelectedFormatId(e.target.value)}
+                disabled={downloading}
+              >
+                {result.formats.map(fmt => (
+                  <option key={fmt.formatId} value={fmt.formatId}>
+                    {fmt.quality} · {fmt.ext.toUpperCase()}{fmt.filesize ? ` · ${formatSize(fmt.filesize)}` : ''}
+                  </option>
+                ))}
+              </select>
+              <Button className="w-full" onClick={downloadFile} disabled={downloading || !selectedFormatId}>
+                {downloading
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Downloading…</>
+                  : <><Download className="mr-2 h-4 w-4" /> Download</>}
+              </Button>
+              {downloadState === 'started' && (
+                <p className="flex items-center justify-center gap-2 text-sm text-emerald-300">
+                  <CheckCircle2 className="h-4 w-4" /> Download started
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -242,7 +225,7 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
           <p className="font-medium">How to use</p>
           <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
             <li>Copy the video URL from {tool.name.replace(' Downloader', '')}</li>
-            <li>Paste it in the box above and click <strong>Get Download Links</strong></li>
+            <li>Paste it in the box above and click <strong>Get Video</strong></li>
             <li>Choose your preferred quality and click <strong>Download</strong></li>
           </ol>
           <p className="text-xs text-muted-foreground pt-1">
