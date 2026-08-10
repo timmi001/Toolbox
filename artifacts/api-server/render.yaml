@@ -23,7 +23,7 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false   # optional fallback provider key
       - key: ALLOWED_ORIGINS
-        sync: false   # set to your frontend domain, e.g. https://toolboxx.vercel.app
+        value: https://toolboxx.site,https://www.toolboxx.site,https://toolbox-ashy-six.vercel.app
       # Optional video timeout overrides (defaults are generous for most videos)
       # - key: VIDEO_INFO_TIMEOUT_MS
       #   value: "45000"

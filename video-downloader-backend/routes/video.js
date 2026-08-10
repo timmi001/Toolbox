@@ -39,7 +39,7 @@ router.post('/download', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid URL.' });
     }
 
-    if (platform && !['youtube', 'facebook', 'instagram', 'twitter', 'tiktok'].includes(platform)) {
+    if (platform && !['youtube', 'facebook', 'instagram', 'twitter', 'tiktok', 'pinterest', 'reddit'].includes(platform)) {
       console.warn(`[video][download] invalid platform: ${platform}`);
       return res.status(400).json({ error: 'Invalid platform.' });
     }
@@ -93,7 +93,7 @@ router.get('/stream', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid URL.' });
     }
 
-    if (platform && !['youtube', 'facebook', 'instagram', 'twitter', 'tiktok'].includes(platform)) {
+    if (platform && !['youtube', 'facebook', 'instagram', 'twitter', 'tiktok', 'pinterest', 'reddit'].includes(platform)) {
       console.warn(`[video][stream] invalid platform: ${platform}`);
       return res.status(400).json({ error: 'Invalid platform.' });
     }
@@ -163,7 +163,7 @@ router.get('/audio', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid URL.' });
     }
 
-    if (platform && !['youtube', 'facebook', 'instagram', 'twitter', 'tiktok'].includes(platform)) {
+    if (platform && !['youtube', 'facebook', 'instagram', 'twitter', 'tiktok', 'pinterest', 'reddit'].includes(platform)) {
       console.warn(`[video][audio] invalid platform: ${platform}`);
       return res.status(400).json({ error: 'Invalid platform.' });
     }

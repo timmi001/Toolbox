@@ -91,18 +91,24 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
     setDownloadState('idle');
     setError('');
     try {
-      videoDownload.start({
+      const downloadUrl = videoDownload.buildDownloadUrl({
         url: sourceUrl,
         platform: config.platform,
         format,
+        title: result.title,
       });
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.rel = 'noopener';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
       setDownloadState('started');
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to download the file.';
       console.error(`[frontend][downloadFile] error: ${errorMsg}`);
       setError(errorMsg);
-    } finally {
-      setDownloading(false);
     }
   }
 

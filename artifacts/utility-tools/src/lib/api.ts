@@ -7,10 +7,16 @@
  * `/api` path behind the shared Replit proxy — so a same-origin relative
  * path always reaches it, in both development and production.
  *
- * Set VITE_API_URL only if the backend is hosted elsewhere.
+ * VITE_API_URL should be the public HTTPS API origin, for example:
+ * https://toolbox-iph5.onrender.com/api
  */
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
+const configuredApiBase = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const API_BASE = configuredApiBase
+  ? configuredApiBase.replace(/\/$/, '')
+  : import.meta.env.PROD
+    ? 'https://toolbox-iph5.onrender.com/api'
+    : '/api';
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -153,7 +159,7 @@ export const httpHeaders = {
 
 // ─── Video downloader endpoints ────────────────────────────────────────────
 
-export type VideoPlatform = 'youtube' | 'facebook' | 'instagram' | 'twitter' | 'tiktok';
+export type VideoPlatform = 'youtube' | 'facebook' | 'instagram' | 'twitter' | 'tiktok' | 'pinterest' | 'reddit';
 
 // Mirrors the backend's allow-list — used for instant client-side feedback
 // before a network request is made (server re-validates regardless).
@@ -163,6 +169,8 @@ const VIDEO_PLATFORM_HOSTS: Record<VideoPlatform, string[]> = {
   instagram: ['instagram.com'],
   twitter: ['twitter.com', 'x.com'],
   tiktok: ['tiktok.com'],
+  pinterest: ['pinterest.com', 'pin.it'],
+  reddit: ['reddit.com', 'redd.it'],
 };
 
 /** Validates a URL client-side before it's sent to the backend. */
@@ -216,6 +224,18 @@ export const videoDownload = {
     }),
 
   /** Step 2: submit the download as a native browser attachment request. */
+  buildDownloadUrl: (payload: VideoDownloadRequest & { format: VideoFormat; title?: string }) => {
+    const params = new URLSearchParams({
+      url: payload.url,
+      platform: payload.platform,
+      format: payload.format.formatId,
+      ext: payload.format.ext,
+      ...(payload.title ? { title: payload.title } : {}),
+    });
+    return `${API_BASE}/video/stream?${params.toString()}`;
+  },
+
+  /** Legacy POST fallback retained for callers that require form submission. */
   start: (payload: VideoDownloadRequest & { format: VideoFormat }) => {
     const frame = document.createElement('iframe');
     frame.name = 'toolboxx-video-download';

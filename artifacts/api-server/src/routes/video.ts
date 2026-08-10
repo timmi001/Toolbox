@@ -160,7 +160,7 @@ const videoStreamLimiter = rateLimit({
 // The allow-list also doubles as SSRF protection for /video/stream, whose
 // `src` query param would otherwise let a caller point yt-dlp at an arbitrary URL.
 // ---------------------------------------------------------------------------
-type Platform = "youtube" | "facebook" | "instagram" | "twitter" | "tiktok";
+type Platform = "youtube" | "facebook" | "instagram" | "twitter" | "tiktok" | "pinterest" | "reddit";
 
 const PLATFORM_HOSTS: Record<Platform, string[]> = {
   youtube: ["youtube.com", "youtu.be"],
@@ -168,6 +168,8 @@ const PLATFORM_HOSTS: Record<Platform, string[]> = {
   instagram: ["instagram.com"],
   twitter: ["twitter.com", "x.com"],
   tiktok: ["tiktok.com"],
+  pinterest: ["pinterest.com", "pin.it"],
+  reddit: ["reddit.com", "redd.it"],
 };
 
 function isValidPlatform(p: unknown): p is Platform {
