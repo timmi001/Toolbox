@@ -15,9 +15,6 @@ function errorHandler(err, req, res, next) {
   } else if (err.code === 'ECONNREFUSED') {
     statusCode = 503;
     userMessage = 'Service unavailable. The download service is temporarily unavailable.';
-  } else if (err.message?.includes('ENOENT') && err.message?.includes('yt-dlp')) {
-    statusCode = 500;
-    userMessage = 'Missing required dependency: yt-dlp is not installed or not found in PATH.';
   } else if (err.message?.includes('Invalid URL')) {
     statusCode = 400;
     userMessage = 'Invalid URL provided. Please check the URL and try again.';

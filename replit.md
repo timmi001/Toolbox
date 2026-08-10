@@ -28,13 +28,13 @@ A comprehensive collection of 200+ free online tools covering text processing, d
 - `artifacts/api-server/` — Express API server
   - `src/routes/ai.ts` — AI-powered tool endpoints (uses Google Generative AI)
   - `src/routes/developer.ts` — developer utility endpoints
-  - `src/routes/video.ts` — video download endpoints (yt-dlp)
+  - `src/routes/video.ts` — provider-neutral video download endpoints
 
 ## Architecture decisions
 
 - All frontend tool pages are lazy-loaded (`React.lazy`) for fast initial load
 - AI routes proxy to Google Generative AI with rate limiting
-- yt-dlp is invoked via system PATH for video tools
+- Video routes are ready for a separately integrated download provider
 - No database required — all tools are client-side or stateless API calls
 - wouter used instead of React Router for lightweight client-side routing
 
@@ -49,7 +49,6 @@ _Populate as you build — explicit user instructions worth remembering across s
 ## Gotchas
 
 - The api-server dev script builds then starts (not a watch mode); restart after code changes
-- yt-dlp is available via Nix PATH; see memory for shadowing notes if version issues arise
 - `pnpm approve-builds` required if @google/genai build scripts need to run
 
 ## Pointers

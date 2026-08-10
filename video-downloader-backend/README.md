@@ -1,6 +1,6 @@
 # Video Downloader Backend
 
-A production-ready Node.js + Express backend for downloading videos and audio from supported sites using yt-dlp and FFmpeg.
+A Node.js + Express backend with stable video and audio download API boundaries. A replacement provider can be integrated without changing the routes.
 
 ## Features
 
@@ -15,28 +15,22 @@ A production-ready Node.js + Express backend for downloading videos and audio fr
 
 ### Prerequisites
 
-Before running the server locally, ensure you have yt-dlp and FFmpeg installed:
+Before running the server locally, ensure FFmpeg is installed if the future provider requires media processing:
 
 **macOS:**
 ```bash
-brew install yt-dlp ffmpeg
+brew install ffmpeg
 ```
 
 **Linux (Ubuntu/Debian):**
 ```bash
 sudo apt-get update
-sudo apt-get install yt-dlp ffmpeg
+sudo apt-get install ffmpeg
 ```
 
 **Windows:**
 Download and install:
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) (via Chocolatey: `choco install yt-dlp`)
 - [FFmpeg](https://ffmpeg.org/download.html)
-
-Or via Python:
-```bash
-pip install yt-dlp
-```
 
 ### Setup
 
@@ -50,7 +44,6 @@ pip install yt-dlp
    ```
 3. Verify dependencies are installed:
    ```bash
-   yt-dlp --version
    ffmpeg -version
    ```
 4. Start the server:
@@ -58,7 +51,7 @@ pip install yt-dlp
    npm run dev
    ```
 
-The server will log a verification message confirming all dependencies are available.
+The server will create its temporary directories and start even when no provider is configured.
 
 ## API Endpoints
 
@@ -114,7 +107,7 @@ Content-Type: application/json
    - PORT=3001
    - HOST=0.0.0.0
    - NODE_ENV=production
-   - ALLOWED_ORIGINS=https://your-frontend-domain.vercel.app
+   - ALLOWED_ORIGINS=https://toolboxx.site,https://www.toolboxx.site
    - MAX_REQUEST_BODY_SIZE=10mb
 
 ### Option 2: Render Blueprint

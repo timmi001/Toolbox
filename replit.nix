@@ -1,5 +1,3 @@
 {pkgs}: {
-  deps = [
-    pkgs.yt-dlp
-  ];
+  deps = [];
 }

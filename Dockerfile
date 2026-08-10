@@ -12,7 +12,7 @@
 # Architecture:
 #   All JS dependencies (Express, pino, drizzle, @google/genai, workspace libs)
 #   are bundled into dist/ by esbuild. The runner image needs zero node_modules.
-#   Only system binaries (ffmpeg, yt-dlp) need to be installed separately.
+#   Only FFmpeg is installed as an optional media-processing dependency.
 #
 # Build context: workspace root — api-server depends on lib/* workspace packages
 #   that esbuild resolves and inlines at compile time.
@@ -71,32 +71,16 @@ RUN pnpm --filter @workspace/api-server run build
 
 # ── Stage 3: runner ───────────────────────────────────────────────────────────
 # The dist/ bundle is completely self-contained — all JS deps are inlined by
-# esbuild. No node_modules are needed at runtime. Only system binaries (ffmpeg,
-# yt-dlp) that the API shells out to need to be installed separately.
+# esbuild. No node_modules are needed at runtime. FFmpeg remains installed for
+# future media-processing providers.
 FROM node:20-bookworm-slim AS runner
 
 WORKDIR /app
 
-# System dependencies:
-#   ffmpeg   — audio extraction (-x flag) and container muxing for yt-dlp
-#   python3 + venv — runtime for yt-dlp (venv avoids Debian's pip isolation
-#                    policy on Bookworm which blocks system-wide pip installs)
+# System dependency retained for future media-processing providers.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ffmpeg \
-        python3 \
-        python3-pip \
-        python3-venv \
     && rm -rf /var/lib/apt/lists/*
-
-# Install the current yt-dlp release from PyPI rather than relying on the
-# Debian package (which can lag behind extractor fixes). Render rebuilds this
-# image on deploy, so the downloader is refreshed with every clean deploy.
-#
-# The upgrade flag ensures every clean Render build gets the latest extractor
-# fixes instead of a stale OS package.
-RUN pip3 install --no-cache-dir -U --break-system-packages yt-dlp \
-    && yt-dlp --version \
-    && command -v yt-dlp
 
 # Copy the compiled bundle from the builder stage.
 # This is the ONLY thing needed at runtime — dist/ contains everything.

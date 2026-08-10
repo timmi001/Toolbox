@@ -8,19 +8,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     ffmpeg \
-    python3 \
-    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3 --version && \
-    python3 -m pip --version && \
-    pip3 install --no-cache-dir -U --break-system-packages yt-dlp && \
-    yt-dlp --version && \
-    ffmpeg -version | head -n 1 && \
-    which yt-dlp && \
-    which ffmpeg
-
-RUN test -x "$(command -v yt-dlp)" && \
+RUN ffmpeg -version | head -n 1 && \
     test -x "$(command -v ffmpeg)"
 
 COPY package*.json ./
