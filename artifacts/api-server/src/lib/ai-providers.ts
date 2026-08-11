@@ -145,7 +145,7 @@ export function getOpenRouterClient(): OpenAI {
     baseURL: "https://openrouter.ai/api/v1",
     defaultHeaders: {
       // OpenRouter recommends identifying your app in these headers.
-      "HTTP-Referer": process.env["PUBLIC_SITE_URL"] ?? "https://toolboxx.site",
+      "HTTP-Referer": process.env["PUBLIC_SITE_URL"] ?? "https://toolbuxx.site",
       "X-Title": "ToolboXX",
     },
   });

@@ -46,13 +46,13 @@ app.use(
 //
 // Why the browser was blocking requests:
 //   The default ALLOWED_ORIGINS list only contained localhost and *.replit.dev
-//   patterns. The production frontend (https://www.toolboxx.site) was not in
+//   patterns. The production frontend (https://www.toolbuxx.site) was not in
 //   that list, so Express never added an Access-Control-Allow-Origin header to
 //   responses. Browsers enforce CORS strictly: a missing header is treated the
 //   same as an explicit rejection.
 //
 // Fix:
-//   1. Add toolboxx.site (www + apex) and the deployed Vercel frontend origin
+//   1. Add toolbuxx.site (www + apex) and the deployed Vercel frontend origin
 //      to the hard-coded default list so the production frontend works without
 //      any environment variable being set.
 //   2. Expose ALLOWED_ORIGINS as an env var so operators can add more origins
@@ -64,6 +64,8 @@ app.use(
 // ---------------------------------------------------------------------------
 
 const PRODUCTION_ORIGINS = [
+  "https://www.toolbuxx.site",
+  "https://toolbuxx.site",
   "https://www.toolboxx.site",
   "https://toolboxx.site",
   "https://toolbox-ashy-six.vercel.app",

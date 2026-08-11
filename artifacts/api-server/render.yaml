@@ -23,7 +23,7 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false   # optional fallback provider key
       - key: ALLOWED_ORIGINS
-        value: https://toolboxx.site,https://www.toolboxx.site,https://toolbox-ashy-six.vercel.app
+        value: https://toolbuxx.site,https://www.toolbuxx.site,https://toolboxx.site,https://www.toolboxx.site,https://toolbox-ashy-six.vercel.app
       - key: COBALT_API_URL
         sync: false
       - key: COBALT_API_KEY

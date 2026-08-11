@@ -111,7 +111,7 @@ Content-Type: application/json
    - PORT=3001
    - HOST=0.0.0.0
    - NODE_ENV=production
-   - ALLOWED_ORIGINS=https://toolboxx.site,https://www.toolboxx.site
+   - ALLOWED_ORIGINS=https://toolbuxx.site,https://www.toolbuxx.site,https://toolboxx.site,https://www.toolboxx.site
    - MAX_REQUEST_BODY_SIZE=10mb
 
 ### Option 2: Render Blueprint

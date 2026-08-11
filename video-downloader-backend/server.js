@@ -31,6 +31,8 @@ app.use(compression());
 app.use(morgan('combined'));
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()).filter(Boolean) || [
+    'https://toolbuxx.site',
+    'https://www.toolbuxx.site',
     'https://toolboxx.site',
     'https://www.toolboxx.site',
     'http://localhost:5173',

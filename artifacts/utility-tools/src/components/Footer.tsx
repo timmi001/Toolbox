@@ -80,7 +80,7 @@ export function Footer() {
                 <LinkedInIcon />
               </a>
               <a
-                href="mailto:hello@toolboxx.app"
+                href="mailto:hello@toolbuxx.app"
                 className="flex h-9 w-9 items-center justify-center rounded-xl bg-sidebar-accent text-muted-foreground transition-colors hover:bg-sidebar-primary/20 hover:text-sidebar-foreground"
                 aria-label="Email"
               >
@@ -136,7 +136,7 @@ export function Footer() {
               <LinkedInIcon />
             </a>
             <a
-              href="mailto:hello@toolboxx.app"
+              href="mailto:hello@toolbuxx.app"
               className="text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Email"
             >

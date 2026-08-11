@@ -39,7 +39,7 @@ export default function PrivacyPolicy() {
           <div>
             <h3 className="font-semibold text-foreground mb-2">Contact</h3>
             <p>
-              If you have questions about privacy, please contact us at hello@toolboxx.com.
+              If you have questions about privacy, please contact us at hello@toolbuxx.com.
             </p>
           </div>
         </CardContent>

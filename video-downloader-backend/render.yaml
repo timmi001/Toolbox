@@ -14,7 +14,7 @@ services:
       - key: HOST
         value: 0.0.0.0
       - key: ALLOWED_ORIGINS
-        value: https://toolboxx.site,https://www.toolboxx.site,https://toolbox-ashy-six.vercel.app
+        value: https://toolbuxx.site,https://www.toolbuxx.site,https://toolboxx.site,https://www.toolboxx.site,https://toolbox-ashy-six.vercel.app
       - key: MAX_REQUEST_BODY_SIZE
         value: 10mb
       - key: COBALT_API_URL

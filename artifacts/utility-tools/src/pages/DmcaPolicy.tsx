@@ -29,7 +29,7 @@ export default function DmcaPolicy() {
         {[
           {
             title: '1. Reporting Copyright Infringement',
-            body: `If you believe that material available on toolboxx.app infringes one or more of your copyrights, please notify our Copyright Agent by submitting a written notice that includes all of the following:
+            body: `If you believe that material available on toolbuxx.site infringes one or more of your copyrights, please notify our Copyright Agent by submitting a written notice that includes all of the following:
 
 • A physical or electronic signature of the copyright owner or a person authorised to act on their behalf.
 • Identification of the copyrighted work(s) claimed to have been infringed.
@@ -38,7 +38,7 @@ export default function DmcaPolicy() {
 • A statement that you have a good faith belief that the use of the material in the manner complained of is not authorised by the copyright owner, its agent, or the law.
 • A statement that the information in the notification is accurate, and, under penalty of perjury, that you are authorised to act on behalf of the copyright owner.
 
-Send your notice to: hello@toolboxx.app`,
+Send your notice to: hello@toolbuxx.app`,
           },
           {
             title: '2. Counter-Notice Procedure',
@@ -67,7 +67,7 @@ Upon receipt of a valid counter-notice we may reinstate the material within 10�
             title: '6. Contact',
             body: `Copyright Agent
 ToolboXX
-Email: hello@toolboxx.app
+Email: hello@toolbuxx.app
 
 We aim to acknowledge all valid DMCA notices within 2 business days and to act on them within 5 business days.`,
           },
