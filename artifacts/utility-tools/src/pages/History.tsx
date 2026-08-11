@@ -1,46 +1,22 @@
 import { useMemo, useRef, useState } from 'react';
 import { EmptyHistory } from '@/components/history/EmptyHistory';
 import { HistoryCard } from '@/components/history/HistoryCard';
-import { HistoryToolbar } from '@/components/history/HistoryToolbar';
 import { SearchBar } from '@/components/history/SearchBar';
 import { useHistory } from '@/hooks/useHistory';
 
 export default function HistoryPage() {
-  const { entries, loading, toggleFavorite, removeEntry, clearAllHistory, importHistory, exportHistory, searchEntries } = useHistory();
+  const { entries, loading, toggleFavorite, removeEntry, searchEntries } = useHistory();
   const [query, setQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const visibleEntries = useMemo(() => {
     return searchEntries(query, 'all', 'newest');
   }, [searchEntries, query]);
 
-  const onImportClick = () => fileInputRef.current?.click();
-
   return (
     <div className="space-y-6">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/json,.json"
-        className="hidden"
-        onChange={async event => {
-          const file = event.target.files?.[0];
-          if (!file) return;
-          await importHistory(file);
-          event.currentTarget.value = '';
-        }}
-      />
-
       <div className="space-y-4">
         <SearchBar value={query} onChange={setQuery} />
-        <HistoryToolbar
-          onImportClick={onImportClick}
-          onExportJson={() => exportHistory('json', 'toolboxx-history.json')}
-          onExportTxt={() => exportHistory('txt', 'toolboxx-history.txt')}
-          onExportPdf={() => exportHistory('pdf', 'toolboxx-history.pdf')}
-          onClear={clearAllHistory}
-        />
       </div>
 
       {loading ? (
