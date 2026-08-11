@@ -30,7 +30,6 @@ export function FeedbackButton() {
       ].join(' ')}
     >
       <span aria-hidden="true" className="text-base leading-none">💬</span>
-      Feedback
     </button>
   );
 }

@@ -3,25 +3,17 @@ import { EmptyHistory } from '@/components/history/EmptyHistory';
 import { HistoryCard } from '@/components/history/HistoryCard';
 import { HistoryToolbar } from '@/components/history/HistoryToolbar';
 import { SearchBar } from '@/components/history/SearchBar';
-import { FilterBar } from '@/components/history/FilterBar';
 import { useHistory } from '@/hooks/useHistory';
-import type { HistorySort } from '@/types/history';
 
 export default function HistoryPage() {
   const { entries, loading, toggleFavorite, removeEntry, clearAllHistory, importHistory, exportHistory, searchEntries } = useHistory();
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('all');
-  const [sort, setSort] = useState<HistorySort>('newest');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const categories = useMemo(() => {
-    return ['all', ...new Set(entries.map(entry => entry.toolCategory))];
-  }, [entries]);
-
   const visibleEntries = useMemo(() => {
-    return searchEntries(query, category, sort);
-  }, [searchEntries, query, category, sort]);
+    return searchEntries(query, 'all', 'newest');
+  }, [searchEntries, query]);
 
   const onImportClick = () => fileInputRef.current?.click();
 
@@ -42,7 +34,6 @@ export default function HistoryPage() {
 
       <div className="space-y-4">
         <SearchBar value={query} onChange={setQuery} />
-        <FilterBar category={category} setCategory={setCategory} sort={sort} setSort={setSort} categories={categories} />
         <HistoryToolbar
           onImportClick={onImportClick}
           onExportJson={() => exportHistory('json', 'toolboxx-history.json')}
