@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
 import { CurrencyPreferenceProvider } from "@/contexts/CurrencyPreferenceContext";
+import { ThemeProvider } from "next-themes";
 import React, { Suspense, Component, type ErrorInfo, type ReactNode } from "react";
 import Home from "@/pages/Home";
 import AiTools from "@/pages/AiTools";
@@ -683,16 +684,25 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <ErrorBoundary>
-            <Router />
-          </ErrorBoundary>
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      themes={["dark", "bw"]}
+      storageKey="toolboxx-theme"
+      disableTransitionOnChange
+    >
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <ErrorBoundary>
+              <Router />
+            </ErrorBoundary>
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

@@ -41,6 +41,18 @@
     <meta name="twitter:description" content="200+ free AI and utility tools for creators, students, developers and businesses. No sign-up. No tracking." />
     <meta name="twitter:image" content="https://toolbuxx.site/opengraph.jpg" />
 
+    <!-- Apply the saved theme before the app renders to prevent a theme flash. -->
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('toolboxx-theme');
+          document.documentElement.classList.add(theme === 'bw' ? 'bw' : 'dark');
+        } catch (error) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+
     <!-- Favicon &amp; Icons ──────────────────────────────────────────── -->
     <!-- SVG favicon (modern browsers — sharp at any size) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -52,6 +64,15 @@
     <link rel="manifest" href="/site.webmanifest" />
     <!-- Address-bar / tab colour on Android Chrome -->
     <meta name="theme-color" content="#4B0082" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('toolboxx-theme');
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', theme === 'bw' ? '#000000' : '#4B0082');
+        } catch (error) {}
+      })();
+    </script>
 
     <!-- Fonts ────────────────────────────────────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

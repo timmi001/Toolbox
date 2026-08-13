@@ -223,6 +223,72 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
+/* BLACK & WHITE THEME — monochrome tokens only; layout and component rules stay unchanged */
+.bw {
+  color-scheme: dark;
+  --button-outline: rgba(255, 255, 255, .35);
+  --badge-outline: rgba(255, 255, 255, .2);
+  --opaque-button-border-intensity: 0;
+  --elevate-1: rgba(255, 255, 255, .08);
+  --elevate-2: rgba(255, 255, 255, .14);
+
+  --background: 0 0% 0%;
+  --foreground: 0 0% 96%;
+  --border: 0 0% 48%;
+  --card: 0 0% 7%;
+  --card-foreground: 0 0% 96%;
+  --card-border: 0 0% 32%;
+  --sidebar: 0 0% 4%;
+  --sidebar-foreground: 0 0% 96%;
+  --sidebar-border: 0 0% 38%;
+  --sidebar-primary: 0 0% 100%;
+  --sidebar-primary-foreground: 0 0% 0%;
+  --sidebar-accent: 0 0% 18%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-ring: 0 0% 100%;
+  --popover: 0 0% 5%;
+  --popover-foreground: 0 0% 96%;
+  --popover-border: 0 0% 36%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 16%;
+  --secondary-foreground: 0 0% 94%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 75%;
+  --accent: 0 0% 24%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 0% 82%;
+  --destructive-foreground: 0 0% 0%;
+  --input: 0 0% 10%;
+  --ring: 0 0% 100%;
+  --chart-1: 0 0% 100%;
+  --chart-2: 0 0% 78%;
+  --chart-3: 0 0% 60%;
+  --chart-4: 0 0% 42%;
+  --chart-5: 0 0% 24%;
+
+  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+}
+
+/*
+ * Some tools intentionally use fixed brand/status colors rather than theme
+ * tokens. Grayscale the rendered app in B&W mode so those pages, cards,
+ * dialogs, ad slots, and mobile surfaces cannot reintroduce colored accents.
+ */
+html.bw #root {
+  filter: grayscale(1);
+}
+
+html.bw body > *:not(#root) {
+  filter: grayscale(1);
+}
+
 @layer base {
   * {
     @apply border-border;

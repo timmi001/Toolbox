@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Menu, X, Search, Home, Clock, FileText, Shield, Copyright } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const SIDEBAR_LINKS = [
   { label: 'Home',             href: '/',         icon: Home },
@@ -58,14 +59,17 @@ export function Navbar() {
             />
           </div>
 
-          {/* Hamburger */}
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-foreground"
-            aria-label="Open navigation menu"
-          >
-            <Menu className="h-4.5 w-4.5" />
-          </button>
+          {/* Theme + hamburger controls */}
+          <div className="flex shrink-0 items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-foreground"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="h-4.5 w-4.5" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -133,6 +137,7 @@ export function Navbar() {
 
               {/* Footer */}
               <div className="border-t border-sidebar-border px-6 py-4">
+                <ThemeToggle />
                 <p className="text-xs text-muted-foreground">
                   ToolboxX © {new Date().getFullYear()} · All rights reserved
                 </p>
