@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -344,13 +345,22 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
+  const { children, ...rest } = props as any
+
   return (
     <div
       data-slot="sidebar-footer"
       data-sidebar="footer"
       className={cn("flex flex-col gap-2 p-2", className)}
-      {...props}
-    />
+      {...rest}
+    >
+      <div className="flex items-center justify-between w-full">
+        <div className="flex-1">{children}</div>
+        <div className="flex-shrink-0">
+          <ThemeToggle />
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -361,6 +371,7 @@ function SidebarSeparator({
   return (
     <Separator
       data-slot="sidebar-separator"
+
       data-sidebar="separator"
       className={cn("bg-sidebar-border mx-2 w-auto", className)}
       {...props}

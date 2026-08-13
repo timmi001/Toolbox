@@ -21,9 +21,12 @@ export function Hero() {
 
         {/* Badge */}
         <motion.div {...fadeUp(0)} className="mb-4 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-card/90 px-4 py-1.5 text-sm font-medium text-primary shadow-sm backdrop-blur-sm">
-            <Zap className="h-3.5 w-3.5" />
-            200+ free tools — no sign up required
+          <span className="inline-flex items-center gap-3 rounded-full border border-primary/30 bg-card/90 px-4 py-2 text-left shadow-sm backdrop-blur-sm">
+            <Zap className="h-3.5 w-3.5 text-primary" />
+            <div className="flex flex-col leading-snug">
+              <span className="text-sm font-semibold text-primary">200+ tools. One place. No sign-up.</span>
+              <span className="text-xs text-primary/80">Free AI and utility tools for creators, students, developers and businesses.</span>
+            </div>
           </span>
         </motion.div>
 
