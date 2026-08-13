@@ -688,7 +688,7 @@ function App() {
       attribute="class"
       defaultTheme="dark"
       enableSystem={false}
-      themes={["dark", "bw"]}
+      themes={["dark", "white", "black"]}
       storageKey="toolboxx-theme"
       disableTransitionOnChange
     >

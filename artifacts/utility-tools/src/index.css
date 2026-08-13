@@ -223,49 +223,58 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-/* BLACK & WHITE THEME — monochrome tokens only; layout and component rules stay unchanged */
-.bw {
-  color-scheme: dark;
-  --button-outline: rgba(255, 255, 255, .35);
-  --badge-outline: rgba(255, 255, 255, .2);
-  --opaque-button-border-intensity: 0;
-  --elevate-1: rgba(255, 255, 255, .08);
-  --elevate-2: rgba(255, 255, 255, .14);
+/* WHITE THEME — clean light surfaces with the existing accent colors */
+.white {
+  color-scheme: light;
+  --button-outline: rgba(15, 23, 42, .18);
+  --badge-outline: rgba(15, 23, 42, .1);
+  --opaque-button-border-intensity: 8;
+  --elevate-1: rgba(15, 23, 42, .04);
+  --elevate-2: rgba(15, 23, 42, .08);
 
-  --background: 0 0% 0%;
-  --foreground: 0 0% 96%;
-  --border: 0 0% 48%;
-  --card: 0 0% 7%;
-  --card-foreground: 0 0% 96%;
-  --card-border: 0 0% 32%;
-  --sidebar: 0 0% 4%;
-  --sidebar-foreground: 0 0% 96%;
-  --sidebar-border: 0 0% 38%;
-  --sidebar-primary: 0 0% 100%;
-  --sidebar-primary-foreground: 0 0% 0%;
-  --sidebar-accent: 0 0% 18%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-ring: 0 0% 100%;
-  --popover: 0 0% 5%;
-  --popover-foreground: 0 0% 96%;
-  --popover-border: 0 0% 36%;
-  --primary: 0 0% 100%;
-  --primary-foreground: 0 0% 0%;
-  --secondary: 0 0% 16%;
-  --secondary-foreground: 0 0% 94%;
-  --muted: 0 0% 14%;
-  --muted-foreground: 0 0% 75%;
-  --accent: 0 0% 24%;
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --border: 220 13% 88%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --card-border: 220 13% 90%;
+  --sidebar: 220 20% 98%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-border: 220 13% 88%;
+  --sidebar-primary: 251 91% 60%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 14% 93%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-ring: 251 91% 60%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --popover-border: 220 13% 88%;
+  --primary: 251 91% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 14% 94%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 220 14% 95%;
+  --muted-foreground: 215 16% 42%;
+  --accent: 251 91% 60%;
   --accent-foreground: 0 0% 100%;
-  --destructive: 0 0% 82%;
-  --destructive-foreground: 0 0% 0%;
-  --input: 0 0% 10%;
-  --ring: 0 0% 100%;
-  --chart-1: 0 0% 100%;
-  --chart-2: 0 0% 78%;
-  --chart-3: 0 0% 60%;
-  --chart-4: 0 0% 42%;
-  --chart-5: 0 0% 24%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 220 14% 97%;
+  --ring: 251 91% 60%;
+  --chart-1: 251 91% 60%;
+  --chart-2: 199 89% 48%;
+  --chart-3: 142 71% 45%;
+  --chart-4: 38 92% 50%;
+  --chart-5: 0 72% 51%;
+
+  --shadow-2xs: 0px 1px 2px rgba(15, 23, 42, .04);
+  --shadow-xs: 0px 1px 3px rgba(15, 23, 42, .06);
+  --shadow-sm: 0px 2px 6px rgba(15, 23, 42, .08);
+  --shadow: 0px 4px 12px rgba(15, 23, 42, .1);
+  --shadow-md: 0px 6px 16px rgba(15, 23, 42, .12);
+  --shadow-lg: 0px 10px 24px rgba(15, 23, 42, .14);
+  --shadow-xl: 0px 16px 40px rgba(15, 23, 42, .16);
+  --shadow-2xl: 0px 24px 64px rgba(15, 23, 42, .18);
 
   --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
@@ -276,17 +285,57 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-/*
- * Some tools intentionally use fixed brand/status colors rather than theme
- * tokens. Grayscale the rendered app in B&W mode so those pages, cards,
- * dialogs, ad slots, and mobile surfaces cannot reintroduce colored accents.
- */
-html.bw #root {
-  filter: grayscale(1);
-}
+/* BLACK THEME — deep black surfaces with the existing accent colors */
+.black {
+  color-scheme: dark;
+  --button-outline: rgba(255, 255, 255, .22);
+  --badge-outline: rgba(255, 255, 255, .12);
+  --opaque-button-border-intensity: 9;
+  --elevate-1: rgba(255, 255, 255, .06);
+  --elevate-2: rgba(255, 255, 255, .11);
 
-html.bw body > *:not(#root) {
-  filter: grayscale(1);
+  --background: 0 0% 0%;
+  --foreground: 0 0% 96%;
+  --border: 0 0% 20%;
+  --card: 0 0% 4%;
+  --card-foreground: 0 0% 95%;
+  --card-border: 0 0% 16%;
+  --sidebar: 0 0% 2%;
+  --sidebar-foreground: 0 0% 94%;
+  --sidebar-border: 0 0% 18%;
+  --sidebar-primary: 251 100% 70%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 251 100% 65%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-ring: 251 100% 65%;
+  --popover: 0 0% 3%;
+  --popover-foreground: 0 0% 95%;
+  --popover-border: 0 0% 18%;
+  --primary: 251 100% 70%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 94%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 72%;
+  --accent: 251 100% 70%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 0 0% 8%;
+  --ring: 251 100% 70%;
+  --chart-1: 251 100% 70%;
+  --chart-2: 0 0% 70%;
+  --chart-3: 0 0% 55%;
+  --chart-4: 38 92% 50%;
+  --chart-5: 0 72% 51%;
+
+  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
 @layer base {

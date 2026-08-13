@@ -46,7 +46,9 @@
       (function () {
         try {
           var theme = localStorage.getItem('toolboxx-theme');
-          document.documentElement.classList.add(theme === 'bw' ? 'bw' : 'dark');
+          document.documentElement.classList.add(
+            theme === 'white' ? 'white' : theme === 'black' || theme === 'bw' ? 'black' : 'dark'
+          );
         } catch (error) {
           document.documentElement.classList.add('dark');
         }
@@ -69,7 +71,12 @@
         try {
           var theme = localStorage.getItem('toolboxx-theme');
           var meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute('content', theme === 'bw' ? '#000000' : '#4B0082');
+          if (meta) {
+            meta.setAttribute(
+              'content',
+              theme === 'white' ? '#ffffff' : theme === 'black' || theme === 'bw' ? '#000000' : '#4B0082'
+            );
+          }
         } catch (error) {}
       })();
     </script>
