@@ -22,7 +22,7 @@ export function FeatureCards() {
           {...fadeUp(0)}
           whileHover={{ y: -6 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="relative overflow-hidden rounded-[24px] p-8 text-white"
+          className="landing-feature-card relative overflow-hidden rounded-[24px] p-8 text-white"
           style={{
             background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 50%, #4C1D95 100%)',
             boxShadow: '0 24px 60px rgba(124,58,237,0.30)',
@@ -33,17 +33,17 @@ export function FeatureCards() {
           <div className="pointer-events-none absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-[#9F67FF]/30 blur-2xl" />
 
           <div className="relative">
-            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+            <div className="feature-card-icon mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
               <Bot className="h-6 w-6 text-white" />
             </div>
             <h3 className="mb-2 text-2xl font-bold">🤖 AI Tools</h3>
-            <p className="mb-6 text-white/75 leading-relaxed">
+            <p className="feature-card-muted mb-6 leading-relaxed">
               Powerful AI tools for writing, coding, studying, business and productivity.
             </p>
             <ul className="mb-8 space-y-2">
               {AI_TOOLS.map((t) => (
-                <li key={t} className="flex items-center gap-2.5 text-sm text-white/85">
-                  <span className="h-1 w-1 rounded-full bg-white/60" />
+                <li key={t} className="feature-card-list-item flex items-center gap-2.5 text-sm">
+                  <span className="feature-card-dot h-1 w-1 rounded-full bg-white/60" />
                   {t}
                 </li>
               ))}
@@ -52,7 +52,7 @@ export function FeatureCards() {
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/20 ring-1 ring-white/20 transition-all hover:bg-white/20 hover:shadow-xl"
+                className="feature-card-action inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/20 ring-1 ring-white/20 transition-all hover:bg-white/20 hover:shadow-xl"
               >
                 Explore AI Tools
                 <ArrowRight className="h-4 w-4" />
@@ -66,7 +66,7 @@ export function FeatureCards() {
           {...fadeUp(0.1)}
           whileHover={{ y: -6 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="relative overflow-hidden rounded-[24px] p-8 text-white"
+          className="landing-feature-card relative overflow-hidden rounded-[24px] p-8 text-white"
           style={{
             background: 'linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%)',
             boxShadow: '0 24px 60px rgba(16,185,129,0.28)',
@@ -77,17 +77,17 @@ export function FeatureCards() {
           <div className="pointer-events-none absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
 
           <div className="relative">
-            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+            <div className="feature-card-icon mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
               <Wrench className="h-6 w-6 text-white" />
             </div>
             <h3 className="mb-2 text-2xl font-bold">🛠 Utility Tools</h3>
-            <p className="mb-6 text-white/75 leading-relaxed">
+            <p className="feature-card-muted mb-6 leading-relaxed">
               Everyday tools for PDFs, files, developers, media and calculations.
             </p>
             <ul className="mb-8 space-y-2">
               {UTIL_TOOLS.map((t) => (
-                <li key={t} className="flex items-center gap-2.5 text-sm text-white/85">
-                  <span className="h-1 w-1 rounded-full bg-white/60" />
+                <li key={t} className="feature-card-list-item flex items-center gap-2.5 text-sm">
+                  <span className="feature-card-dot h-1 w-1 rounded-full bg-white/60" />
                   {t}
                 </li>
               ))}
@@ -96,7 +96,7 @@ export function FeatureCards() {
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/20 ring-1 ring-white/20 transition-all hover:bg-white/20 hover:shadow-xl"
+                className="feature-card-action inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/20 ring-1 ring-white/20 transition-all hover:bg-white/20 hover:shadow-xl"
               >
                 Explore Utility Tools
                 <ArrowRight className="h-4 w-4" />
