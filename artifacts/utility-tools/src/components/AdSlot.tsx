@@ -13,7 +13,6 @@ export function AdSlot({ className, id = 'ad-slot' }: AdSlotProps) {
         className,
       )}
       id={id}
-      data-ad-slot="monetag-ipp"
       aria-label="Advertisement"
     >
       <span className="sr-only">Advertisement</span>
