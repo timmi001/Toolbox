@@ -44,7 +44,7 @@ export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps
           <AlertCircle className="mx-auto h-10 w-10 text-yellow-400" />
           <h2 className="text-lg font-semibold">Temporarily Unavailable</h2>
           <p className="text-sm text-muted-foreground">This downloader is temporarily unavailable for maintenance. Downloads are disabled until maintenance is complete.</p>
-          <p className="text-xs text-muted-foreground">To re-enable downloads, set <strong>VIDEO_DOWNLOAD_MAINTENANCE</strong> to <strong>false</strong> in <em>src/lib/maintenance.ts</em>.</p>
+          
         </div>
       </ToolLayout>
     );
