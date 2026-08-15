@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link2, Download, AlertCircle, Loader2, CheckCircle2, FileVideo, Clock } from 'lucide-react';
 import { ToolLayout } from '@/components/ToolLayout';
+import { VIDEO_DOWNLOAD_MAINTENANCE } from '@/lib/maintenance';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tool } from '@/lib/tools-data';
@@ -36,6 +37,18 @@ function formatDuration(s?: number) {
 }
 
 export function VideoDownloaderShell({ tool, config }: VideoDownloaderShellProps) {
+  if (VIDEO_DOWNLOAD_MAINTENANCE) {
+    return (
+      <ToolLayout tool={tool}>
+        <div className="max-w-2xl mx-auto p-8 text-center space-y-4">
+          <AlertCircle className="mx-auto h-10 w-10 text-yellow-400" />
+          <h2 className="text-lg font-semibold">Temporarily Unavailable</h2>
+          <p className="text-sm text-muted-foreground">This downloader is temporarily unavailable for maintenance. Downloads are disabled until maintenance is complete.</p>
+          <p className="text-xs text-muted-foreground">To re-enable downloads, set <strong>VIDEO_DOWNLOAD_MAINTENANCE</strong> to <strong>false</strong> in <em>src/lib/maintenance.ts</em>.</p>
+        </div>
+      </ToolLayout>
+    );
+  }
   const [url, setUrl] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [loading, setLoading] = useState(false);
