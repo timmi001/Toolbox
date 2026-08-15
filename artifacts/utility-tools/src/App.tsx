@@ -322,7 +322,7 @@ const AiStoryWriter = L(() => import("@/pages/tools/ai/ai-story-writer"));
 const AiBookOutlineGenerator = L(() => import("@/pages/tools/ai/ai-book-outline-generator"));
 const AiChapterGenerator = L(() => import("@/pages/tools/ai/ai-chapter-generator"));
 const AiSpeechWriter = L(() => import("@/pages/tools/ai/ai-speech-writer"));
-const AiEventAssistant = L(() => import("@/pages/tools/ai/ai-event-assistant"));
+// AI Event Assistant removed
 const AiEventItinerary = L(() => import("@/pages/tools/ai/ai-event-itinerary"));
 const AiEventChecklist = L(() => import("@/pages/tools/ai/ai-event-checklist"));
 const AiEventInvitation = L(() => import("@/pages/tools/ai/ai-event-invitation"));
@@ -350,6 +350,7 @@ const AiPerformanceAnalytics = L(() => import("@/pages/tools/ai/ai-performance-a
 const AiPdfPracticePapers = L(() => import("@/pages/tools/ai/ai-pdf-practice-papers"));
 const AiDailyPractice = L(() => import("@/pages/tools/ai/ai-daily-practice"));
 
+// Query Client initialized
 const queryClient = new QueryClient();
 
 function Router() {
@@ -620,7 +621,7 @@ function Router() {
         <Route path="/tools/ai/ai-book-outline-generator" component={AiBookOutlineGenerator} />
         <Route path="/tools/ai/ai-chapter-generator" component={AiChapterGenerator} />
         <Route path="/tools/ai/ai-speech-writer" component={AiSpeechWriter} />
-        <Route path="/tools/ai/ai-event-assistant" component={AiEventAssistant} />
+        {/* AI Event Assistant route removed */}
         <Route path="/tools/ai/ai-event-itinerary" component={AiEventItinerary} />
         <Route path="/tools/ai/ai-event-checklist" component={AiEventChecklist} />
         <Route path="/tools/ai/ai-event-invitation" component={AiEventInvitation} />

@@ -87,7 +87,6 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "ai-code-reviewer": 900,
   "ai-bug-finder": 900,
   "ai-json-formatter": 800,
-  "ai-event-assistant": 1200,
   "ai-event-itinerary": 900,
   "ai-event-checklist": 900,
   "ai-event-invitation": 800,
@@ -225,7 +224,6 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "ai-shorten-text": { required: ["text"], maxLengths: {"text":10000} },
   "ai-proofreader":    { required: ["text"],  maxLengths: {"text":10000} },
   "ai-ghostwriting":   { required: ["topic"], maxLengths: {"topic":3000} },
-  "ai-event-assistant": { required: ["event_type", "theme"], maxLengths: { event_type: 100, theme: 200, guest_count: 100, budget: 100, details: 2000 } },
   "ai-event-itinerary": { required: ["event_name", "flow"], maxLengths: { event_name: 200, duration: 100, flow: 4000 } },
   "ai-event-checklist": { required: ["event_name", "timeline"], maxLengths: { event_name: 200, details: 3000 } },
   "ai-event-invitation": { required: ["event_name", "tone"], maxLengths: { event_name: 200, audience: 200, details: 2000 } },
@@ -470,43 +468,7 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
     case "ai-jamb-cbt-practice":
       return `Generate 10 realistic JAMB CBT practice questions for the subject: "${i.subject}".\n\nFor EACH question provide:\n\n**Question [N]:** [The question text]\n\n**A)** [Option A]\n**B)** [Option B]\n**C)** [Option C]\n**D)** [Option D]\n\n**Correct Answer:** [A/B/C/D]\n**Explanation:** [Why this is correct and why other options are wrong - helps learning]\n\n---\n\nMake questions realistic to actual JAMB exams, vary difficulty levels, and focus on core concepts covered in the curriculum.`;
 
-    case "ai-event-assistant":
-      return `Create a polished, production-ready event toolkit for a ${i.event_type || "special"} event${i.event_name ? ` named "${i.event_name}"` : ""}${i.theme ? ` with the theme "${i.theme}"` : ""}.
-
-Event details:
-- Purpose: ${i.event_purpose || "Not specified"}
-- Date: ${i.event_date || "Not specified"}
-- Time: ${i.start_time || "Not specified"}${i.end_time ? ` to ${i.end_time}` : ""}
-- Venue: ${i.venue || "Not specified"}
-- City/Country: ${i.city || "Not specified"}${i.country ? `, ${i.country}` : ""}
-- Budget: ${i.budget || "Flexible"}${i.currency ? ` ${i.currency}` : ""}
-- Expected guests: ${i.guest_count || "Flexible"}
-- Audience: ${i.audience || "General audience"}
-- Tone: ${i.tone || "Professional"}
-- Dress code: ${i.dress_code || "Not specified"}
-- Special requirements: ${i.special_requirements || "None"}
-- Additional notes: ${i.additional_notes || "None"}
-
-${i.section_focus ? `Focus on the section titled "${i.section_focus}" and write it as a detailed, practical subsection with clear bullet points and a polished tone.` : "Create a complete toolkit with the following sections and include enough details for execution:"}
-
-${i.section_focus ? "" : `1. Event Overview
-2. Event Timeline
-3. Budget Planner
-4. Event Checklist
-5. Shopping List
-6. Vendor Suggestions
-7. Invitation Generator
-8. Event Description
-9. Social Media Promotion
-10. Email Campaign
-11. Speech Generator
-12. Event Hashtags
-13. Seating Planner
-14. Risk & Contingency
-15. AI Recommendations
-`}
-
-Format the response as markdown with clear headings. Use practical, stylish, and easy-to-execute language. Keep each section detailed but concise enough to be immediately useful.`;
+    // ai-event-assistant removed
 
     case "ai-event-itinerary":
       return `Create a clear event itinerary for "${i.event_name}" with the following flow notes:

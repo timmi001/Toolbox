@@ -349,17 +349,7 @@ const configs: Record<string, AiToolConfig> = {
       { key: "tone", label: "Tone", type: "select", options: ["Urgent", "Friendly", "Confident", "Professional", "Playful"] },
     ],
   },
-  "ai-event-assistant": {
-    toolId: "ai-event-assistant",
-    buttonLabel: "Plan Event",
-    fields: [
-      { key: "event_type", label: "Event Type", type: "select", options: ["Birthday", "Wedding", "Corporate Launch", "Baby Shower", "Graduation", "Community Gathering", "Other"], required: true },
-      { key: "theme", label: "Theme / Mood", type: "text", placeholder: "e.g. elegant, playful, boho, minimal", required: true },
-      { key: "guest_count", label: "Estimated Guests", type: "text", placeholder: "e.g. 40 guests" },
-      { key: "budget", label: "Budget Range", type: "text", placeholder: "e.g. $2,000 - $5,000" },
-      { key: "details", label: "Extra Details", type: "textarea", placeholder: "Add the vibe, venue notes, food ideas, or anything else that matters...", rows: 4 } ,
-    ],
-  },
+  // ai-event-assistant config removed
   "ai-event-itinerary": {
     toolId: "ai-event-itinerary",
     buttonLabel: "Build Itinerary",
