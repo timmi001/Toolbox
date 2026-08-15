@@ -53,7 +53,3 @@ description: Root causes and fixes for the 8 bugs found in the toolboxx pnpm mon
 - **Root cause:** 300+ lazy-loaded routes with only `<Suspense>` (handles loading, not render errors). One thrown error whitescreens everything.
 - **Fix:** Class-based `ErrorBoundary` wrapping `<Router>` with a "Try again" reset button.
 
-### Stale Vite dependency cache can mimic an invalid React hook setup
-- **Root cause:** After `next-themes` was optimized, the dev cache produced an invalid-hook crash in `ThemeProvider` even though the workspace had one React 19.1.0 copy and typechecking was clean.
-- **Fix:** Remove the generated `artifacts/utility-tools/node_modules/.vite` cache and restart the utility-tools workflow.
-- **Why durable:** This is a dev-server cache issue, not a source-level React or dependency-version mismatch.
