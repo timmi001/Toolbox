@@ -104,7 +104,7 @@ const UTILITY_CATEGORIES = [
 
 const FEATURED_UTILITY_SLUGS = [
   'json-formatter', 'image-compressor', 'merge-pdf', 'uuid-generator',
-  'word-counter', 'css-gradient', 'youtube-downloader', 'percentage-calculator',
+  'word-counter', 'css-gradient', 'percentage-calculator',
 ];
 
 export default function UtilityTools() {

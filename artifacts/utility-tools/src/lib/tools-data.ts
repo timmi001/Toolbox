@@ -282,11 +282,7 @@ export const toolsData: Tool[] = [
   { slug: 'speech-to-text', name: 'Speech to Text', description: 'Transcribe your speech to text in real-time using your microphone and voice recognition.', category: 'audio', keywords: ['speech', 'transcribe', 'voice', 'recognize', 'dictate'], new: true, icon: 'FileAudio' },
 
   // Video Tools
-  { slug: 'youtube-downloader', name: 'YouTube Downloader', description: 'Download YouTube videos in MP4, WebM, or audio-only formats at your chosen quality.', category: 'video', keywords: ['youtube', 'download', 'video', 'mp4', 'yt'], new: true, icon: 'Youtube' },
-  { slug: 'facebook-downloader', name: 'Facebook Downloader', description: 'Download Facebook videos and Reels in HD or SD directly to your device.', category: 'video', keywords: ['facebook', 'download', 'video', 'reels', 'fb'], new: true, icon: 'Facebook' },
-  { slug: 'instagram-downloader', name: 'Instagram Downloader', description: 'Download Instagram Reels, Videos, and IGTV content without watermark.', category: 'video', keywords: ['instagram', 'download', 'reels', 'igtv', 'video'], new: true, icon: 'Instagram' },
-  { slug: 'twitter-downloader', name: 'Twitter / X Downloader', description: 'Download videos from Twitter and X posts in the highest available quality.', category: 'video', keywords: ['twitter', 'x', 'download', 'video', 'tweet'], new: true, icon: 'Twitter' },
-  { slug: 'tiktok-downloader', name: 'TikTok Downloader', description: 'Download TikTok videos without watermark in the best available quality.', category: 'video', keywords: ['tiktok', 'download', 'video', 'no watermark', 'short'], new: true, icon: 'Music' },
+  
   { slug: 'video-converter', name: 'Video Converter', description: 'Convert video files to WebM format with adjustable quality settings, entirely in your browser.', category: 'video', keywords: ['video', 'convert', 'webm', 'format', 'transcode'], new: true, icon: 'Video' },
   { slug: 'video-compressor', name: 'Video Compressor', description: 'Compress video files by reducing resolution and bitrate to shrink file size.', category: 'video', keywords: ['video', 'compress', 'reduce', 'size', 'smaller'], new: true, icon: 'Minimize2' },
   { slug: 'video-trimmer', name: 'Video Trimmer', description: 'Trim videos to keep only the segment you need with precise start and end time controls.', category: 'video', keywords: ['video', 'trim', 'cut', 'clip', 'segment'], new: true, icon: 'Clapperboard' },
