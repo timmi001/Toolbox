@@ -3,19 +3,20 @@
  *
  * All requests to the backend go through this file.
  *
- * The API server is a separate artifact in this workspace, mounted at the
- * `/api` path behind the shared Replit proxy — so a same-origin relative
- * path always reaches it, in both development and production.
+ * The API server is a separate artifact in this workspace. In Replit, it is
+ * mounted at the `/api` path behind the shared proxy. On Render, it is deployed
+ * as a standalone root service.
  *
  * VITE_API_URL should be the public HTTPS API origin, for example:
- * https://toolbox-iph5.onrender.com/api
+ * https://toolbox-iph5.onrender.com (Render: no /api suffix, routes at root)
+ * https://www.toolbuxx.site/api (Replit: /api suffix for shared proxy)
  */
 
 const configuredApiBase = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
 const API_BASE = configuredApiBase
   ? configuredApiBase.replace(/\/$/, '')
   : import.meta.env.PROD
-    ? 'https://toolbox-iph5.onrender.com/api'
+    ? 'https://toolbox-iph5.onrender.com'
     : '/api';
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {

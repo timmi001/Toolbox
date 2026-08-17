@@ -98,8 +98,8 @@ const corsOptions: cors.CorsOptions = {
 };
 
 // Handle preflight (OPTIONS) for every route before any other middleware runs.
-// Express 5 uses path-to-regexp v8 which rejects bare "*" — use a named wildcard.
-app.options("/{*path}", cors(corsOptions));
+// Use a catch-all pattern that matches any path to ensure CORS headers are set.
+app.options("*", cors(corsOptions));
 
 // Apply CORS headers to all actual requests.
 app.use(cors(corsOptions));
