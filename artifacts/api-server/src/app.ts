@@ -59,9 +59,9 @@ app.use(
 //      (e.g. staging domains) without a code change.
 //   3. Explicitly declare methods and allowedHeaders so preflight OPTIONS
 //      requests receive a correct 204 response with all required headers.
-//   4. Call app.options("/:path*", cors(...)) BEFORE routes so Express handles
-//      preflight before any route middleware can interfere. (Express 5 uses
-//      '/:path*' to match all paths, not '*' which is invalid in Express 5.)
+//   4. Handle OPTIONS requests in middleware before routes so Express 5 does
+//      not try to parse a wildcard path pattern. This preserves the same CORS
+//      preflight behavior without registering an invalid route.
 // ---------------------------------------------------------------------------
 
 const PRODUCTION_ORIGINS = [
@@ -99,8 +99,18 @@ const corsOptions: cors.CorsOptions = {
 };
 
 // Handle preflight (OPTIONS) for every route before any other middleware runs.
-// In Express 5, use '/:path*' instead of '*' to capture all paths.
-app.options("/:path*", cors(corsOptions));
+// Express 5 rejects wildcard route registrations, so we handle OPTIONS in
+// middleware instead of registering a path pattern. This preserves the same
+// preflight behavior without tripping path-to-regexp validation.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method !== "OPTIONS") {
+    return next();
+  }
+
+  return cors(corsOptions)(req, res, () => {
+    res.sendStatus(204);
+  });
+});
 
 // Apply CORS headers to all actual requests.
 app.use(cors(corsOptions));
