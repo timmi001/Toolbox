@@ -1,6 +1,20 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { validateGeminiEnv } from "./lib/ai-service";
+import { validateGeminiEnv, validateAgentRouterEnv } from "./lib/ai-service";
+
+// Validate AgentRouter first — it's the PRIMARY provider and critical for the system.
+// This validation happens early so failures are visible in the deploy log.
+if (process.env["AGENTROUTER_API_KEY"]) {
+  try {
+    validateAgentRouterEnv();
+  } catch (err) {
+    logger.error(
+      { error: err instanceof Error ? err.message : String(err) },
+      "AgentRouter validation failed — this is the PRIMARY AI provider",
+    );
+    throw err;
+  }
+}
 
 // Validate Gemini only when a Gemini-style key is actually configured.
 // This avoids preventing AgentRouter-only deployments from starting.
@@ -31,7 +45,7 @@ if (configuredProviders.length === 0) {
   logger.error(
     { configured: 0, required: AI_KEYS.length },
     "No AI provider keys are configured — every /ai/generate request will fail. " +
-      "Set at least one of: AGENTROUTER_API_KEY, GEMINI_API_KEY (or GOOGLE_API_KEY), GROQ_API_KEY, OPENROUTER_API_KEY.",
+      "Configure at least AGENTROUTER_API_KEY (primary), or fall back to: GEMINI_API_KEY (or GOOGLE_API_KEY), GROQ_API_KEY, OPENROUTER_API_KEY.",
   );
 } else {
   const missingProviders = AI_KEYS.filter(({ name }) => {
@@ -43,13 +57,17 @@ if (configuredProviders.length === 0) {
 
   if (missingProviders.length > 0) {
     logger.warn(
-      { configured: configuredProviders.length, missing: missingProviders.map(k => k.label) },
+      {
+        configured: configuredProviders.length,
+        missing: missingProviders.map(k => k.label),
+        fallbackChain: ["AgentRouter", "Gemini", "Groq", "OpenRouter"],
+      },
       "Some AI provider keys are not configured — they will be skipped in the fallback chain.",
     );
   } else {
     logger.info(
       { configured: configuredProviders.map(k => k.label) },
-      "All AI provider keys are configured.",
+      "All AI provider keys are configured — full fallback chain available.",
     );
   }
 }

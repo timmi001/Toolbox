@@ -1,7 +1,11 @@
 /**
  * ai-service.ts — Resilient multi-provider AI generation pipeline.
  *
- * Provider order: Gemini → Groq → OpenRouter
+ * Provider order (PRIMARY → FALLBACK):
+ * 1. AgentRouter (primary)
+ * 2. Gemini
+ * 3. Groq
+ * 4. OpenRouter
  *
  * A provider is skipped when:
  *   - Its API key is absent from the environment
@@ -16,8 +20,12 @@
  *   Complex / long-form tools — 60 s
  *
  * Retries (within the same provider):
- *   1 automatic retry with 200 ms backoff for transient network / 5xx errors.
+ *   Up to 2 retries with exponential backoff for transient network / 5xx errors.
  *   Quota and model-not-found errors skip to the next provider immediately.
+ *
+ * Model IDs:
+ *   All model IDs are configurable via environment variables for easy rotation
+ *   when models are retired. Sensible defaults are provided for each provider.
  */
 
 import { GoogleGenAI } from "@google/genai";
@@ -25,42 +33,51 @@ import { getAgentRouterClient, getGroqClient, getOpenRouterClient } from "./ai-p
 import { logger } from "./logger";
 
 // ---------------------------------------------------------------------------
-// Model configuration
+// Model configuration (environment-variable based with defaults)
 // ---------------------------------------------------------------------------
 
 /**
- * Canonical model IDs per provider.
+ * Load model ID from environment with a fallback default.
+ * Model IDs are environment-variable configurable to handle provider model retirement.
  *
- * Gemini
- *   standard → gemini-2.0-flash-lite   (stable; replaces retired gemini-2.5-flash-lite)
- *   complex  → gemini-2.5-flash        (best reasoning, higher quota cost)
- *
- * Groq (fallback #1)
- *   standard → llama-3.1-8b-instant    (high rate-limit ceiling)
- *   complex  → llama-3.3-70b-versatile (highest quality on Groq)
- *
- * OpenRouter (fallback #2)
- *   standard → google/gemini-2.0-flash-lite-001
- *   complex  → google/gemini-2.0-flash-001
+ * Environment variables:
+ *   AGENTROUTER_MODEL_STANDARD    — override AgentRouter standard model (default: "auto")
+ *   AGENTROUTER_MODEL_COMPLEX     — override AgentRouter complex model (default: "auto")
+ *   GEMINI_MODEL_STANDARD         — override Gemini standard model (default: "gemini-2.0-flash")
+ *   GEMINI_MODEL_COMPLEX          — override Gemini complex model (default: "gemini-2.0-flash")
+ *   GROQ_MODEL_STANDARD           — override Groq standard model (default: "llama-3.3-70b-versatile")
+ *   GROQ_MODEL_COMPLEX            — override Groq complex model (default: "llama-3.3-70b-versatile")
+ *   OPENROUTER_MODEL_STANDARD     — override OpenRouter standard model (default: "meta-llama/llama-3.1-8b-instruct")
+ *   OPENROUTER_MODEL_COMPLEX      — override OpenRouter complex model (default: "meta-llama/llama-3.1-70b-instruct")
  */
+function getModelId(envVarName: string, defaultValue: string): string {
+  const value = process.env[envVarName]?.trim();
+  return value || defaultValue;
+}
+
 export const PROVIDER_MODELS = {
-  // AgentRouter — primary. "auto" lets AgentRouter pick the best model
-  // automatically. Override with AGENTROUTER_MODEL if a specific model is needed.
+  // AgentRouter — primary provider. "auto" lets AgentRouter pick the best model automatically.
   agentrouter: {
-    standard: "auto",
-    complex:  "auto",
+    standard: getModelId("AGENTROUTER_MODEL_STANDARD", "auto"),
+    complex:  getModelId("AGENTROUTER_MODEL_COMPLEX", "auto"),
   },
+  // Gemini — second fallback
+  // Using gemini-2.0-flash (more widely available than gemini-2.0-flash-lite)
   gemini: {
-    standard: "gemini-2.0-flash-lite",
-    complex:  "gemini-2.5-flash",
+    standard: getModelId("GEMINI_MODEL_STANDARD", "gemini-2.0-flash"),
+    complex:  getModelId("GEMINI_MODEL_COMPLEX", "gemini-2.0-flash"),
   },
+  // Groq — third fallback
+  // llama-3.3-70b-versatile is the most capable model available on Groq
   groq: {
-    standard: "llama-3.1-8b-instant",
-    complex:  "llama-3.3-70b-versatile",
+    standard: getModelId("GROQ_MODEL_STANDARD", "llama-3.3-70b-versatile"),
+    complex:  getModelId("GROQ_MODEL_COMPLEX", "llama-3.3-70b-versatile"),
   },
+  // OpenRouter — fourth fallback
+  // Using Meta Llama 3.1 models which are reliably available on OpenRouter
   openrouter: {
-    standard: "google/gemini-2.0-flash-lite-001",
-    complex:  "google/gemini-2.0-flash-001",
+    standard: getModelId("OPENROUTER_MODEL_STANDARD", "meta-llama/llama-3.1-8b-instruct"),
+    complex:  getModelId("OPENROUTER_MODEL_COMPLEX", "meta-llama/llama-3.1-70b-instruct"),
   },
 } as const;
 
@@ -352,6 +369,40 @@ export function validateGeminiEnv(): string {
       `Startup validation failed: GEMINI_API_KEY/GOOGLE_API_KEY is not in a valid Google API key format. Received ${key.slice(0, 6)}...`,
     );
   }
+
+  return key;
+}
+
+/**
+ * Validate AgentRouter API key at startup.
+ * AgentRouter is the PRIMARY provider, so validation is critical.
+ */
+export function validateAgentRouterEnv(): string {
+  const key = (process.env["AGENTROUTER_API_KEY"] ?? "").trim();
+
+  if (!key) {
+    throw new Error(
+      "Startup validation failed: AGENTROUTER_API_KEY is not set. " +
+      "AgentRouter is the PRIMARY AI provider and requires a valid API key. " +
+      "Set AGENTROUTER_API_KEY in your environment.",
+    );
+  }
+
+  if (key.length < 10) {
+    throw new Error(
+      `Startup validation failed: AGENTROUTER_API_KEY appears invalid (too short). ` +
+      `Expected API key length >= 10 characters, got ${key.length}. Received: ${key.slice(0, 6)}...`,
+    );
+  }
+
+  logger.info(
+    {
+      provider: "agentrouter",
+      keyLength: key.length,
+      keyPreview: `${key.slice(0, 6)}...${key.slice(-4)}`,
+    },
+    "AgentRouter API key validated at startup",
+  );
 
   return key;
 }
