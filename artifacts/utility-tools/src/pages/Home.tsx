@@ -100,26 +100,26 @@ export default function Home() {
   };
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
-      <section className="mb-7 flex flex-col gap-5 rounded-[26px] border border-[#1D2B39] bg-[#0D151E] px-5 py-6 shadow-[0_18px_55px_rgba(0,0,0,0.2)] sm:flex-row sm:items-center sm:justify-between sm:px-7">
+    <div className="mx-auto max-w-[1400px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-9">
+      <section className="mb-5 flex flex-col gap-4 rounded-2xl border border-[#1D2B39] bg-[#0D151E] px-4 py-4 shadow-[0_18px_55px_rgba(0,0,0,0.2)] sm:mb-7 sm:gap-5 sm:rounded-[26px] sm:px-5 sm:py-6 lg:px-7">
         <div>
           <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6C7B8C]"><span className="h-1.5 w-1.5 rounded-full bg-[#5BE4B6] shadow-[0_0_10px_#5BE4B6]" />Your workspace</div>
-          <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">{greeting}</h1>
+          <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl lg:text-4xl">{greeting}</h1>
           <p className="mt-2 text-sm text-[#91A0B0] sm:text-base">What would you like to accomplish today?</p>
         </div>
-        <button type="button" onClick={() => { setBriefOpen(true); if (!brief) void generateBrief(); }} className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#315046] bg-[#142C2B] px-4 text-sm font-semibold text-[#A9F2D8] transition hover:border-[#5BE4B6]/70 hover:bg-[#193A35]"><CalendarDays className="h-4 w-4" />Daily Brief<ArrowRight className="h-4 w-4" /></button>
+        <button type="button" onClick={() => { setBriefOpen(true); if (!brief) void generateBrief(); }} className="inline-flex h-10 w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-[#315046] bg-[#142C2B] px-4 text-sm font-semibold text-[#A9F2D8] transition hover:border-[#5BE4B6]/70 hover:bg-[#193A35] sm:h-11 sm:w-auto"><CalendarDays className="h-4 w-4" />Daily Brief<ArrowRight className="h-4 w-4" /></button>
       </section>
 
       {briefOpen && <section className="mb-7 rounded-[22px] border border-[#315046] bg-[#10211F] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]"><div className="flex items-start justify-between gap-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#78EAC7]">Today</div><h2 className="mt-1 text-xl font-bold text-white">Daily Brief</h2></div><div className="flex items-center gap-2"><button type="button" onClick={() => void generateBrief()} disabled={briefLoading} className="inline-flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#A9F2D8] hover:bg-[#183B34] disabled:opacity-60"><RefreshCw className={`h-3.5 w-3.5 ${briefLoading ? 'animate-spin' : ''}`} />Refresh</button><button type="button" onClick={() => setBriefOpen(false)} className="rounded-lg px-2.5 py-2 text-xs text-[#8492A3] hover:bg-[#183B34] hover:text-white">Close</button></div></div>{briefLoading ? <p className="mt-4 animate-pulse text-sm text-[#A9F2D8]">Preparing your brief...</p> : briefError ? <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-red-200"><span>{briefError}</span><button type="button" onClick={() => void generateBrief()} className="font-semibold text-white underline">Retry</button></div> : <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[#C5D0DB]">{brief || 'No brief generated yet.'}</p>}</section>}
 
-      <section>
+      <section className="mt-4 sm:mt-0">
         <div className="mb-4 flex items-end justify-between gap-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Start here</div><h2 className="mt-1 text-xl font-bold text-white sm:text-2xl">Your core hubs</h2></div><Link href="/" className="hidden items-center gap-2 text-sm font-semibold text-[#7EEAC9] hover:text-white sm:inline-flex">View all tools<ArrowRight className="h-4 w-4" /></Link></div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="hub-card-rail flex snap-x gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-5">
           {HUB_CARDS.map(({ title, href, description, icon: Icon, accent, gradient, glow }) => (
-            <Link key={title} href={href} className="group min-w-0">
-              <article className={`relative flex h-full min-h-[228px] flex-col overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-br ${gradient} p-5 transition duration-200 hover:-translate-y-1 hover:border-white/20`} style={{ boxShadow: `0 18px 38px ${glow}` }}>
+            <Link key={title} href={href} className="group min-w-[clamp(110px,32vw,150px)] snap-start md:min-w-0">
+              <article className={`relative flex h-full min-h-[176px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br ${gradient} p-4 transition duration-200 hover:-translate-y-1 hover:border-white/20 sm:min-h-[228px] sm:rounded-[24px] sm:p-5`} style={{ boxShadow: `0 18px 38px ${glow}` }}>
                 <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl" style={{ backgroundColor: accent, opacity: 0.16 }} />
-                <div className="relative flex flex-1 flex-col"><div className="flex items-start justify-between gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-[#071017]/70" style={{ boxShadow: `0 0 24px ${glow}` }}><Icon className="h-5 w-5" style={{ color: accent }} /></div><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: accent, boxShadow: `0 0 12px ${accent}` }} /></div><h3 className="mt-7 text-lg font-bold text-white">{title}</h3><p className="mt-2 text-sm leading-6 text-[#B3BFCC]">{description}</p><span className="mt-auto inline-flex items-center gap-2 pt-6 text-xs font-bold text-white">Open Hub<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" style={{ color: accent }} /></span></div>
+                <div className="relative flex flex-1 flex-col"><div className="flex items-start justify-between gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-[#071017]/70 sm:h-11 sm:w-11 sm:rounded-2xl" style={{ boxShadow: `0 0 24px ${glow}` }}><Icon className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: accent }} /></div><span className="h-2 w-2 rounded-full sm:h-2.5 sm:w-2.5" style={{ backgroundColor: accent, boxShadow: `0 0 12px ${accent}` }} /></div><h3 className="mt-4 text-base font-bold text-white sm:mt-7 sm:text-lg">{title}</h3><p className="mt-1 line-clamp-2 text-xs leading-5 text-[#B3BFCC] sm:mt-2 sm:text-sm sm:leading-6">{description}</p><span className="mt-auto inline-flex items-center gap-2 pt-4 text-[11px] font-bold text-white sm:pt-6 sm:text-xs">Open Hub<ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-1" style={{ color: accent }} /></span></div>
               </article>
             </Link>
           ))}

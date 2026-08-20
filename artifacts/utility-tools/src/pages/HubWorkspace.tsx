@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Check, ChevronDown, Code2, Copy, FileText, Image, Paperclip, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2 } from 'lucide-react';
+import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Check, ChevronDown, Code2, Copy, Download, FileText, Image, Paperclip, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2, X } from 'lucide-react';
 import { Link, useRoute } from 'wouter';
 import { generateHubResponse } from '@/lib/hub-ai';
 
@@ -20,6 +20,29 @@ const HUBS = {
 
 type HubKey = keyof typeof HUBS;
 
+function readPreference(key: string, fallback: string) {
+  if (typeof window === 'undefined') return fallback;
+  return window.localStorage.getItem(`toolbuxx_${key}`) ?? fallback;
+}
+
+function writePreference(key: string, value: string) {
+  try { window.localStorage.setItem(`toolbuxx_${key}`, value); } catch { /* best effort */ }
+}
+
+function downloadText(filename: string, text: string) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+function SettingsPopover({ open, onClose, value, onChange }: { open: boolean; onClose: () => void; value: string; onChange: (value: string) => void }) {
+  if (!open) return null;
+  return <div className="absolute right-0 top-12 z-20 w-56 rounded-xl border border-[#263746] bg-[#101A24] p-3 shadow-2xl"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">Response style</span><button type="button" onClick={onClose} aria-label="Close settings" className="text-[#718194] hover:text-white"><X className="h-3.5 w-3.5" /></button></div><select value={value} onChange={(event) => onChange(event.target.value)} className="mt-3 w-full rounded-lg border border-[#263746] bg-[#0A1118] px-2 py-2 text-xs text-white"><option>Balanced</option><option>Concise</option><option>Detailed</option></select></div>;
+}
+
 const AI_QUICK_ACTIONS = ['Write', 'Explain', 'Summarize', 'Brainstorm', 'Research', 'Code', 'Translate'];
 
 type ChatMessage = { id: number; role: 'user' | 'assistant'; content: string };
@@ -31,6 +54,8 @@ function AiAssistantWorkspace() {
   const [copied, setCopied] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [responseStyle, setResponseStyle] = useState(() => readPreference('ai-response-style', 'Balanced'));
 
   const sendMessage = async (requestedPrompt = prompt) => {
     const value = requestedPrompt.trim();
@@ -38,7 +63,7 @@ function AiAssistantWorkspace() {
     setLoading(true);
     setError('');
     try {
-      const answer = await generateHubResponse('ai-assistant', { prompt: value, mode: activeAction });
+      const answer = await generateHubResponse('ai-assistant', { prompt: value, mode: activeAction, context: `Response style: ${responseStyle}` });
       setMessages((current) => [...current, { id: Date.now(), role: 'user', content: value }, { id: Date.now() + 1, role: 'assistant', content: answer }]);
       setPrompt('');
     } catch (err) {
@@ -70,7 +95,7 @@ function AiAssistantWorkspace() {
         </aside>
 
         <main className="flex min-w-0 flex-1 flex-col">
-          <header className="flex items-start justify-between gap-4 border-b border-[#1B2936] px-4 py-5 sm:px-8"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowLeft className="h-4 w-4" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#245143] bg-[#103027] text-[#5BE4B6]"><Sparkles className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold tracking-tight text-white">AI Assistant</h1><p className="mt-1 hidden truncate text-xs text-[#8492A3] sm:block sm:text-sm">Your everyday AI for thinking, writing, learning and getting things done.</p></div></div><div className="flex shrink-0 gap-1"><button type="button" className="rounded-xl p-2.5 text-[#8190A0] hover:bg-[#13202A] hover:text-white" aria-label="Settings"><Settings2 className="h-4 w-4" /></button><Link href="/history" className="rounded-xl p-2.5 text-[#8190A0] hover:bg-[#13202A] hover:text-white" aria-label="History"><Search className="h-4 w-4" /></Link></div></header>
+          <header className="flex items-start justify-between gap-4 border-b border-[#1B2936] px-4 py-5 sm:px-8"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowLeft className="h-4 w-4" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#245143] bg-[#103027] text-[#5BE4B6]"><Sparkles className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold tracking-tight text-white">AI Assistant</h1><p className="mt-1 hidden truncate text-xs text-[#8492A3] sm:block sm:text-sm">Your everyday AI for thinking, writing, learning and getting things done.</p></div></div><div className="relative flex shrink-0 gap-1"><button type="button" onClick={() => setSettingsOpen((open) => !open)} className="rounded-xl p-2.5 text-[#8190A0] hover:bg-[#13202A] hover:text-white" aria-label="Settings"><Settings2 className="h-4 w-4" /></button><SettingsPopover open={settingsOpen} onClose={() => setSettingsOpen(false)} value={responseStyle} onChange={(value) => { setResponseStyle(value); writePreference('ai-response-style', value); }} /><Link href="/history" className="rounded-xl p-2.5 text-[#8190A0] hover:bg-[#13202A] hover:text-white" aria-label="History"><Search className="h-4 w-4" /></Link></div></header>
 
           <div className="flex flex-1 flex-col px-4 pb-4 pt-5 sm:px-8">
             <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
@@ -80,7 +105,7 @@ function AiAssistantWorkspace() {
                 <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">{AI_QUICK_ACTIONS.map((action) => <button key={action} type="button" onClick={() => setActionPrompt(action)} className={`shrink-0 rounded-full border px-3 py-1.5 text-xs transition ${activeAction === action ? 'border-[#4FD9B0] bg-[#12352D] text-[#A9F2D8]' : 'border-[#1F2D3A] bg-[#0E151D] text-[#91A0B0] hover:border-[#3DDBC0]/60 hover:text-white'}`}>{action}</button>)}</div>
                 {error && <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-200"><span>{error}</span><button type="button" onClick={() => void sendMessage()} className="font-semibold text-white underline">Retry</button></div>}
                 {loading && <div className="mb-3 text-xs text-[#A9F2D8]">Toolbuxx AI is thinking…</div>}
-                <div className="rounded-2xl border border-[#2A3A48] bg-[#0E151D] p-2 shadow-[0_12px_40px_rgba(0,0,0,0.3)] focus-within:border-[#3DDBC0]/70"><textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} rows={3} placeholder="Ask anything…" className="w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-white outline-none placeholder:text-[#68798A]" /><div className="flex items-center justify-between gap-2 px-2 pb-1"><div className="flex items-center gap-1"><button type="button" className="rounded-lg p-2 text-[#8190A0] hover:bg-[#17242F] hover:text-white" aria-label="Attach file"><Paperclip className="h-4 w-4" /></button><button type="button" className="rounded-lg p-2 text-[#8190A0] hover:bg-[#17242F] hover:text-white" aria-label="Voice input"><Mic className="h-4 w-4" /></button><button type="button" className="rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:bg-[#17242F] hover:text-white">Toolbuxx AI ▾</button></div><div className="flex items-center gap-1"><button type="button" className="rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:bg-[#17242F] hover:text-white">Balanced ▾</button><button type="button" onClick={() => void sendMessage()} className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#10B981] text-[#061410] transition hover:bg-[#34D399]" aria-label="Send message"><ArrowUp className="h-4 w-4" /></button></div></div></div>
+                <div className="rounded-2xl border border-[#2A3A48] bg-[#0E151D] p-2 shadow-[0_12px_40px_rgba(0,0,0,0.3)] focus-within:border-[#3DDBC0]/70"><textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} rows={3} placeholder="Ask anything…" className="w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-white outline-none placeholder:text-[#68798A]" /><div className="flex items-center justify-between gap-2 px-2 pb-1"><div className="flex items-center gap-1"><button type="button" onClick={() => setPrompt((current) => `${current}${current ? '\n' : ''}Attached file: `)} className="rounded-lg p-2 text-[#8190A0] hover:bg-[#17242F] hover:text-white" aria-label="Attach file"><Paperclip className="h-4 w-4" /></button><button type="button" onClick={() => setError('Voice input is not available in this browser. Use the text box instead.')} className="rounded-lg p-2 text-[#8190A0] hover:bg-[#17242F] hover:text-white" aria-label="Voice input"><Mic className="h-4 w-4" /></button><span className="rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB]">Toolbuxx AI</span></div><div className="flex items-center gap-1"><span className="rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB]">{responseStyle}</span><button type="button" onClick={() => void sendMessage()} className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#10B981] text-[#061410] transition hover:bg-[#34D399]" aria-label="Send message"><ArrowUp className="h-4 w-4" /></button></div></div></div>
                 {messages.length > 0 && <button type="button" onClick={() => { setMessages([]); setPrompt(''); }} className="mx-auto mt-3 flex items-center gap-1.5 text-[11px] text-[#718194] hover:text-white"><Trash2 className="h-3 w-3" />Clear conversation</button>}
               </div>
             </div>
@@ -108,6 +133,36 @@ function StudyHubWorkspace() {
   const [messages, setMessages] = useState<Array<{ role: 'student' | 'tutor'; text: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [subject, setSubject] = useState(() => readPreference('study-subject', 'General'));
+  const [level, setLevel] = useState(() => readPreference('study-level', 'Intermediate'));
+  const [progressOpen, setProgressOpen] = useState(false);
+  const [sessions, setSessions] = useState(() => Number(readPreference('study-sessions', '0')) || 0);
+
+  useEffect(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt,.md,.csv,.pdf,text/plain';
+    input.style.display = 'none';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      try { setPrompt(await file.text()); } catch { setError('Unable to read that study file.'); }
+    };
+    const onClick = (event: MouseEvent) => {
+      const button = (event.target as HTMLElement).closest('button');
+      if (!button) return;
+      const text = button.textContent?.trim() ?? '';
+      if (text.includes('Notes / PDF') || button.getAttribute('aria-label') === 'Upload image') input.click();
+      if (text === 'Progress') setProgressOpen(true);
+      if (text === 'Save answer') { const latest = messages.filter((message) => message.role === 'tutor').at(-1)?.text; if (latest) { writePreference('saved-study-answer', latest); setError('Answer saved in this browser.'); } }
+      if (text === 'Resume study plan') setPrompt('Resume my study plan and tell me the next best study task: ');
+      if (text.startsWith('Biology')) { const values = ['General', 'Biology', 'Mathematics', 'Computer Science']; const value = values[(values.indexOf(subject) + 1) % values.length]; setSubject(value); writePreference('study-subject', value); }
+      if (text.startsWith('College')) { const values = ['Beginner', 'Intermediate', 'Advanced', 'College']; const value = values[(values.indexOf(level) + 1) % values.length]; setLevel(value); writePreference('study-level', value); }
+    };
+    document.addEventListener('click', onClick, true);
+    document.body.appendChild(input);
+    return () => { document.removeEventListener('click', onClick, true); input.remove(); };
+  }, [level, subject, messages]);
 
   const askTutor = async () => {
     const value = prompt.trim();
@@ -115,8 +170,9 @@ function StudyHubWorkspace() {
     setLoading(true);
     setError('');
     try {
-      const answer = await generateHubResponse('study', { prompt: value, mode, subject: 'General', level: 'Intermediate' });
+      const answer = await generateHubResponse('study', { prompt: value, mode, subject, level });
       setMessages((current) => [...current, { role: 'student', text: value }, { role: 'tutor', text: answer }]);
+      setSessions((current) => { const next = current + 1; writePreference('study-sessions', String(next)); return next; });
       setPrompt('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to reach the AI tutor.');
@@ -127,6 +183,7 @@ function StudyHubWorkspace() {
 
   return (
     <div className="min-h-[calc(100vh-76px)] bg-[#080C11] text-white">
+      {progressOpen && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4"><section className="w-full max-w-sm rounded-2xl border border-[#263746] bg-[#0D151E] p-5 shadow-2xl"><div className="flex items-center justify-between"><h2 className="text-lg font-bold">Study progress</h2><button type="button" onClick={() => setProgressOpen(false)} aria-label="Close progress" className="text-[#718194] hover:text-white"><X className="h-4 w-4" /></button></div><p className="mt-4 text-sm text-[#C5D0DB]">{sessions} completed study {sessions === 1 ? 'session' : 'sessions'} in this browser.</p><div className="mt-4 h-2 rounded-full bg-[#1B2935]"><div className="h-full rounded-full bg-[#5BE4B6]" style={{ width: `${Math.min(100, sessions * 10)}%` }} /></div></section></div>}
       <div className="mx-auto max-w-[1420px] px-3 py-4 sm:px-6 lg:px-8 lg:py-6">
         <header className="mb-5 flex items-center justify-between gap-4 border-b border-[#1B2935] pb-5"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowLeft className="h-4 w-4" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#123B35] text-[#5BE4B6]"><BookOpen className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold text-white">Study Hub</h1><p className="hidden truncate text-sm text-[#8492A3] sm:block">Learn faster with your personal AI study assistant.</p></div></div><button type="button" className="inline-flex items-center gap-2 rounded-xl border border-[#263746] bg-[#101A24] px-3 py-2 text-xs font-semibold text-[#A9F2D8] hover:border-[#3DDBC0]/60"><Target className="h-3.5 w-3.5 text-[#5BE4B6]" />Progress</button></header>
 
@@ -163,8 +220,36 @@ function CareerHubWorkspace() {
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'coach'; text: string }>>([]);
   const [resumeUploaded, setResumeUploaded] = useState(false);
   const [interviewStarted, setInterviewStarted] = useState(false);
+  const [interviewAnswer, setInterviewAnswer] = useState('');
+  const [resumeText, setResumeText] = useState('');
+  const [role, setRole] = useState(() => readPreference('career-role', 'Not specified'));
+  const [experience, setExperience] = useState(() => readPreference('career-experience', 'Not specified'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt,.md,.pdf,application/pdf';
+    input.style.display = 'none';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      try { const text = await file.text(); setResumeText(text); setResumeUploaded(true); setPrompt((current) => current || 'Review my uploaded resume and suggest improvements.'); } catch { setError('Unable to read that resume file.'); }
+    };
+    const onClick = (event: MouseEvent) => {
+      const button = (event.target as HTMLElement).closest('button');
+      if (!button) return;
+      const text = button.textContent?.trim() ?? '';
+      if (text.includes('Upload CV') || button.getAttribute('aria-label') === 'Upload document') input.click();
+      if (text === 'Career progress') setPrompt('Review my career progress and recommend my next three actions.');
+      if (text === 'Product Design') { const values = ['Not specified', 'Product Design', 'Software Engineering', 'Marketing']; const value = values[(values.indexOf(role) + 1) % values.length]; setRole(value); writePreference('career-role', value); }
+      if (text === 'Mid-level') { const values = ['Not specified', 'Entry-level', 'Mid-level', 'Senior']; const value = values[(values.indexOf(experience) + 1) % values.length]; setExperience(value); writePreference('career-experience', value); }
+    };
+    document.addEventListener('click', onClick, true);
+    document.body.appendChild(input);
+    return () => { document.removeEventListener('click', onClick, true); input.remove(); };
+  }, [experience, role]);
 
   const askCoach = async () => {
     const value = prompt.trim();
@@ -172,7 +257,7 @@ function CareerHubWorkspace() {
     setLoading(true);
     setError('');
     try {
-      const answer = await generateHubResponse('career', { prompt: value, mode, role: 'Not specified', industry: 'Not specified', experience: 'Not specified' });
+      const answer = await generateHubResponse('career', { prompt: `${value}${resumeText ? `\n\nUploaded resume:\n${resumeText}` : ''}`, mode, role, industry: 'Not specified', experience });
       setMessages((current) => [...current, { role: 'user', text: value }, { role: 'coach', text: answer }]);
       setPrompt('');
     } catch (err) {
@@ -182,8 +267,32 @@ function CareerHubWorkspace() {
     }
   };
 
+  const evaluateInterview = async () => {
+    const answer = interviewAnswer.trim();
+    if (!answer || loading) { if (!answer) setError('Write an interview answer before evaluating it.'); return; }
+    setLoading(true);
+    setError('');
+    try {
+      const feedback = await generateHubResponse('career', { prompt: `Evaluate this interview answer and give a score out of 10, strengths, improvements, and a stronger example answer.\n\nQuestion: Tell me about a product decision you are proud of.\nAnswer: ${answer}`, mode: 'Interview', role, experience });
+      setMessages((current) => [...current, { role: 'user', text: answer }, { role: 'coach', text: feedback }]);
+      setInterviewAnswer('');
+    } catch (err) { setError(err instanceof Error ? err.message : 'Unable to evaluate the answer.'); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => {
+    const answerField = Array.from(document.querySelectorAll('textarea')).find((field) => field.getAttribute('placeholder') === 'Type your answer…');
+    const evaluateButton = Array.from(document.querySelectorAll('button')).find((button) => button.textContent?.trim() === 'Evaluate answer');
+    if (!answerField || !evaluateButton) return;
+    const onInput = () => setInterviewAnswer(answerField.value);
+    const onClick = () => void evaluateInterview();
+    answerField.addEventListener('input', onInput);
+    evaluateButton.addEventListener('click', onClick);
+    return () => { answerField.removeEventListener('input', onInput); evaluateButton.removeEventListener('click', onClick); };
+  }, [evaluateInterview, interviewStarted, interviewAnswer]);
+
   return (
-    <div className="min-h-[calc(100vh-76px)] bg-[#080C11] text-white"><div className="mx-auto max-w-[1420px] px-3 py-4 sm:px-6 lg:px-8 lg:py-6">
+    <div className="min-h-[calc(100vh-76px)] bg-[#080C11] text-white"><div className="mx-auto max-w-[1420px] px-3 py-4 sm:px-6 lg:px-8 lg:py-6">{error && <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-4 py-3 text-sm text-red-200"><span>{error}</span><button type="button" onClick={() => setError('')} aria-label="Dismiss error" className="text-red-200 hover:text-white"><X className="h-4 w-4" /></button></div>}
       <header className="mb-5 flex items-center justify-between gap-4 border-b border-[#1B2935] pb-5"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowLeft className="h-4 w-4" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#123B35] text-[#5BE4B6]"><BriefcaseBusiness className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold text-white">Career Hub</h1><p className="hidden truncate text-sm text-[#8492A3] sm:block">Build your career, improve your skills and land better opportunities.</p></div></div><button type="button" className="inline-flex items-center gap-2 rounded-xl border border-[#263746] bg-[#101A24] px-3 py-2 text-xs font-semibold text-[#A9F2D8] hover:border-[#3DDBC0]/60"><Target className="h-3.5 w-3.5 text-[#5BE4B6]" />Career progress</button></header>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]"><main className="min-w-0 space-y-5"><section className="rounded-[26px] border border-[#1B2935] bg-[#0D151E] p-4 shadow-[0_18px_60px_rgba(0,0,0,0.22)] sm:p-6"><div className="mb-5"><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">AI career coach</div><h2 className="mt-1 text-2xl font-bold text-white">What career goal are you working toward?</h2></div>{messages.length === 0 ? <div className="mb-5 rounded-2xl border border-dashed border-[#263746] bg-[#0A1118] p-4 text-sm leading-6 text-[#8492A3]">Tell me your target role, share a job description, or upload your resume. I’ll help you move from where you are to what’s next.</div> : <div className="mb-5 max-h-[380px] space-y-4 overflow-y-auto rounded-2xl border border-[#1B2935] bg-[#0A1118] p-4">{messages.map((message, index) => <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === 'user' ? 'bg-[#16483D] text-[#E7FFF7]' : 'border border-[#263746] bg-[#101A24] text-[#C5D0DB]'}`}>{message.text}</div></div>)}</div>}<div className="flex gap-2 overflow-x-auto border-b border-[#1B2935] pb-3 [scrollbar-width:none]">{CAREER_MODES.map((careerMode) => <button key={careerMode} type="button" onClick={() => setMode(careerMode)} className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-semibold ${mode === careerMode ? 'border-[#3DDBC0]/60 bg-[#16483D] text-[#A9F2D8]' : 'border-transparent bg-[#101A24] text-[#8492A3] hover:text-white'}`}>{careerMode}</button>)}</div><div className="mt-4 rounded-2xl border border-[#29413F] bg-[#0A1118] p-3 focus-within:border-[#3DDBC0]/70"><textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); askCoach(); } }} rows={4} placeholder="Tell me what you need help with…" className="w-full resize-none bg-transparent px-2 py-2 text-sm leading-7 text-white outline-none placeholder:text-[#718194]" /><div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#1B2935] pt-3"><div className="flex items-center gap-1"><button type="button" onClick={() => setResumeUploaded(true)} className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs ${resumeUploaded ? 'text-[#5BE4B6]' : 'text-[#91A0B0]'} hover:bg-[#16242E] hover:text-white`}><Upload className="h-3.5 w-3.5" />{resumeUploaded ? 'CV uploaded' : 'Upload CV'}</button><button type="button" className="rounded-lg p-1.5 text-[#8190A0] hover:bg-[#16242E] hover:text-white" aria-label="Upload document"><FileText className="h-4 w-4" /></button></div><div className="flex items-center gap-2"><button type="button" className="hidden items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:bg-[#16242E] hover:text-white sm:inline-flex">Product Design <ChevronDown className="h-3 w-3" /></button><button type="button" className="hidden items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:bg-[#16242E] hover:text-white sm:inline-flex">Mid-level <ChevronDown className="h-3 w-3" /></button><button type="button" onClick={askCoach} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#10B981] text-[#04120D] hover:bg-[#34D399]" aria-label="Ask career coach"><ArrowUp className="h-4 w-4" /></button></div></div></div>{resumeUploaded && <div className="mt-3 flex flex-wrap gap-2"><button type="button" className="rounded-lg border border-[#263746] bg-[#101A24] px-3 py-2 text-xs text-[#A9F2D8]">ATS analysis</button><button type="button" className="rounded-lg border border-[#263746] bg-[#101A24] px-3 py-2 text-xs text-[#A9F2D8]">Missing keywords</button><button type="button" className="rounded-lg border border-[#263746] bg-[#101A24] px-3 py-2 text-xs text-[#A9F2D8]">Formatting suggestions</button><button type="button" className="rounded-xl bg-[#183B34] px-3 py-2 text-xs font-semibold text-[#A9F2D8]">Improve Resume</button></div>}</section><section><div className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Career tools</div><div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{CAREER_TOOLS.map(([label, href, Icon]) => <Link key={label} href={href} className="group rounded-2xl border border-[#1B2935] bg-[#0D151E] p-4 transition hover:-translate-y-0.5 hover:border-[#3DDBC0]/60"><Icon className="h-4 w-4 text-[#5BE4B6]" /><div className="mt-3 text-xs font-semibold text-white">{label}</div><div className="mt-2 flex items-center gap-1 text-[10px] text-[#718194] group-hover:text-[#A9F2D8]">Open tool <ArrowRight className="h-3 w-3" /></div></Link>)}</div></section></main><aside className="space-y-5"><section className="rounded-[24px] border border-[#1B2935] bg-[#0D151E] p-5"><div className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Career dashboard</div><div className="grid grid-cols-2 gap-2"><div className="rounded-xl bg-[#101A24] p-3"><div className="text-xl font-black text-white">82</div><div className="mt-1 text-[10px] text-[#718194]">Resume score</div></div><div className="rounded-xl bg-[#101A24] p-3"><div className="text-xl font-black text-white">14</div><div className="mt-1 text-[10px] text-[#718194]">Applications</div></div><div className="rounded-xl bg-[#101A24] p-3"><div className="text-xl font-black text-white">6</div><div className="mt-1 text-[10px] text-[#718194]">Interviews</div></div><div className="rounded-xl bg-[#101A24] p-3"><div className="text-xl font-black text-white">64%</div><div className="mt-1 text-[10px] text-[#718194]">Skills progress</div></div></div><div className="mt-4 rounded-xl border border-[#263746] bg-[#101A24] p-3"><div className="text-[10px] uppercase tracking-[0.15em] text-[#718194]">Career goal</div><div className="mt-2 text-sm font-semibold text-white">Senior Product Designer</div><div className="mt-1 text-xs text-[#8492A3]">Next milestone: portfolio review</div></div></section><section className="rounded-[24px] border border-[#1B2935] bg-[#0D151E] p-5"><div className="mb-4 flex items-center justify-between"><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Interview practice</div><span className="text-xs text-[#718194]">{interviewStarted ? 'In progress' : 'Ready'}</span></div>{interviewStarted ? <div><div className="rounded-xl border border-[#263746] bg-[#101A24] p-3 text-sm leading-6 text-[#C5D0DB]">Tell me about a product decision you are proud of.</div><textarea placeholder="Type your answer…" className="mt-3 min-h-20 w-full resize-none rounded-xl border border-[#263746] bg-[#0A1118] p-3 text-xs text-white outline-none placeholder:text-[#718194]" /><button type="button" className="mt-3 w-full rounded-xl bg-[#183B34] px-3 py-2.5 text-xs font-semibold text-[#A9F2D8]">Evaluate answer</button></div> : <><p className="text-xs leading-5 text-[#8492A3]">Practice role-specific questions and get a score with actionable feedback.</p><button type="button" onClick={() => setInterviewStarted(true)} className="mt-4 w-full rounded-xl bg-[#10B981] px-3 py-2.5 text-xs font-semibold text-[#04120D]">Start interview</button></>}</section></aside></div>
     </div></div>
@@ -209,8 +318,33 @@ function BusinessHubWorkspace() {
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'consultant'; text: string }>>([]);
   const [projectSaved, setProjectSaved] = useState(false);
+  const [businessType, setBusinessType] = useState(() => readPreference('business-type', 'SaaS business'));
+  const [industry, setIndustry] = useState(() => readPreference('business-industry', 'Technology'));
+  const [attachment, setAttachment] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt,.md,.csv,.pdf,application/pdf';
+    input.style.display = 'none';
+    input.onchange = () => setAttachment(input.files?.[0]?.name ?? '');
+    const onClick = (event: MouseEvent) => {
+      const button = (event.target as HTMLElement).closest('button');
+      if (!button) return;
+      const text = button.textContent?.trim() ?? '';
+      if (button.getAttribute('aria-label') === 'Attach business document') input.click();
+      if (text.startsWith('SaaS business')) { const values = ['SaaS business', 'E-commerce', 'Agency', 'Nonprofit']; const value = values[(values.indexOf(businessType) + 1) % values.length]; setBusinessType(value); writePreference('business-type', value); }
+      if (text.startsWith('Technology')) { const values = ['Technology', 'Healthcare', 'Education', 'Finance']; const value = values[(values.indexOf(industry) + 1) % values.length]; setIndustry(value); writePreference('business-industry', value); }
+      if (text === 'View all') setError('All saved projects are available through the current workspace session.');
+      if (text === 'Continue') setPrompt('Continue this project and define the next three actions: ');
+      if (text.includes('New business project')) { setProjectSaved(false); setPrompt('New business project: '); }
+    };
+    document.addEventListener('click', onClick, true);
+    document.body.appendChild(input);
+    return () => { document.removeEventListener('click', onClick, true); input.remove(); };
+  }, [businessType, industry]);
 
   const askConsultant = async () => {
     const value = prompt.trim();
@@ -218,7 +352,7 @@ function BusinessHubWorkspace() {
     setLoading(true);
     setError('');
     try {
-      const answer = await generateHubResponse('business', { prompt: value, mode, businessType: 'Not specified', industry: 'Not specified' });
+      const answer = await generateHubResponse('business', { prompt: `${value}${attachment ? `\nAttached document: ${attachment}` : ''}`, mode, businessType, industry });
       setMessages((current) => [...current, { role: 'user', text: value }, { role: 'consultant', text: answer }]);
       setPrompt('');
     } catch (err) {
@@ -229,7 +363,7 @@ function BusinessHubWorkspace() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-76px)] bg-[#080C11] text-white"><div className="mx-auto max-w-[1420px] px-3 py-4 sm:px-6 lg:px-8 lg:py-6">
+    <div className="min-h-[calc(100vh-76px)] bg-[#080C11] text-white"><div className="mx-auto max-w-[1420px] px-3 py-4 sm:px-6 lg:px-8 lg:py-6">{error && <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-4 py-3 text-sm text-red-200"><span>{error}</span><button type="button" onClick={() => setError('')} aria-label="Dismiss error" className="text-red-200 hover:text-white"><X className="h-4 w-4" /></button></div>}
       <header className="mb-5 flex items-center justify-between gap-4 border-b border-[#1B2935] pb-5"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowLeft className="h-4 w-4" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#123B35] text-[#5BE4B6]"><BriefcaseBusiness className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold text-white">Business Hub</h1><p className="hidden truncate text-sm text-[#8492A3] sm:block">Plan, market and grow your business with AI.</p></div></div><button type="button" onClick={() => setProjectSaved(true)} className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${projectSaved ? 'border-[#3DDBC0]/60 bg-[#16483D] text-[#A9F2D8]' : 'border-[#263746] bg-[#101A24] text-[#A9F2D8] hover:border-[#3DDBC0]/60'}`}><Bookmark className="h-3.5 w-3.5" />{projectSaved ? 'Project saved' : 'Save project'}</button></header>
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]"><main className="min-w-0 space-y-5"><section className="rounded-[26px] border border-[#1B2935] bg-[#0D151E] p-4 shadow-[0_18px_60px_rgba(0,0,0,0.22)] sm:p-6"><div className="mb-5"><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Business AI consultant</div><h2 className="mt-1 text-2xl font-bold text-white">What are you working on today?</h2></div>{messages.length === 0 ? <div className="mb-5 rounded-2xl border border-dashed border-[#263746] bg-[#0A1118] p-4 text-sm leading-6 text-[#8492A3]">Ask about your business, marketing, customers or strategy. Start with an idea and move naturally from research to execution.</div> : <div className="mb-5 max-h-[390px] space-y-4 overflow-y-auto rounded-2xl border border-[#1B2935] bg-[#0A1118] p-4">{messages.map((message, index) => <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === 'user' ? 'bg-[#16483D] text-[#E7FFF7]' : 'border border-[#263746] bg-[#101A24] text-[#C5D0DB]'}`}>{message.text}</div></div>)}</div>}<div className="flex gap-2 overflow-x-auto border-b border-[#1B2935] pb-3 [scrollbar-width:none]">{BUSINESS_MODES.map((businessMode) => <button key={businessMode} type="button" onClick={() => setMode(businessMode)} className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-semibold ${mode === businessMode ? 'border-[#3DDBC0]/60 bg-[#16483D] text-[#A9F2D8]' : 'border-transparent bg-[#101A24] text-[#8492A3] hover:text-white'}`}>{businessMode}</button>)}</div><div className="mt-4 rounded-2xl border border-[#29413F] bg-[#0A1118] p-3 focus-within:border-[#3DDBC0]/70"><textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); askConsultant(); } }} rows={4} placeholder="Ask about your business, marketing, customers or strategy…" className="w-full resize-none bg-transparent px-2 py-2 text-sm leading-7 text-white outline-none placeholder:text-[#718194]" /><div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#1B2935] pt-3"><div className="flex items-center gap-2"><button type="button" className="rounded-lg p-1.5 text-[#8190A0] hover:bg-[#16242E] hover:text-white" aria-label="Attach business document"><Paperclip className="h-4 w-4" /></button><button type="button" className="rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:bg-[#16242E] hover:text-white">SaaS business <ChevronDown className="ml-1 inline h-3 w-3" /></button><button type="button" className="hidden rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:bg-[#16242E] hover:text-white sm:inline">Technology <ChevronDown className="ml-1 inline h-3 w-3" /></button></div><button type="button" onClick={askConsultant} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#10B981] text-[#04120D] hover:bg-[#34D399]" aria-label="Ask business consultant"><ArrowUp className="h-4 w-4" /></button></div></div>{messages.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{['Improve', 'Expand', 'Turn into plan', 'Create campaign', 'Generate social posts'].map((action) => <button key={action} type="button" onClick={() => setPrompt(`${action}: `)} className="rounded-lg border border-[#263746] bg-[#101A24] px-3 py-2 text-xs text-[#A9F2D8]">{action}</button>)}</div>}</section><section><div className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Business tools</div><div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{BUSINESS_TOOLS.map(([label, href, Icon]) => <Link key={label} href={href} className="group rounded-2xl border border-[#1B2935] bg-[#0D151E] p-4 transition hover:-translate-y-0.5 hover:border-[#3DDBC0]/60"><Icon className="h-4 w-4 text-[#5BE4B6]" /><div className="mt-3 text-xs font-semibold text-white">{label}</div><div className="mt-2 flex items-center gap-1 text-[10px] text-[#718194] group-hover:text-[#A9F2D8]">Open tool <ArrowRight className="h-3 w-3" /></div></Link>)}</div></section></main><aside className="space-y-5"><section className="rounded-[24px] border border-[#1B2935] bg-[#0D151E] p-5"><div className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">AI workflow</div><div className="flex flex-wrap gap-2">{['Idea', 'Research', 'Strategy', 'Content', 'Marketing', 'Execution'].map((step, index) => <div key={step} className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-[11px] ${index === 0 ? 'bg-[#16483D] text-[#A9F2D8]' : 'bg-[#101A24] text-[#8492A3]'}`}><span className="text-[10px]">{index + 1}</span>{step}</div>)}</div><p className="mt-4 text-xs leading-5 text-[#8492A3]">Move from a rough thought to a clear plan, then turn it into content and actions.</p></section><section className="rounded-[24px] border border-[#1B2935] bg-[#0D151E] p-5"><div className="mb-4 flex items-center justify-between"><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Business projects</div><button type="button" className="text-xs text-[#7EEAC9]">View all</button></div><div className="space-y-3">{['Q3 launch plan', 'Freelance proposal', 'Customer growth strategy'].map((project, index) => <div key={project} className="rounded-xl border border-[#263746] bg-[#101A24] p-3"><div className="flex items-center justify-between gap-2"><div className="min-w-0 truncate text-xs font-semibold text-white">{project}</div><button type="button" className="shrink-0 rounded-lg px-2 py-1 text-[10px] text-[#A9F2D8] hover:bg-[#183B34]">Continue</button></div><div className="mt-2 text-[10px] text-[#718194]">{index + 1}h ago · {index === 0 ? 'Strategy' : 'Project'}</div></div>)}</div><button type="button" onClick={() => setProjectSaved(true)} className="mt-3 w-full rounded-xl border border-dashed border-[#315046] px-3 py-2.5 text-xs font-semibold text-[#A9F2D8] hover:bg-[#142B2B]">+ New business project</button></section></aside></div>
     </div></div>
@@ -255,9 +389,45 @@ function CreatorStudioWorkspace() {
   const [mode, setMode] = useState('Image');
   const [prompt, setPrompt] = useState('');
   const [generated, setGenerated] = useState(false);
+  const [generatedText, setGeneratedText] = useState('');
   const [aiEdit, setAiEdit] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState('16:9');
+  const [style, setStyle] = useState('Cinematic');
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,video/*,audio/*,.txt,.pdf';
+    input.style.display = 'none';
+    const onChange = () => setMediaFile(input.files?.[0] ?? null);
+    const onClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest('button');
+      if (target.closest('button[aria-label="Upload media"]') || button?.textContent?.includes('Reference')) input.click();
+      if (button?.getAttribute('aria-label') === 'Play preview' && generatedText) downloadText(`creator-${mode.toLowerCase()}.txt`, generatedText);
+      if (button?.getAttribute('aria-label') === 'Preview options' && generatedText) downloadText(`creator-${mode.toLowerCase()}-export.txt`, generatedText);
+      if (button?.textContent?.trim() === 'Apply') {
+        const instruction = aiEdit.trim();
+        if (instruction) { setGeneratedText((current) => `${current}\n\nApplied edit: ${instruction}`.trim()); setGenerated(true); setAiEdit(''); }
+        else setError('Describe the edit you want to apply.');
+      }
+      const toolLabel = button?.textContent?.trim();
+      if (toolLabel && CREATOR_TOOLS.some(([label]) => label === toolLabel)) setPrompt((current) => `${current}${current ? '\n' : ''}${toolLabel} edit: `);
+    };
+    input.addEventListener('change', onChange);
+    document.addEventListener('click', onClick, true);
+    document.body.appendChild(input);
+    return () => { input.removeEventListener('change', onChange); document.removeEventListener('click', onClick, true); input.remove(); };
+  }, [generatedText, mode, aiEdit]);
+
+  useEffect(() => {
+    if (generated && !generatedText && prompt.trim() && !loading) void generateCreatorAsset();
+  }, [generated, generatedText, loading, prompt]);
 
   const generateCreatorAsset = async () => {
     const value = prompt.trim();
@@ -268,7 +438,8 @@ function CreatorStudioWorkspace() {
     setLoading(true);
     setError('');
     try {
-      await generateHubResponse('creator', { prompt: value, mode });
+      const answer = await generateHubResponse('creator', { prompt: `${value}\nAspect ratio: ${aspectRatio}\nStyle: ${style}${mediaFile ? `\nReference file: ${mediaFile.name}` : ''}`, mode });
+      setGeneratedText(answer);
       setGenerated(true);
       setPrompt('');
     } catch (err) {
@@ -278,10 +449,18 @@ function CreatorStudioWorkspace() {
     }
   };
 
+  const applyAiEdit = () => {
+    const instruction = aiEdit.trim();
+    if (!instruction) { setError('Describe the edit you want to apply.'); return; }
+    setGeneratedText((current) => `${current}\n\nApplied edit: ${instruction}`.trim());
+    setGenerated(true);
+    setAiEdit('');
+  };
+
   return (
     <div className="min-h-[calc(100vh-76px)] bg-[#080C11] text-white">
       <div className="mx-auto max-w-[1500px] px-3 py-4 sm:px-6 lg:px-8 lg:py-6">
-        <header className="mb-5 flex items-center justify-between gap-4 border-b border-[#1B2935] pb-5"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowRight className="h-4 w-4 rotate-180" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#123B35] text-[#5BE4B6]"><Wand2 className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold text-white">Creator Hub</h1><p className="hidden truncate text-sm text-[#8492A3] sm:block">Create images, videos, scripts, audio and social content with AI.</p></div></div><div className="flex items-center gap-2"><div className="hidden items-center gap-2 rounded-xl border border-[#263746] bg-[#101A24] px-3 py-2 text-xs text-[#A9F2D8] sm:flex"><Sparkles className="h-3.5 w-3.5 text-[#5BE4B6]" />240 credits</div><button type="button" className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Creator settings"><Settings2 className="h-4 w-4" /></button></div></header>
+          <header className="mb-5 flex items-center justify-between gap-4 border-b border-[#1B2935] pb-5"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowRight className="h-4 w-4 rotate-180" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#123B35] text-[#5BE4B6]"><Wand2 className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold text-white">Creator Hub</h1><p className="hidden truncate text-sm text-[#8492A3] sm:block">Create images, videos, scripts, audio and social content with AI.</p></div></div><div className="relative flex items-center gap-2"><div className="hidden items-center gap-2 rounded-xl border border-[#263746] bg-[#101A24] px-3 py-2 text-xs text-[#A9F2D8] sm:flex"><Sparkles className="h-3.5 w-3.5 text-[#5BE4B6]" />240 credits</div><button type="button" onClick={() => setSettingsOpen((open) => !open)} className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Creator settings"><Settings2 className="h-4 w-4" /></button><SettingsPopover open={settingsOpen} onClose={() => setSettingsOpen(false)} value={style} onChange={setStyle} /></div></header>
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_290px]">
           <main className="min-w-0 space-y-5">

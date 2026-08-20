@@ -160,11 +160,11 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
             <div className="relative">
               <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#78EAC7]"><Zap className="h-3.5 w-3.5" /> Toolbuxx Pro</div>
               <p className="text-xs leading-5 text-[#C3D2D7]">Unlock higher limits and smarter workflows.</p>
-              <button type="button" className="mt-3 inline-flex h-8 items-center justify-center rounded-lg bg-[#5BE4B6] px-3 text-xs font-bold text-[#071713] transition hover:bg-[#8AF2D1]">Upgrade Now</button>
+              <Link href="/contact" className="mt-3 inline-flex h-8 items-center justify-center rounded-lg bg-[#5BE4B6] px-3 text-xs font-bold text-[#071713] transition hover:bg-[#8AF2D1]">Upgrade Now</Link>
             </div>
           </div>
         ) : (
-          <button type="button" title="Upgrade to Pro" className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#5BE4B6] to-[#6A78FF] text-[#061410]"><Zap className="h-4 w-4" /></button>
+          <Link href="/contact" title="Upgrade to Pro" className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#5BE4B6] to-[#6A78FF] text-[#061410]"><Zap className="h-4 w-4" /></Link>
         )}
       </div>
     </div>
@@ -191,7 +191,7 @@ function RightSidebar({ onClose }: { onClose: () => void }) {
   return (
     <>
       <button type="button" className="fixed inset-0 z-40 bg-black/60 lg:bg-black/30" onClick={onClose} aria-label="Close workspace panel" />
-      <aside className="fixed inset-y-0 right-0 z-50 flex w-[min(360px,calc(100vw-24px))] flex-col border-l border-[#172331] bg-[#0C121A] text-white shadow-2xl">
+      <aside className="fixed inset-y-0 right-0 z-50 flex w-[min(300px,calc(100vw-40px))] flex-col border-l border-[#172331] bg-[#0C121A] text-white shadow-2xl">
         <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-[#172331] px-5">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#637387]">Workspace pulse</div>
@@ -247,7 +247,7 @@ function GlobalHeader({ onDesktopToggle, onMobileOpen, onRightOpen, sidebarColla
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-[76px] shrink-0 items-center gap-3 border-b border-[#172331] bg-[#0A0E14]/95 px-4 backdrop-blur-xl sm:px-6">
+    <header className="sticky top-0 z-30 flex h-[60px] shrink-0 items-center gap-2 border-b border-[#172331] bg-[#0A0E14]/95 px-3 backdrop-blur-xl sm:h-[76px] sm:gap-3 sm:px-6">
       <button type="button" onClick={onMobileOpen} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#22303E] bg-[#101823] text-[#9AA8B8] hover:text-white lg:hidden" aria-label="Open navigation menu">
         <Menu className="h-[18px] w-[18px]" />
       </button>
