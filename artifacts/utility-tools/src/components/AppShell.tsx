@@ -34,6 +34,8 @@ import {
   Check,
   Flame,
 } from 'lucide-react';
+import { getCurrentStreak } from '@/utils/activityStorage';
+import { loadHistory } from '@/utils/historyStorage';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -170,6 +172,22 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
 }
 
 function RightSidebar({ onClose }: { onClose: () => void }) {
+  const [streak, setStreak] = useState(() => getCurrentStreak());
+  const [recentActivity, setRecentActivity] = useState(() => loadHistory().slice(0, 3));
+
+  useEffect(() => {
+    const refresh = () => {
+      setStreak(getCurrentStreak());
+      setRecentActivity(loadHistory().slice(0, 3));
+    };
+    window.addEventListener('toolbuxx-activity-updated', refresh);
+    window.addEventListener('toolboxx-history-updated', refresh);
+    return () => {
+      window.removeEventListener('toolbuxx-activity-updated', refresh);
+      window.removeEventListener('toolboxx-history-updated', refresh);
+    };
+  }, []);
+
   return (
     <>
       <button type="button" className="fixed inset-0 z-40 bg-black/60 lg:bg-black/30" onClick={onClose} aria-label="Close workspace panel" />
@@ -189,7 +207,7 @@ function RightSidebar({ onClose }: { onClose: () => void }) {
           <div className="mt-5 space-y-3">
             <div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-4">
               <div className="flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#637387]">Daily streak</span><Flame className="h-4 w-4 text-[#F5C05A]" /></div>
-              <div className="mt-2 text-xl font-black">12 days</div>
+              <div className="mt-2 text-xl font-black">{streak} {streak === 1 ? 'day' : 'days'}</div>
               <div className="mt-3 grid grid-cols-7 gap-1.5">{['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => <div key={`${day}-${index}`} className="text-center"><div className="mb-1 text-[9px] text-[#718194]">{day}</div><div className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full ${index < 5 ? 'bg-[#25483D] text-[#5BE4B6]' : 'bg-[#182532] text-[#657589]'}`}>{index < 5 ? <Check className="h-3 w-3" /> : <span className="h-1 w-1 rounded-full bg-current" />}</div></div>)}</div>
             </div>
 
@@ -212,7 +230,7 @@ function RightSidebar({ onClose }: { onClose: () => void }) {
 
         <div className="shrink-0 border-t border-[#172331] bg-[#0A0E14] px-4 py-4">
           <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#637387]">Recent activity</div>
-          <div className="space-y-2.5">{[['AI Writer', '2m ago'], ['PDF Compressor', '15m ago'], ['Study Hub', '1h ago']].map(([name, time]) => <Link key={name} href="/history" onClick={onClose} className="flex items-center justify-between gap-3 text-sm"><span className="flex min-w-0 items-center gap-2.5 text-[#C5D0DB]"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#5BE4B6]" /><span className="truncate">{name}</span></span><span className="shrink-0 text-[11px] text-[#718194]">{time}</span></Link>)}</div>
+          {recentActivity.length > 0 ? <div className="space-y-2.5">{recentActivity.map((entry) => <Link key={entry.id} href="/history" onClick={onClose} className="flex items-center justify-between gap-3 text-sm"><span className="flex min-w-0 items-center gap-2.5 text-[#C5D0DB]"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#5BE4B6]" /><span className="truncate">{entry.toolName}</span></span><span className="shrink-0 text-[11px] text-[#718194]">{new Date(entry.createdAt).toLocaleDateString()}</span></Link>)}</div> : <p className="text-xs text-[#718194]">No activity yet.</p>}
         </div>
       </aside>
     </>

@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { getAiToolConfig } from '@/lib/ai-tools-config';
 import { ai } from '@/lib/api';
 import { useHistory } from '@/hooks/useHistory';
+import { markActivity } from '@/utils/activityStorage';
 
 interface AiToolShellProps {
   tool: Tool;
@@ -87,6 +88,7 @@ export function AiToolShell({ tool }: AiToolShellProps) {
   const canGenerate = requiredFields.every(f => (inputs[f.key] ?? '').trim().length > 0);
 
   async function generate() {
+    if (loading) return;
     // ---- Performance diagnostics (read-only — does not change behavior) ----
     // Stages measured on the client:
     //   1. prepare  — time from click to the fetch actually being issued
@@ -146,6 +148,7 @@ export function AiToolShell({ tool }: AiToolShellProps) {
           characterCount: nextResult.length,
           favorite: false,
         });
+        markActivity();
       }
 
       const tProcessEnd = performance.now();

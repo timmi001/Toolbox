@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ToolLayout } from '@/components/ToolLayout';
 import { Tool } from '@/lib/tools-data';
+import { markActivity } from '@/utils/activityStorage';
 
 export interface LocalToolField {
   key: string;
@@ -56,8 +57,10 @@ export function LocalToolShell({
   const canGenerate = requiredFields.every(field => (inputs[field.key] ?? '').trim().length > 0);
 
   const handleGenerate = () => {
+    if (!canGenerate) return;
     const nextResult = generate(inputs);
     setResult(nextResult);
+    if (nextResult.trim()) markActivity();
     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
   };
 

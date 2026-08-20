@@ -558,15 +558,6 @@ Provide:
 
 Keep the tone encouraging and easy to follow.`;
 
-    case "ai-flashcard-generator":
-      return `Create ${i.count || "15"} flashcards for the topic "${i.topic}" for a ${i.level || "Intermediate"} learner.
-
-Format each flashcard as:
-Front: [term/question]
-Back: [definition/answer]
-
-Make the cards focused on the most important concepts and useful for revision.`;
-
     case "ai-study-notes-generator":
       return `Create ${i.format || "Detailed Notes"} for the topic "${i.topic}" for a ${i.level || "Intermediate"} learner.
 

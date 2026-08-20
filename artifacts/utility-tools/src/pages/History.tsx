@@ -1,13 +1,15 @@
 import { useMemo, useRef, useState } from 'react';
 import { EmptyHistory } from '@/components/history/EmptyHistory';
 import { HistoryCard } from '@/components/history/HistoryCard';
+import { HistoryToolbar } from '@/components/history/HistoryToolbar';
 import { SearchBar } from '@/components/history/SearchBar';
 import { useHistory } from '@/hooks/useHistory';
 
 export default function HistoryPage() {
-  const { entries, loading, toggleFavorite, removeEntry, searchEntries } = useHistory();
+  const { entries, loading, toggleFavorite, removeEntry, searchEntries, importHistory, exportHistory, clearAllHistory } = useHistory();
   const [query, setQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const visibleEntries = useMemo(() => {
     return searchEntries(query, 'all', 'newest');
@@ -17,6 +19,14 @@ export default function HistoryPage() {
     <div className="space-y-6">
       <div className="space-y-4">
         <SearchBar value={query} onChange={setQuery} />
+        <HistoryToolbar
+          onImportClick={() => fileInputRef.current?.click()}
+          onExportJson={() => void exportHistory('json', 'toolbuxx-history.json')}
+          onExportTxt={() => void exportHistory('txt', 'toolbuxx-history.txt')}
+          onExportPdf={() => void exportHistory('pdf', 'toolbuxx-history.pdf')}
+          onClear={() => { if (window.confirm('Clear all saved history?')) clearAllHistory(); }}
+        />
+        <input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importHistory(file); event.target.value = ''; }} />
       </div>
 
       {loading ? (

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import {
   ArrowRight,
@@ -18,11 +18,14 @@ import {
   LockKeyhole,
   Plus,
   Quote,
+  RefreshCw,
   Sparkles,
   Star,
   Wand2,
   Zap,
 } from 'lucide-react';
+import { generateHubResponse } from '@/lib/hub-ai';
+import { getDailyBrief, saveDailyBrief } from '@/utils/dailyBriefStorage';
 
 const HUB_CARDS = [
   { title: 'AI Assistant', href: '/hub/ai', description: 'Chat, write, research and automate anything with AI.', icon: Sparkles, accent: '#5BE4B6', gradient: 'from-[#123E37] via-[#102D30] to-[#101A28]', glow: 'rgba(91,228,182,0.24)' },
@@ -75,6 +78,26 @@ const VALUE_POINTS = [
 
 export default function Home() {
   const greeting = useMemo(() => getGreeting(new Date().getHours()), []);
+  const [briefOpen, setBriefOpen] = useState(false);
+  const [brief, setBrief] = useState(() => getDailyBrief()?.content ?? '');
+  const [briefLoading, setBriefLoading] = useState(false);
+  const [briefError, setBriefError] = useState('');
+
+  const generateBrief = async () => {
+    setBriefLoading(true);
+    setBriefError('');
+    try {
+      const result = await generateHubResponse('ai-assistant', {
+        prompt: `Create a concise daily brief for ${new Date().toLocaleDateString()}. Give three practical priorities for today, one focus suggestion, and one encouraging closing note. Use the user's general utility workspace context and do not invent personal facts.`,
+        mode: 'Daily Brief',
+      });
+      setBrief(saveDailyBrief(result).content);
+    } catch (error) {
+      setBriefError(error instanceof Error ? error.message : 'Unable to generate the daily brief.');
+    } finally {
+      setBriefLoading(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
@@ -84,8 +107,10 @@ export default function Home() {
           <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">{greeting}</h1>
           <p className="mt-2 text-sm text-[#91A0B0] sm:text-base">What would you like to accomplish today?</p>
         </div>
-        <button type="button" className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#315046] bg-[#142C2B] px-4 text-sm font-semibold text-[#A9F2D8] transition hover:border-[#5BE4B6]/70 hover:bg-[#193A35]"><CalendarDays className="h-4 w-4" />Daily Brief<ArrowRight className="h-4 w-4" /></button>
+        <button type="button" onClick={() => { setBriefOpen(true); if (!brief) void generateBrief(); }} className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#315046] bg-[#142C2B] px-4 text-sm font-semibold text-[#A9F2D8] transition hover:border-[#5BE4B6]/70 hover:bg-[#193A35]"><CalendarDays className="h-4 w-4" />Daily Brief<ArrowRight className="h-4 w-4" /></button>
       </section>
+
+      {briefOpen && <section className="mb-7 rounded-[22px] border border-[#315046] bg-[#10211F] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]"><div className="flex items-start justify-between gap-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#78EAC7]">Today</div><h2 className="mt-1 text-xl font-bold text-white">Daily Brief</h2></div><div className="flex items-center gap-2"><button type="button" onClick={() => void generateBrief()} disabled={briefLoading} className="inline-flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#A9F2D8] hover:bg-[#183B34] disabled:opacity-60"><RefreshCw className={`h-3.5 w-3.5 ${briefLoading ? 'animate-spin' : ''}`} />Refresh</button><button type="button" onClick={() => setBriefOpen(false)} className="rounded-lg px-2.5 py-2 text-xs text-[#8492A3] hover:bg-[#183B34] hover:text-white">Close</button></div></div>{briefLoading ? <p className="mt-4 animate-pulse text-sm text-[#A9F2D8]">Preparing your brief...</p> : briefError ? <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-red-200"><span>{briefError}</span><button type="button" onClick={() => void generateBrief()} className="font-semibold text-white underline">Retry</button></div> : <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[#C5D0DB]">{brief || 'No brief generated yet.'}</p>}</section>}
 
       <section>
         <div className="mb-4 flex items-end justify-between gap-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Start here</div><h2 className="mt-1 text-xl font-bold text-white sm:text-2xl">Your core hubs</h2></div><Link href="/" className="hidden items-center gap-2 text-sm font-semibold text-[#7EEAC9] hover:text-white sm:inline-flex">View all tools<ArrowRight className="h-4 w-4" /></Link></div>

@@ -1,4 +1,6 @@
 import { ai } from './api';
+import { saveHistoryEntry } from '@/utils/historyStorage';
+import { markActivity } from '@/utils/activityStorage';
 
 export type HubId = 'ai-assistant' | 'creator' | 'study' | 'career' | 'business';
 
@@ -27,5 +29,20 @@ export async function generateHubResponse(hub: HubId, input: HubGenerationInput)
   });
 
   if (!response.result?.trim()) throw new Error('The AI provider returned an empty response. Please retry.');
+  const hubName = hub === 'ai-assistant' ? 'AI Assistant' : `${hub[0].toUpperCase()}${hub.slice(1)} Hub`;
+  saveHistoryEntry({
+    toolSlug: `hub-${hub}`,
+    toolName: hubName,
+    toolCategory: 'ai',
+    prompt,
+    response: response.result,
+    inputs: { ...input },
+    title: `${hubName} result`,
+    status: 'success',
+    createdAt: new Date().toISOString(),
+    characterCount: response.result.length,
+    favorite: false,
+  });
+  markActivity();
   return response.result;
 }
