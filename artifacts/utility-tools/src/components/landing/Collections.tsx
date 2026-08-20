@@ -136,7 +136,7 @@ export function Collections() {
 
   const collections = mode === 'utility' ? UTILITY_COLLECTIONS : AI_COLLECTIONS;
   const modeLabel   = mode === 'utility' ? 'Utility Tools' : 'AI Tools';
-  const modeHref    = mode === 'utility' ? '/utility-tools' : '/ai-tools';
+  const modeHref    = mode === 'utility' ? '/' : '/ai-tools';
 
   return (
     <section className="px-4 py-7 sm:px-6 lg:px-8">

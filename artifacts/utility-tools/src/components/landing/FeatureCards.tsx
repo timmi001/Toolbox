@@ -92,7 +92,7 @@ export function FeatureCards() {
                 </li>
               ))}
             </ul>
-            <Link href="/utility-tools">
+            <Link href="/">
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}

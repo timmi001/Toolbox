@@ -92,7 +92,7 @@ export function Hero() {
                 </div>
               </div>
               {/* CTA */}
-              <Link href="/utility-tools">
+              <Link href="/">
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}

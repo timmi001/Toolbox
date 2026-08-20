@@ -3,7 +3,7 @@ import { Link } from 'wouter';
 const LINKS = {
   Explore: [
     { label: 'AI Tools',        href: '/ai-tools' },
-    { label: 'Utility Tools',   href: '/utility-tools' },
+    { label: 'Utility Tools',   href: '/' },
     { label: 'Developer Tools', href: '/developer-tools' },
     { label: 'History',         href: '/history' },
   ],
