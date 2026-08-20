@@ -110,7 +110,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="mt-10 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mt-10 grid gap-6 xl:grid-cols-1">
       <section>
         <div className="mb-5 flex items-end justify-between gap-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Directory</div><h2 className="mt-1 text-xl font-bold text-white sm:text-2xl">Explore All Hubs</h2><p className="mt-1 text-sm text-[#8492A3]">200+ tools organized into powerful hubs</p></div><Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#7EEAC9] hover:text-white">View all hubs<ArrowRight className="h-4 w-4" /></Link></div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -118,7 +118,7 @@ export default function Home() {
         </div>
       </section>
 
-      <aside className="space-y-4">
+      <aside className="hidden space-y-4">
         <section className="rounded-[22px] border border-[#1D2B39] bg-[#0D151E] p-5">
           <div className="flex items-center justify-between"><div><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Daily streak</div><div className="mt-2 text-xl font-black text-white"><span className="mr-1">🔥</span>12 days</div></div><Flame className="h-5 w-5 text-[#F5C05A]" /></div>
           <div className="mt-5 grid grid-cols-7 gap-1.5">{['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => <div key={`${day}-${index}`} className="text-center"><div className="mb-2 text-[10px] text-[#718194]">{day}</div><div className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full ${index < 5 ? 'bg-[#25483D] text-[#5BE4B6]' : 'bg-[#182532] text-[#657589]'}`}>{index < 5 ? <Check className="h-3.5 w-3.5" /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}</div></div>)}</div>
