@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Check, ChevronDown, Code2, Copy, Download, FileText, Image, Paperclip, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2, X } from 'lucide-react';
-import { Link, useRoute } from 'wouter';
+import { Link, useLocation, useRoute } from 'wouter';
 import { generateHubResponse } from '@/lib/hub-ai';
 
 const HUBS = {
@@ -87,13 +87,6 @@ function AiAssistantWorkspace() {
   return (
     <div className="min-h-[calc(100vh-76px)] bg-[#090D12] text-white">
       <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-[1480px]">
-        <aside className="hidden w-64 shrink-0 border-r border-[#1B2936] bg-[#080C11] p-4 lg:block">
-          <div className="mb-5 flex items-center justify-between"><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#718194]">Conversations</div><button type="button" onClick={() => { setMessages([]); setPrompt(''); setError(''); }} className="rounded-lg p-2 text-[#8190A0] hover:bg-[#13202A] hover:text-white" aria-label="New conversation"><FileText className="h-4 w-4" /></button></div>
-          <button type="button" onClick={() => { setMessages([]); setPrompt(''); setError(''); }} className="mb-3 flex w-full items-center gap-2 rounded-xl border border-[#214238] bg-[#10271F] px-3 py-2.5 text-left text-xs font-semibold text-[#A9F2D8]"><Sparkles className="h-4 w-4" />New conversation</button>
-          <div className="space-y-1">{['Getting started', 'Content ideas', 'Research notes'].map((item, index) => <button key={item} type="button" onClick={() => setPrompt(`${item}: `)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs ${index === 0 ? 'bg-[#14222D] text-white' : 'text-[#7F8FA1] hover:bg-[#111B25] hover:text-white'}`}><span className="h-1.5 w-1.5 rounded-full bg-[#4FD9B0]" />{item}</button>)}</div>
-          <div className="mt-8 border-t border-[#1B2936] pt-4 text-[10px] leading-5 text-[#657589]">Your conversations stay in this browser. No sign in required.</div>
-        </aside>
-
         <main className="flex min-w-0 flex-1 flex-col">
           <header className="flex items-start justify-between gap-4 border-b border-[#1B2936] px-4 py-5 sm:px-8"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowLeft className="h-4 w-4" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#245143] bg-[#103027] text-[#5BE4B6]"><Sparkles className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold tracking-tight text-white">AI Assistant</h1><p className="mt-1 hidden truncate text-xs text-[#8492A3] sm:block sm:text-sm">Your everyday AI for thinking, writing, learning and getting things done.</p></div></div><div className="relative flex shrink-0 gap-1"><button type="button" onClick={() => setSettingsOpen((open) => !open)} className="rounded-xl p-2.5 text-[#8190A0] hover:bg-[#13202A] hover:text-white" aria-label="Settings"><Settings2 className="h-4 w-4" /></button><SettingsPopover open={settingsOpen} onClose={() => setSettingsOpen(false)} value={responseStyle} onChange={(value) => { setResponseStyle(value); writePreference('ai-response-style', value); }} /><Link href="/history" className="rounded-xl p-2.5 text-[#8190A0] hover:bg-[#13202A] hover:text-white" aria-label="History"><Search className="h-4 w-4" /></Link></div></header>
 
@@ -299,7 +292,18 @@ function CareerHubWorkspace() {
   );
 }
 
-const BUSINESS_MODES = ['Business Plan', 'Marketing', 'Sales', 'Strategy', 'Customer Support', 'Finance', 'Research', 'Content'];
+const BUSINESS_MODES = [
+  ['Ideas', 'Turn rough ideas into clear opportunities and next steps.', '💡'],
+  ['Research', 'Explore customers, markets, competitors, and evidence.', '📊'],
+  ['Build', 'Shape plans, campaigns, offers, and business documents.', '📝'],
+  ['Money', 'Work through pricing, budgets, revenue, and financial choices.', '💰'],
+] as const;
+
+function BusinessInsights({ onBack }: { onBack: () => void }) {
+  const history = typeof window === 'undefined' ? [] : JSON.parse(window.localStorage.getItem('toolboxx_history_v1') ?? '[]') as Array<{ toolCategory?: string; createdAt?: string }>;
+  const recent = history.filter((entry) => entry.toolCategory === 'ai' || entry.toolCategory === 'business').slice(0, 5);
+  return <section className="mx-auto max-w-[1100px] px-3 py-5 sm:px-6 lg:px-8 lg:py-8"><div className="mb-6 flex items-start justify-between gap-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F5C05A]">Business dashboard</div><h1 className="mt-1 text-2xl font-black text-white sm:text-3xl">Business Insights</h1><p className="mt-2 text-sm text-[#91A0B0]">A focused view of your business activity and momentum.</p></div><button type="button" onClick={onBack} className="rounded-xl border border-[#263746] bg-[#101A24] px-3 py-2 text-xs font-semibold text-[#C5D0DB] hover:text-white">Back to chat</button></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-4"><div className="text-[10px] uppercase tracking-[0.16em] text-[#718194]">AI sessions</div><div className="mt-2 text-2xl font-black text-white">{history.length}</div></div><div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-4"><div className="text-[10px] uppercase tracking-[0.16em] text-[#718194]">Projects</div><div className="mt-2 text-2xl font-black text-white">3</div></div><div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-4"><div className="text-[10px] uppercase tracking-[0.16em] text-[#718194]">Plan progress</div><div className="mt-2 text-2xl font-black text-[#5BE4B6]">68%</div></div><div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-4"><div className="text-[10px] uppercase tracking-[0.16em] text-[#718194]">Active focus</div><div className="mt-2 text-2xl font-black text-[#F5C05A]">Build</div></div></div><div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-5"><div className="text-sm font-bold text-white">Project progress</div><div className="mt-5 space-y-4">{[['Q3 launch plan', 78], ['Customer growth strategy', 54], ['Freelance proposal', 32]].map(([name, value]) => <div key={name as string}><div className="flex justify-between text-xs text-[#C5D0DB]"><span>{name}</span><span>{value}%</span></div><div className="mt-2 h-2 rounded-full bg-[#1B2935]"><div className="h-full rounded-full bg-gradient-to-r from-[#F5C05A] to-[#5BE4B6]" style={{ width: `${value}%` }} /></div></div>)}</div></div><div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-5"><div className="text-sm font-bold text-white">Recent activity</div>{recent.length ? <div className="mt-4 space-y-3">{recent.map((entry, index) => <div key={`${entry.createdAt}-${index}`} className="flex items-center justify-between text-xs text-[#C5D0DB]"><span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-[#F5C05A]" />Business AI session</span><span className="text-[#718194]">{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : 'Recent'}</span></div>)}</div> : <p className="mt-4 text-xs text-[#718194]">Complete a Business AI session to see activity here.</p>}</div></div></section>;
+}
 
 const BUSINESS_TOOLS = [
   ['Business Plan Generator', '/tools/business/ai-business-name', FileText],

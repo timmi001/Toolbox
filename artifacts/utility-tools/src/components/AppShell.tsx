@@ -1,22 +1,25 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useRoute } from 'wouter';
 import {
-  Archive,
   BarChart3,
   BookOpen,
   BriefcaseBusiness,
   Calculator,
+  CalendarDays,
   Clock3,
   Code2,
   FileArchive,
   FileText,
   FolderOpen,
-  Grid2X2,
+  Files,
   Heart,
   History,
   Image,
+  Layers3,
+  ListChecks,
   LayoutDashboard,
   Menu,
+  MessageCircleQuestion,
   PanelLeftClose,
   PanelLeftOpen,
   PanelRightClose,
@@ -31,11 +34,14 @@ import {
   X,
   Zap,
   Activity,
+  AudioLines,
+  PenLine,
+  ArrowRight,
   Check,
   Flame,
+  Wand2,
 } from 'lucide-react';
 import { getCurrentStreak } from '@/utils/activityStorage';
-import { loadHistory } from '@/utils/historyStorage';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -78,18 +84,18 @@ const utilityHubItems: NavItem[] = [
   { label: 'Calculator & Converter', href: '/calculators', icon: Calculator },
 ];
 
-const discoverItems: NavItem[] = [
-  { label: 'All Tools', href: '/', icon: Grid2X2, badge: '200+' },
-  { label: 'Popular Tools', href: '/', icon: Zap },
-  { label: 'New Tools', href: '/', icon: Plus },
-  { label: 'Categories', href: '/', icon: Archive },
-];
-
 const navGroups: NavGroup[] = [
   { label: 'MY WORKSPACE', items: workspaceItems },
   { label: 'HUBS', items: dailyHubItems },
   { label: 'UTILITY', items: utilityHubItems },
-  { label: 'DISCOVER', items: discoverItems },
+];
+
+const primaryHubs = [
+  { label: 'AI Assistant', href: '/hub/ai', icon: Sparkles },
+  { label: 'Creator Hub', href: '/hub/creator', icon: Wand2 },
+  { label: 'Study Hub', href: '/hub/study', icon: BookOpen },
+  { label: 'Career Hub', href: '/hub/career', icon: BriefcaseBusiness },
+  { label: 'Business Hub', href: '/hub/business', icon: BarChart3 },
 ];
 
 function isItemActive(location: string, href: string) {
@@ -171,20 +177,109 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
   );
 }
 
+const hubSidebarItems = {
+  ai: [
+    { label: 'New Chat', href: '/hub/ai', icon: Plus },
+    { label: 'Recent Chats', href: '/history', icon: History },
+    { label: 'Saved Chats', href: '/history', icon: Heart },
+    { label: 'Projects', href: '/hub/business', icon: FolderOpen },
+    { label: 'AI Tools', href: '/ai-tools', icon: Sparkles },
+    { label: 'Files', href: '/history', icon: Files },
+    { label: 'Settings', href: '/contact', icon: Settings2 },
+  ],
+  creator: [
+    { label: 'Create', href: '/hub/creator', icon: Plus },
+    { label: 'My Projects', href: '/history', icon: FolderOpen },
+    { label: 'Image Generator', href: '/image-tools', icon: Image },
+    { label: 'Video Generator', href: '/video-tools', icon: Video },
+    { label: 'Audio', href: '/audio-tools', icon: AudioLines },
+    { label: 'Script Writer', href: '/tools/ai/ai-writer', icon: FileText },
+    { label: 'Editor', href: '/tools/text/markdown-preview', icon: PenLine },
+    { label: 'Templates', href: '/ai-tools', icon: LayoutDashboard },
+    { label: 'Files', href: '/history', icon: Files },
+    { label: 'Settings', href: '/contact', icon: Settings2 },
+  ],
+  study: [
+    { label: 'Study Home', href: '/hub/study', icon: LayoutDashboard },
+    { label: 'AI Tutor', href: '/tools/ai/ai-tutor-chat', icon: Sparkles },
+    { label: 'My Courses', href: '/hub/study', icon: BookOpen },
+    { label: 'Notes', href: '/tools/ai/ai-study-notes-generator', icon: FileText },
+    { label: 'Flashcards', href: '/tools/ai/ai-flashcard-generator', icon: Layers3 },
+    { label: 'Practice Questions', href: '/tools/ai/ai-practice-questions', icon: ListChecks },
+    { label: 'Quizzes', href: '/tools/ai/ai-mock-exam-generator', icon: Check },
+    { label: 'Study Planner', href: '/tools/ai/ai-study-planner', icon: CalendarDays },
+    { label: 'Progress', href: '/hub/study', icon: BarChart3 },
+    { label: 'Streak', href: '/hub/study', icon: Flame },
+    { label: 'Settings', href: '/contact', icon: Settings2 },
+  ],
+  career: [
+    { label: 'Career Home', href: '/hub/career', icon: LayoutDashboard },
+    { label: 'AI Career Coach', href: '/hub/career', icon: BriefcaseBusiness },
+    { label: 'Resume', href: '/tools/ai/ai-resume-builder', icon: FileText },
+    { label: 'Cover Letter', href: '/tools/ai/ai-cover-letter', icon: PenLine },
+    { label: 'Interview Practice', href: '/tools/ai/ai-interview-practice', icon: MessageCircleQuestion },
+    { label: 'Job Search', href: '/tools/ai/ai-interview-questions', icon: Search },
+    { label: 'Saved Jobs', href: '/history', icon: Heart },
+    { label: 'Applications', href: '/history', icon: FolderOpen },
+    { label: 'Skills', href: '/tools/ai/ai-resume-bullet-points', icon: ListChecks },
+    { label: 'Career Progress', href: '/hub/career', icon: BarChart3 },
+    { label: 'Settings', href: '/contact', icon: Settings2 },
+  ],
+  business: [
+    { label: 'New Chat', href: '/hub/business', icon: Plus },
+    { label: 'History', href: '/history', icon: History },
+    { label: 'Projects', href: '/hub/business?view=projects', icon: FolderOpen },
+    { label: 'Business Insights', href: '/hub/business?view=insights', icon: BarChart3 },
+    { label: 'Settings', href: '/contact', icon: Settings2 },
+  ],
+} as const;
+
+function HubNavigationSidebar() {
+  const [location] = useLocation();
+  const hubKey = location.startsWith('/hub/creator') ? 'creator' : location.startsWith('/hub/study') ? 'study' : location.startsWith('/hub/career') ? 'career' : location.startsWith('/hub/business') ? 'business' : 'ai';
+  const items = hubSidebarItems[hubKey];
+  const title = hubKey === 'creator' ? 'Creator Hub' : hubKey === 'study' ? 'Study Hub' : hubKey === 'career' ? 'Career Hub' : hubKey === 'business' ? 'Business Hub' : 'AI Assistant';
+
+  return (
+    <aside className="fixed inset-y-0 left-[264px] z-20 hidden w-[220px] border-r border-[#172331] bg-[#0C121A] lg:block">
+      <div className="flex h-full flex-col px-4 py-6">
+        <div className="mb-6 flex items-center gap-2 border-b border-[#172331] pb-5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#123B35] text-[#5BE4B6]"><Sparkles className="h-4 w-4" /></span>
+          <div><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#637387]">{title}</div><div className="mt-1 text-sm font-bold text-white">Workspace</div></div>
+        </div>
+        <nav className="space-y-1">
+          {items.map(({ label, href, icon: Icon }) => {
+            const active = label === 'New Chat' ? location === '/hub/ai' : location === href;
+            return <Link key={label} href={href} className={`flex min-h-10 items-center gap-3 rounded-xl px-3 text-xs font-semibold transition ${active ? 'bg-[#183044] text-white shadow-[inset_2px_0_0_#35D5B0]' : 'text-[#8B98A8] hover:bg-[#111F2B] hover:text-white'}`}><Icon className={`h-4 w-4 ${active ? 'text-[#57E4BD]' : 'text-[#758396]'}`} />{label}</Link>;
+          })}
+        </nav>
+        <p className="mt-auto border-t border-[#172331] pt-4 text-[10px] leading-5 text-[#657589]">Your chats, files, and projects stay ready in this browser.</p>
+      </div>
+    </aside>
+  );
+}
+
+function MobileHubNavigation({ open, onClose, onOpen }: { open: boolean; onClose: () => void; onOpen: () => void }) {
+  const [location] = useLocation();
+  const hubKey = location.startsWith('/hub/creator') ? 'creator' : location.startsWith('/hub/study') ? 'study' : location.startsWith('/hub/career') ? 'career' : location.startsWith('/hub/business') ? 'business' : 'ai';
+  const items = hubSidebarItems[hubKey];
+  const title = hubKey === 'creator' ? 'Creator Hub' : hubKey === 'study' ? 'Study Hub' : hubKey === 'career' ? 'Career Hub' : hubKey === 'business' ? 'Business Hub' : 'AI Assistant';
+  return <>
+    <div className="flex h-14 items-center border-b border-[#172331] bg-[#0C121A] px-3 lg:hidden"><button type="button" onClick={onOpen} className="flex h-10 items-center gap-2 rounded-xl border border-[#263746] bg-[#101823] px-3 text-xs font-semibold text-[#C5D0DB]" aria-label={`Open ${title} sidebar`}><Menu className="h-4 w-4" />Menu</button><span className="ml-3 text-sm font-bold text-white">{title}</span></div>
+    {open && <><button type="button" onClick={onClose} className="fixed inset-0 z-40 bg-black/60 lg:hidden" aria-label={`Close ${title} sidebar`} /><aside className="fixed inset-y-0 left-0 z-50 flex w-[min(280px,calc(100vw-40px))] flex-col border-r border-[#172331] bg-[#0C121A] p-4 shadow-2xl lg:hidden"><div className="mb-5 flex items-center justify-between"><div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-[#5BE4B6]" /><span className="text-sm font-bold text-white">{title}</span></div><button type="button" onClick={onClose} aria-label={`Close ${title} sidebar`} className="text-[#8B98A8] hover:text-white"><X className="h-4 w-4" /></button></div><nav className="space-y-1">{items.map(({ label, href, icon: Icon }) => <Link key={label} href={href} onClick={onClose} className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-[#C5D0DB] hover:bg-[#183044] hover:text-white"><Icon className="h-4 w-4 text-[#57E4BD]" />{label}</Link>)}</nav></aside></>}
+  </>;
+}
+
 function RightSidebar({ onClose }: { onClose: () => void }) {
   const [streak, setStreak] = useState(() => getCurrentStreak());
-  const [recentActivity, setRecentActivity] = useState(() => loadHistory().slice(0, 3));
 
   useEffect(() => {
     const refresh = () => {
       setStreak(getCurrentStreak());
-      setRecentActivity(loadHistory().slice(0, 3));
     };
     window.addEventListener('toolbuxx-activity-updated', refresh);
-    window.addEventListener('toolboxx-history-updated', refresh);
     return () => {
       window.removeEventListener('toolbuxx-activity-updated', refresh);
-      window.removeEventListener('toolboxx-history-updated', refresh);
     };
   }, []);
 
@@ -228,10 +323,6 @@ function RightSidebar({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-[#172331] bg-[#0A0E14] px-4 py-4">
-          <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#637387]">Recent activity</div>
-          {recentActivity.length > 0 ? <div className="space-y-2.5">{recentActivity.map((entry) => <Link key={entry.id} href="/history" onClick={onClose} className="flex items-center justify-between gap-3 text-sm"><span className="flex min-w-0 items-center gap-2.5 text-[#C5D0DB]"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#5BE4B6]" /><span className="truncate">{entry.toolName}</span></span><span className="shrink-0 text-[11px] text-[#718194]">{new Date(entry.createdAt).toLocaleDateString()}</span></Link>)}</div> : <p className="text-xs text-[#718194]">No activity yet.</p>}
-        </div>
       </aside>
     </>
   );
@@ -272,9 +363,11 @@ export function AppShell({ children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [hubMobileOpen, setHubMobileOpen] = useState(false);
   const [location] = useLocation();
   useEffect(() => setMobileOpen(false), [location]);
   useEffect(() => setRightOpen(false), [location]);
+  useEffect(() => setHubMobileOpen(false), [location]);
 
   return (
     <div className="min-h-screen bg-[#0A0C10] text-white selection:bg-[#3BDDB2]/20">
@@ -296,8 +389,11 @@ export function AppShell({ children }: AppShellProps) {
 
       {rightOpen && <RightSidebar onClose={() => setRightOpen(false)} />}
 
-      <div className={`flex min-h-screen flex-col transition-[margin] duration-200 ${collapsed ? 'lg:ml-[76px]' : 'lg:ml-[264px]'}`}>
+      {location.startsWith('/hub/') && <HubNavigationSidebar />}
+
+      <div className={`flex min-h-screen flex-col transition-[margin] duration-200 ${location.startsWith('/hub/') ? 'lg:ml-[484px]' : collapsed ? 'lg:ml-[76px]' : 'lg:ml-[264px]'}`}>
         {!location.startsWith('/hub/') && <GlobalHeader onDesktopToggle={() => setCollapsed((value) => !value)} onMobileOpen={() => setMobileOpen(true)} onRightOpen={() => setRightOpen(true)} sidebarCollapsed={collapsed} />}
+        {location.startsWith('/hub/') && <MobileHubNavigation open={hubMobileOpen} onOpen={() => setHubMobileOpen(true)} onClose={() => setHubMobileOpen(false)} />}
         <main className="min-w-0 flex-1">{children}</main>
       </div>
     </div>
