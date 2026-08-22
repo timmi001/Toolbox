@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { Link } from 'wouter';
 import { EmptyHistory } from '@/components/history/EmptyHistory';
 import { HistoryCard } from '@/components/history/HistoryCard';
 import { HistoryToolbar } from '@/components/history/HistoryToolbar';
@@ -17,6 +19,9 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-6">
+      <Link href="/" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border/60 bg-card/60 px-3 text-sm font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" /> Back to dashboard
+      </Link>
       <div className="space-y-4">
         <SearchBar value={query} onChange={setQuery} />
         <HistoryToolbar

@@ -292,12 +292,14 @@ function CareerHubWorkspace() {
   );
 }
 
-const BUSINESS_MODES = [
+const UNIFIED_BUSINESS_MODES = [
   ['Ideas', 'Turn rough ideas into clear opportunities and next steps.', '💡'],
   ['Research', 'Explore customers, markets, competitors, and evidence.', '📊'],
   ['Build', 'Shape plans, campaigns, offers, and business documents.', '📝'],
   ['Money', 'Work through pricing, budgets, revenue, and financial choices.', '💰'],
 ] as const;
+
+const BUSINESS_MODES = ['Business Plan', 'Marketing', 'Sales', 'Strategy', 'Customer Support', 'Finance', 'Research', 'Content'];
 
 function BusinessInsights({ onBack }: { onBack: () => void }) {
   const history = typeof window === 'undefined' ? [] : JSON.parse(window.localStorage.getItem('toolboxx_history_v1') ?? '[]') as Array<{ toolCategory?: string; createdAt?: string }>;
@@ -482,6 +484,75 @@ function CreatorStudioWorkspace() {
   );
 }
 
+const UNIFIED_HUBS = {
+  creator: {
+    title: 'Creator Hub',
+    subtitle: 'Create polished content, campaigns, and creative direction with AI.',
+    icon: Wand2,
+    modes: [['Create', 'Turn an idea into production-ready content.'], ['Plan', 'Shape a clear creative brief and direction.'], ['Polish', 'Improve tone, structure, and clarity.'], ['Repurpose', 'Adapt one idea for multiple formats.']],
+    tools: [['Instagram Caption', '/tools/ai/ai-instagram-caption'], ['YouTube Title', '/tools/ai/ai-youtube-title'], ['Ad Copy', '/tools/ai/ai-ad-copy-generator']],
+  },
+  study: {
+    title: 'Study Hub',
+    subtitle: 'Learn faster with a focused AI tutor for understanding and practice.',
+    icon: BookOpen,
+    modes: [['Explain', 'Break down a difficult topic step by step.'], ['Summarize', 'Turn notes into a clear revision guide.'], ['Practice', 'Test understanding with useful questions.'], ['Plan', 'Build a realistic study routine.']],
+    tools: [['Practice Questions', '/tools/ai/ai-practice-questions'], ['Flashcards', '/tools/ai/ai-flashcard-generator'], ['Study Planner', '/tools/ai/ai-study-planner']],
+  },
+  career: {
+    title: 'Career Hub',
+    subtitle: 'Prepare stronger applications and make confident career decisions with AI.',
+    icon: BriefcaseBusiness,
+    modes: [['Resume', 'Strengthen experience and achievement statements.'], ['Cover Letter', 'Write a specific, persuasive application.'], ['Interview', 'Practice answers and improve your delivery.'], ['Career Advice', 'Turn your next goal into an action plan.']],
+    tools: [['Resume Builder', '/tools/ai/ai-resume-builder'], ['Cover Letter', '/tools/ai/ai-cover-letter'], ['Interview Practice', '/tools/ai/ai-interview-practice']],
+  },
+  business: {
+    title: 'Business Hub',
+    subtitle: 'Think, plan, and execute business ideas in one focused AI workspace.',
+    icon: BarChart3,
+    modes: [['Ideas', 'Turn rough thoughts into clear opportunities.'], ['Research', 'Explore customers, markets, and competitors.'], ['Build', 'Create plans, campaigns, and business documents.'], ['Money', 'Work through pricing, budgets, and revenue.']],
+    tools: [['Business Names', '/tools/business/ai-business-name'], ['Ad Copy', '/tools/ai/ai-ad-copy-generator'], ['Invoice Generator', '/tools/business/invoice-generator']],
+  },
+} as const;
+
+type UnifiedHubKey = keyof typeof UNIFIED_HUBS;
+
+function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
+  const [location, navigate] = useLocation();
+  const config = UNIFIED_HUBS[hub];
+  const [mode, setMode] = useState<string>(config.modes[0][0]);
+  const [prompt, setPrompt] = useState('');
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  if (hub === 'business' && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'insights') {
+    return <BusinessInsights onBack={() => navigate('/hub/business')} />;
+  }
+
+  const submit = async () => {
+    const value = prompt.trim();
+    if (!value || loading) return;
+    setLoading(true);
+    setError('');
+    try {
+      const answer = await generateHubResponse(hub, { prompt: value, mode });
+      setMessages((current) => [...current, { role: 'user', text: value }, { role: 'assistant', text: answer }]);
+      setPrompt('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to reach the AI service.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const latestAnswer = messages.filter((message) => message.role === 'assistant').at(-1)?.text ?? '';
+  const copyAnswer = async () => { if (latestAnswer) { await navigator.clipboard?.writeText(latestAnswer); setCopied(true); window.setTimeout(() => setCopied(false), 1500); } };
+
+  return <div className="min-h-[calc(100vh-76px)] bg-[#090D12] text-white"><div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-[1180px] flex-col px-3 py-4 sm:px-6 lg:px-8 lg:py-6"><header className="flex items-start justify-between gap-4 border-b border-[#1B2936] pb-5"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowLeft className="h-4 w-4" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#245143] bg-[#103027] text-[#5BE4B6]"><config.icon className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold tracking-tight text-white">{config.title}</h1><p className="mt-1 hidden truncate text-sm text-[#8492A3] sm:block">{config.subtitle}</p></div></div><Link href="/history" className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#8190A0] hover:text-white" aria-label="History"><Search className="h-4 w-4" /></Link></header><main className="mx-auto flex w-full max-w-3xl flex-1 flex-col"><div className="flex-1 py-5">{messages.length === 0 ? <div className="flex min-h-[280px] flex-col items-center justify-center text-center"><div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#245143] bg-[#103027] text-[#5BE4B6]"><config.icon className="h-7 w-7" /></div><h2 className="mt-5 text-2xl font-bold tracking-tight text-white">How can AI help with {config.title.replace(' Hub', '')}?</h2><p className="mt-3 max-w-md text-sm leading-6 text-[#8492A3]">Choose a focused mode or describe what you need in your own words.</p></div> : <div className="space-y-5">{messages.map((message, index) => <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[90%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === 'user' ? 'bg-[#16483D] text-[#E7FFF7]' : 'border border-[#1E2D3B] bg-[#0E151D] text-[#CBD6E0]'}`}>{message.text}{message.role === 'assistant' && index === messages.length - 1 && <button type="button" onClick={copyAnswer} className="mt-3 flex items-center gap-1.5 border-t border-[#1E2D3B] pt-2 text-xs text-[#8492A3] hover:text-white"><Copy className="h-3.5 w-3.5" />{copied ? 'Copied' : 'Copy response'}</button>}</div></div>)}</div>}</div><div className="sticky bottom-3 mt-auto pt-3"><div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">{config.modes.map(([label, description]) => <button key={label} type="button" onClick={() => { setMode(label); setPrompt(`${label}: `); }} className={`min-w-[130px] shrink-0 rounded-xl border p-3 text-left transition ${mode === label ? 'border-[#4FD9B0]/60 bg-[#12352D] text-[#A9F2D8]' : 'border-[#1F2D3A] bg-[#0E151D] text-[#91A0B0] hover:border-[#3DDBC0]/60'}`}><span className="block text-xs font-semibold text-white">{label}</span><span className="mt-1 block line-clamp-2 text-[10px] leading-4 text-[#718194]">{description}</span></button>)}</div>{error && <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-200"><span>{error}</span><button type="button" onClick={() => void submit()} className="font-semibold text-white underline">Retry</button></div>}{loading && <div className="mb-3 text-xs text-[#A9F2D8]">Toolbuxx AI is thinking...</div>}<div className="rounded-2xl border border-[#2A3A48] bg-[#0E151D] p-2 shadow-[0_12px_40px_rgba(0,0,0,0.3)] focus-within:border-[#3DDBC0]/70"><textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void submit(); } }} rows={3} placeholder="Describe what you need..." className="w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-white outline-none placeholder:text-[#68798A]" /><div className="flex items-center justify-between px-2 pb-1"><span className="text-[11px] text-[#718194]">{mode} mode</span><button type="button" onClick={() => void submit()} disabled={!prompt.trim() || loading} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#10B981] text-[#061410] transition hover:bg-[#34D399] disabled:cursor-not-allowed disabled:opacity-50" aria-label={`Generate ${config.title} response`}><ArrowUp className="h-4 w-4" /></button></div></div><div className="mt-4 flex flex-wrap gap-2">{config.tools.map(([label, href]) => <Link key={label} href={href} className="inline-flex items-center gap-1.5 rounded-lg border border-[#263746] bg-[#101A24] px-3 py-2 text-xs text-[#A9F2D8] hover:border-[#3DDBC0]/60">{label}<ArrowRight className="h-3 w-3" /></Link>)}</div></div></main></div></div>;
+}
+
 export default function HubWorkspace() {
   const [, params] = useRoute('/hub/:hub');
   const key = (params?.hub ?? 'ai') as HubKey;
@@ -489,10 +560,10 @@ export default function HubWorkspace() {
   const Icon = hub.icon;
 
   if (key === 'ai') return <AiAssistantWorkspace />;
-  if (key === 'creator') return <CreatorStudioWorkspace />;
-  if (key === 'study') return <StudyHubWorkspace />;
-  if (key === 'career') return <CareerHubWorkspace />;
-  if (key === 'business') return <BusinessHubWorkspace />;
+  if (key === 'creator') return <UnifiedHubWorkspace hub="creator" />;
+  if (key === 'study') return <UnifiedHubWorkspace hub="study" />;
+  if (key === 'career') return <UnifiedHubWorkspace hub="career" />;
+  if (key === 'business') return <UnifiedHubWorkspace hub="business" />;
 
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
