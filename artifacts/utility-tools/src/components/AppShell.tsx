@@ -370,7 +370,7 @@ export function AppShell({ children }: AppShellProps) {
   useEffect(() => setHubMobileOpen(false), [location]);
 
   return (
-    <div className="min-h-screen bg-[#0A0C10] text-white selection:bg-[#3BDDB2]/20">
+    <div className="min-h-screen bg-[#121212] text-white selection:bg-[#3BDDB2]/20">
       <aside className={`fixed inset-y-0 left-0 z-50 hidden border-r border-[#172331] bg-[#0C121A] transition-[width] duration-200 lg:block ${collapsed ? 'w-[76px]' : 'w-[264px]'}`}>
         <SidebarContent collapsed={collapsed} onNavigate={() => setMobileOpen(false)} />
       </aside>
