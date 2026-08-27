@@ -5,17 +5,17 @@ import { Link, useLocation, useRoute } from 'wouter';
 import { generateHubResponse } from '@/lib/hub-ai';
 
 const HUBS = {
-  ai: { title: 'AI Assistant', description: 'Write, research, analyze, and brainstorm in one focused workspace.', icon: Sparkles, color: '#46E3B5', actions: [['AI Article Writer', '/tools/ai/ai-writer'], ['AI Summarizer', '/tools/ai/ai-summarizer'], ['AI Grammar Checker', '/tools/ai/ai-grammar-checker']] },
-  creator: { title: 'Creator Hub', description: 'Turn rough ideas into polished content, campaigns, and social posts.', icon: Wand2, color: '#FF66B8', actions: [['Instagram Caption', '/tools/ai/ai-instagram-caption'], ['YouTube Title', '/tools/ai/ai-youtube-title'], ['Ad Copy', '/tools/ai/ai-ad-copy-generator']] },
-  study: { title: 'Study Hub', description: 'Build notes, practice questions, flashcards, and study plans.', icon: FileText, color: '#5C8DFF', actions: [['Practice Questions', '/tools/ai/ai-practice-questions'], ['Flashcards', '/tools/ai/ai-flashcard-generator'], ['Study Planner', '/tools/ai/ai-study-planner']] },
-  career: { title: 'Career Hub', description: 'Prepare resumes, cover letters, interviews, and professional bios.', icon: FileText, color: '#A779FF', actions: [['Resume Builder', '/tools/ai/ai-resume-builder'], ['Cover Letter', '/tools/ai/ai-cover-letter'], ['Interview Practice', '/tools/ai/ai-interview-practice']] },
-  business: { title: 'Business Hub', description: 'Create useful business documents, positioning, and marketing copy.', icon: Wand2, color: '#F7B83B', actions: [['Invoice Generator', '/tools/business/invoice-generator'], ['Business Name', '/tools/business/ai-business-name'], ['Slogan Generator', '/tools/business/ai-slogan-generator']] },
-  pdf: { title: 'PDF & Documents', description: 'Merge, split, compress, and convert documents securely in your browser.', icon: FileText, color: '#FF7777', actions: [['Merge PDF', '/tools/pdf/merge-pdf'], ['Compress PDF', '/tools/pdf/compress-pdf'], ['PDF to JPG', '/tools/pdf/pdf-to-jpg']] },
-  image: { title: 'Image Hub', description: 'Resize, compress, crop, and convert image assets quickly.', icon: Image, color: '#F78BCB', actions: [['Image Resizer', '/tools/image/image-resizer'], ['Image Compressor', '/tools/image/image-compressor'], ['JPG to PNG', '/tools/image/jpg-to-png']] },
-  video: { title: 'Video Hub', description: 'Trim, merge, compress, and convert videos with browser-first tools.', icon: Video, color: '#48D9FF', actions: [['Video Trimmer', '/tools/video/video-trimmer'], ['Video Compressor', '/tools/video/video-compressor'], ['Video Converter', '/tools/video/video-converter']] },
-  audio: { title: 'Audio Hub', description: 'Trim, convert, merge, and enhance audio without leaving your workspace.', icon: Video, color: '#FA8080', actions: [['Audio Trimmer', '/tools/audio/audio-trimmer'], ['Audio Merger', '/tools/audio/audio-merger'], ['MP3 Converter', '/tools/audio/mp3-converter']] },
-  developer: { title: 'Developer Hub', description: 'Format, validate, debug, and convert code and data faster.', icon: Code2, color: '#32D5B2', actions: [['JSON Formatter', '/tools/developer/json-formatter'], ['Regex Tester', '/tools/developer/regex-tester'], ['SQL Formatter', '/tools/developer/sql-formatter']] },
-  calculator: { title: 'Calculator & Converter', description: 'Solve everyday calculations and convert values with confidence.', icon: Code2, color: '#B39BFF', actions: [['Unit Converter', '/tools/calculators/unit-converter'], ['Percentage Calculator', '/tools/calculators/percentage-calculator'], ['Currency Converter', '/tools/calculators/currency-converter']] },
+  ai: { title: 'AI Assistant', description: 'Write, research, analyze, and brainstorm in one focused workspace.', icon: Sparkles, color: '#46E3B5', actions: [] },
+  creator: { title: 'Creator Hub', description: 'Turn rough ideas into polished content, campaigns, and social posts.', icon: Wand2, color: '#FF66B8', actions: [] },
+  study: { title: 'Study Hub', description: 'Learn, practice, and build a study routine with focused AI guidance.', icon: FileText, color: '#5C8DFF', actions: [] },
+  career: { title: 'Career Hub', description: 'Prepare for your next opportunity with focused AI guidance.', icon: FileText, color: '#A779FF', actions: [] },
+  business: { title: 'Business Hub', description: 'Plan, research, and develop business ideas in one focused workspace.', icon: Wand2, color: '#F7B83B', actions: [] },
+  pdf: { title: 'PDF & Documents', description: 'A focused workspace for document planning and assistance.', icon: FileText, color: '#FF7777', actions: [] },
+  image: { title: 'Image Hub', description: 'A focused workspace for image planning and assistance.', icon: Image, color: '#F78BCB', actions: [] },
+  video: { title: 'Video Hub', description: 'A focused workspace for video planning and assistance.', icon: Video, color: '#48D9FF', actions: [] },
+  audio: { title: 'Audio Hub', description: 'A focused workspace for audio planning and assistance.', icon: Video, color: '#FA8080', actions: [] },
+  developer: { title: 'Developer Hub', description: 'A focused workspace for development planning and assistance.', icon: Code2, color: '#32D5B2', actions: [] },
+  calculator: { title: 'Calculator & Converter', description: 'A focused workspace for calculation planning and assistance.', icon: Code2, color: '#B39BFF', actions: [] },
 } as const;
 
 type HubKey = keyof typeof HUBS;
@@ -489,29 +489,29 @@ const UNIFIED_HUBS = {
     title: 'Creator Hub',
     subtitle: 'Create polished content, campaigns, and creative direction with AI.',
     icon: Wand2,
+    tools: [],
     modes: [['Create', 'Turn an idea into production-ready content.'], ['Plan', 'Shape a clear creative brief and direction.'], ['Polish', 'Improve tone, structure, and clarity.'], ['Repurpose', 'Adapt one idea for multiple formats.']],
-    tools: [['Instagram Caption', '/tools/ai/ai-instagram-caption'], ['YouTube Title', '/tools/ai/ai-youtube-title'], ['Ad Copy', '/tools/ai/ai-ad-copy-generator']],
   },
   study: {
     title: 'Study Hub',
     subtitle: 'Learn faster with a focused AI tutor for understanding and practice.',
     icon: BookOpen,
+    tools: [],
     modes: [['Explain', 'Break down a difficult topic step by step.'], ['Summarize', 'Turn notes into a clear revision guide.'], ['Practice', 'Test understanding with useful questions.'], ['Plan', 'Build a realistic study routine.']],
-    tools: [['Practice Questions', '/tools/ai/ai-practice-questions'], ['Flashcards', '/tools/ai/ai-flashcard-generator'], ['Study Planner', '/tools/ai/ai-study-planner']],
   },
   career: {
     title: 'Career Hub',
     subtitle: 'Prepare stronger applications and make confident career decisions with AI.',
     icon: BriefcaseBusiness,
+    tools: [],
     modes: [['Resume', 'Strengthen experience and achievement statements.'], ['Cover Letter', 'Write a specific, persuasive application.'], ['Interview', 'Practice answers and improve your delivery.'], ['Career Advice', 'Turn your next goal into an action plan.']],
-    tools: [['Resume Builder', '/tools/ai/ai-resume-builder'], ['Cover Letter', '/tools/ai/ai-cover-letter'], ['Interview Practice', '/tools/ai/ai-interview-practice']],
   },
   business: {
     title: 'Business Hub',
     subtitle: 'Think, plan, and execute business ideas in one focused AI workspace.',
     icon: BarChart3,
+    tools: [],
     modes: [['Ideas', 'Turn rough thoughts into clear opportunities.'], ['Research', 'Explore customers, markets, and competitors.'], ['Build', 'Create plans, campaigns, and business documents.'], ['Money', 'Work through pricing, budgets, and revenue.']],
-    tools: [['Business Names', '/tools/business/ai-business-name'], ['Ad Copy', '/tools/ai/ai-ad-copy-generator'], ['Invoice Generator', '/tools/business/invoice-generator']],
   },
 } as const;
 

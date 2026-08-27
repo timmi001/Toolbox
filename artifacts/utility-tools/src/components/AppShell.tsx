@@ -69,19 +69,9 @@ const dailyHubItems: NavItem[] = [
   { label: 'Business Hub', href: '/hub/business', icon: BarChart3 },
 ];
 
-const utilityHubItems: NavItem[] = [
-  { label: 'PDF & Documents', href: '/pdf-tools', icon: FileText },
-  { label: 'Image Hub', href: '/image-tools', icon: Image },
-  { label: 'Video Hub', href: '/video-tools', icon: Video },
-  { label: 'Audio Hub', href: '/audio-tools', icon: FileArchive },
-  { label: 'Developer Hub', href: '/developer-tools', icon: Code2 },
-  { label: 'Calculator & Converter', href: '/calculators', icon: Calculator },
-];
-
 const navGroups: NavGroup[] = [
   { label: 'MY WORKSPACE', items: workspaceItems },
   { label: 'HUBS', items: dailyHubItems },
-  { label: 'UTILITY', items: utilityHubItems },
 ];
 
 const primaryHubs = [
@@ -148,7 +138,6 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
             <div className="space-y-1">
               {group.items.map((item) => <ShellNavItem key={item.label} item={item} collapsed={collapsed} onNavigate={onNavigate} />)}
             </div>
-            {group.label === 'HUBS' && !collapsed && <div className="mb-1 mt-4 px-3 text-[10px] text-[#69798C]">Utility</div>}
           </div>
         ))}
       </nav>
@@ -177,31 +166,18 @@ const hubSidebarItems = {
     { label: 'Recent Chats', href: '/history', icon: History },
     { label: 'Saved Chats', href: '/history', icon: Heart },
     { label: 'Projects', href: '/hub/business', icon: FolderOpen },
-    { label: 'AI Tools', href: '/ai-tools', icon: Sparkles },
     { label: 'Files', href: '/history', icon: Files },
     { label: 'Settings', href: '/contact', icon: Settings2 },
   ],
   creator: [
     { label: 'Create', href: '/hub/creator', icon: Plus },
     { label: 'My Projects', href: '/history', icon: FolderOpen },
-    { label: 'Image Generator', href: '/image-tools', icon: Image },
-    { label: 'Video Generator', href: '/video-tools', icon: Video },
-    { label: 'Audio', href: '/audio-tools', icon: AudioLines },
-    { label: 'Script Writer', href: '/tools/ai/ai-writer', icon: FileText },
-    { label: 'Editor', href: '/tools/text/markdown-preview', icon: PenLine },
-    { label: 'Templates', href: '/ai-tools', icon: LayoutDashboard },
     { label: 'Files', href: '/history', icon: Files },
     { label: 'Settings', href: '/contact', icon: Settings2 },
   ],
   study: [
     { label: 'Study Home', href: '/hub/study', icon: LayoutDashboard },
-    { label: 'AI Tutor', href: '/tools/ai/ai-tutor-chat', icon: Sparkles },
     { label: 'My Courses', href: '/hub/study', icon: BookOpen },
-    { label: 'Notes', href: '/tools/ai/ai-study-notes-generator', icon: FileText },
-    { label: 'Flashcards', href: '/tools/ai/ai-flashcard-generator', icon: Layers3 },
-    { label: 'Practice Questions', href: '/tools/ai/ai-practice-questions', icon: ListChecks },
-    { label: 'Quizzes', href: '/tools/ai/ai-mock-exam-generator', icon: Check },
-    { label: 'Study Planner', href: '/tools/ai/ai-study-planner', icon: CalendarDays },
     { label: 'Progress', href: '/hub/study', icon: BarChart3 },
     { label: 'Streak', href: '/hub/study', icon: Flame },
     { label: 'Settings', href: '/contact', icon: Settings2 },
@@ -209,13 +185,8 @@ const hubSidebarItems = {
   career: [
     { label: 'Career Home', href: '/hub/career', icon: LayoutDashboard },
     { label: 'AI Career Coach', href: '/hub/career', icon: BriefcaseBusiness },
-    { label: 'Resume', href: '/tools/ai/ai-resume-builder', icon: FileText },
-    { label: 'Cover Letter', href: '/tools/ai/ai-cover-letter', icon: PenLine },
-    { label: 'Interview Practice', href: '/tools/ai/ai-interview-practice', icon: MessageCircleQuestion },
-    { label: 'Job Search', href: '/tools/ai/ai-interview-questions', icon: Search },
     { label: 'Saved Jobs', href: '/history', icon: Heart },
     { label: 'Applications', href: '/history', icon: FolderOpen },
-    { label: 'Skills', href: '/tools/ai/ai-resume-bullet-points', icon: ListChecks },
     { label: 'Career Progress', href: '/hub/career', icon: BarChart3 },
     { label: 'Settings', href: '/contact', icon: Settings2 },
   ],
