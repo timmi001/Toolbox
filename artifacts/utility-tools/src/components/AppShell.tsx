@@ -22,18 +22,13 @@ import {
   MessageCircleQuestion,
   PanelLeftClose,
   PanelLeftOpen,
-  PanelRightClose,
-  PanelRightOpen,
   Plus,
   Search,
   Settings2,
   Sparkles,
-  Quote,
-  Star,
   Video,
   X,
   Zap,
-  Activity,
   AudioLines,
   PenLine,
   ArrowRight,
@@ -41,7 +36,6 @@ import {
   Flame,
   Wand2,
 } from 'lucide-react';
-import { getCurrentStreak } from '@/utils/activityStorage';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -270,65 +264,7 @@ function MobileHubNavigation({ open, onClose, onOpen }: { open: boolean; onClose
   </>;
 }
 
-function RightSidebar({ onClose }: { onClose: () => void }) {
-  const [streak, setStreak] = useState(() => getCurrentStreak());
-
-  useEffect(() => {
-    const refresh = () => {
-      setStreak(getCurrentStreak());
-    };
-    window.addEventListener('toolbuxx-activity-updated', refresh);
-    return () => {
-      window.removeEventListener('toolbuxx-activity-updated', refresh);
-    };
-  }, []);
-
-  return (
-    <>
-      <button type="button" className="fixed inset-0 z-40 bg-black/60 lg:bg-black/30" onClick={onClose} aria-label="Close workspace panel" />
-      <aside className="fixed inset-y-0 right-0 z-50 flex w-[min(300px,calc(100vw-40px))] flex-col border-l border-[#172331] bg-[#0C121A] text-white shadow-2xl">
-        <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-[#172331] px-5">
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#637387]">Workspace pulse</div>
-            <h2 className="mt-1 text-base font-bold">Your activity</h2>
-          </div>
-          <button type="button" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#263545] bg-[#111D29] text-[#A4B0BE] hover:text-white" aria-label="Close workspace panel">
-            <PanelRightClose className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 [scrollbar-color:#263746_transparent] [scrollbar-width:thin]">
-          <p className="text-sm leading-6 text-[#91A0B0]">Keep an eye on your momentum while you move between tools.</p>
-          <div className="mt-5 space-y-3">
-            <div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-4">
-              <div className="flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#637387]">Daily streak</span><Flame className="h-4 w-4 text-[#F5C05A]" /></div>
-              <div className="mt-2 text-xl font-black">{streak} {streak === 1 ? 'day' : 'days'}</div>
-              <div className="mt-3 grid grid-cols-7 gap-1.5">{['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => <div key={`${day}-${index}`} className="text-center"><div className="mb-1 text-[9px] text-[#718194]">{day}</div><div className={`mx-auto flex h-6 w-6 items-center justify-center rounded-full ${index < 5 ? 'bg-[#25483D] text-[#5BE4B6]' : 'bg-[#182532] text-[#657589]'}`}>{index < 5 ? <Check className="h-3 w-3" /> : <span className="h-1 w-1 rounded-full bg-current" />}</div></div>)}</div>
-            </div>
-
-            <div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-4">
-              <div className="flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#637387]">Today's progress</span><Activity className="h-4 w-4 text-[#5BE4B6]" /></div>
-              <div className="mt-2 text-xl font-black">78% <span className="text-xs font-medium text-[#8391A1]">complete</span></div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#1B2935]"><div className="h-full w-[78%] rounded-full bg-gradient-to-r from-[#43D6AE] to-[#6C8CFF]" /></div>
-              <div className="mt-2 text-xs text-[#91A0B0]">12 of 15 tasks completed</div>
-            </div>
-
-            <div className="rounded-2xl border border-[#40355D] bg-gradient-to-br from-[#292044] to-[#171728] p-4"><Quote className="h-4 w-4 text-[#B18AFF]" /><p className="mt-3 text-sm leading-6 text-[#D4CCEB]">The best way to predict the future is to create it.</p><p className="mt-2 text-xs text-[#9A8BBE]">- Peter Drucker</p></div>
-
-            <div className="relative overflow-hidden rounded-2xl border border-[#315046] bg-gradient-to-br from-[#123D36] to-[#1C283A] p-4"><Star className="absolute right-4 top-4 h-4 w-4 fill-[#F5C05A] text-[#F5C05A]" /><div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#78EAC7]">Premium offer</div><p className="mt-3 text-sm font-semibold leading-6 text-white">Save 50% with yearly plan!</p><p className="mt-1 text-xs leading-5 text-[#B9D4D1]">Get full access to all premium features.</p><button type="button" className="mt-4 text-xs font-bold text-[#7EEAC9]">Explore Plans <span aria-hidden="true">-&gt;</span></button></div>
-
-            <div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-4"><div className="mb-4"><div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#637387]">Why Toolbuxx</div><h3 className="mt-1 text-base font-bold text-white">Why users choose Toolbuxx</h3></div><div className="space-y-4">{[['100% Free', 'No hidden charges'], ['No Sign Up', 'Jump right in'], ['Fast & Reliable', 'Results in seconds'], ['Privacy Focused', 'Your data is safe'], ['Always Improving', 'New tools every week']].map(([title, description]) => <div key={title} className="flex items-start gap-3"><span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-[#5BE4B6]" /><div><div className="text-xs font-semibold text-white">{title}</div><div className="mt-1 text-[11px] text-[#8492A3]">{description}</div></div></div>)}</div></div>
-
-            <div className="rounded-2xl border border-[#1D2B39] bg-[#0D151E] p-4"><div className="grid grid-cols-2 gap-y-5">{[['200+', 'Powerful Tools'], ['12', 'Hubs'], ['1M+', 'Happy Users'], ['99.9%', 'Uptime']].map(([value, label]) => <div key={label} className="text-center"><div className="text-xl font-black text-white">{value}</div><div className="mt-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#718194]">{label}</div></div>)}</div></div>
-          </div>
-        </div>
-
-      </aside>
-    </>
-  );
-}
-
-function GlobalHeader({ onDesktopToggle, onMobileOpen, onRightOpen, sidebarCollapsed }: { onDesktopToggle: () => void; onMobileOpen: () => void; onRightOpen: () => void; sidebarCollapsed: boolean }) {
+function GlobalHeader({ onDesktopToggle, onMobileOpen, sidebarCollapsed }: { onDesktopToggle: () => void; onMobileOpen: () => void; sidebarCollapsed: boolean }) {
   const [query, setQuery] = useState('');
   const [, navigate] = useLocation();
 
@@ -353,7 +289,6 @@ function GlobalHeader({ onDesktopToggle, onMobileOpen, onRightOpen, sidebarColla
 
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <button type="button" className="hidden h-10 w-10 items-center justify-center rounded-xl border border-[#22303E] bg-[#101823] text-[#9AA8B8] hover:text-white sm:flex" aria-label="Open settings"><Settings2 className="h-[17px] w-[17px]" /></button>
-        <button type="button" onClick={onRightOpen} className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#22303E] bg-[#101823] text-[#9AA8B8] hover:text-white" aria-label="Open workspace activity panel"><PanelRightOpen className="h-[17px] w-[17px]" /></button>
       </div>
     </header>
   );
@@ -361,12 +296,10 @@ function GlobalHeader({ onDesktopToggle, onMobileOpen, onRightOpen, sidebarColla
 
 export function AppShell({ children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [rightOpen, setRightOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hubMobileOpen, setHubMobileOpen] = useState(false);
   const [location] = useLocation();
   useEffect(() => setMobileOpen(false), [location]);
-  useEffect(() => setRightOpen(false), [location]);
   useEffect(() => setHubMobileOpen(false), [location]);
 
   return (
@@ -387,12 +320,10 @@ export function AppShell({ children }: AppShellProps) {
         </>
       )}
 
-      {rightOpen && <RightSidebar onClose={() => setRightOpen(false)} />}
-
       {location.startsWith('/hub/') && <HubNavigationSidebar />}
 
       <div className={`flex min-h-screen flex-col transition-[margin] duration-200 ${location.startsWith('/hub/') ? 'lg:ml-[484px]' : collapsed ? 'lg:ml-[76px]' : 'lg:ml-[264px]'}`}>
-        {!location.startsWith('/hub/') && <GlobalHeader onDesktopToggle={() => setCollapsed((value) => !value)} onMobileOpen={() => setMobileOpen(true)} onRightOpen={() => setRightOpen(true)} sidebarCollapsed={collapsed} />}
+        {!location.startsWith('/hub/') && <GlobalHeader onDesktopToggle={() => setCollapsed((value) => !value)} onMobileOpen={() => setMobileOpen(true)} sidebarCollapsed={collapsed} />}
         {location.startsWith('/hub/') && <MobileHubNavigation open={hubMobileOpen} onOpen={() => setHubMobileOpen(true)} onClose={() => setHubMobileOpen(false)} />}
         <main className="min-w-0 flex-1">{children}</main>
       </div>
