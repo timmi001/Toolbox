@@ -1,22 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Check, ChevronDown, Code2, Copy, Download, FileText, Image, Paperclip, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2, X } from 'lucide-react';
+import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Check, ChevronDown, Code2, Copy, Download, FileText, Image, Paperclip, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2, X, type LucideIcon } from 'lucide-react';
 import { Link, useLocation, useRoute } from 'wouter';
 import { generateHubResponse } from '@/lib/hub-ai';
 
+type HubAction = readonly [string, string];
+type HubConfig = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  color: string;
+  actions: readonly HubAction[];
+};
+
 const HUBS = {
-  ai: { title: 'AI Assistant', description: 'Write, research, analyze, and brainstorm in one focused workspace.', icon: Sparkles, color: '#46E3B5', actions: [] },
-  creator: { title: 'Creator Hub', description: 'Turn rough ideas into polished content, campaigns, and social posts.', icon: Wand2, color: '#FF66B8', actions: [] },
-  study: { title: 'Study Hub', description: 'Learn, practice, and build a study routine with focused AI guidance.', icon: FileText, color: '#5C8DFF', actions: [] },
-  career: { title: 'Career Hub', description: 'Prepare for your next opportunity with focused AI guidance.', icon: FileText, color: '#A779FF', actions: [] },
-  business: { title: 'Business Hub', description: 'Plan, research, and develop business ideas in one focused workspace.', icon: Wand2, color: '#F7B83B', actions: [] },
-  pdf: { title: 'PDF & Documents', description: 'A focused workspace for document planning and assistance.', icon: FileText, color: '#FF7777', actions: [] },
-  image: { title: 'Image Hub', description: 'A focused workspace for image planning and assistance.', icon: Image, color: '#F78BCB', actions: [] },
-  video: { title: 'Video Hub', description: 'A focused workspace for video planning and assistance.', icon: Video, color: '#48D9FF', actions: [] },
-  audio: { title: 'Audio Hub', description: 'A focused workspace for audio planning and assistance.', icon: Video, color: '#FA8080', actions: [] },
-  developer: { title: 'Developer Hub', description: 'A focused workspace for development planning and assistance.', icon: Code2, color: '#32D5B2', actions: [] },
-  calculator: { title: 'Calculator & Converter', description: 'A focused workspace for calculation planning and assistance.', icon: Code2, color: '#B39BFF', actions: [] },
-} as const;
+  ai: { title: 'AI Assistant', description: 'Write, research, analyze, and brainstorm in one focused workspace.', icon: Sparkles, color: '#46E3B5', actions: [] as HubAction[] },
+  creator: { title: 'Creator Hub', description: 'Turn rough ideas into polished content, campaigns, and social posts.', icon: Wand2, color: '#FF66B8', actions: [] as HubAction[] },
+  study: { title: 'Study Hub', description: 'Learn, practice, and build a study routine with focused AI guidance.', icon: FileText, color: '#5C8DFF', actions: [] as HubAction[] },
+  career: { title: 'Career Hub', description: 'Prepare for your next opportunity with focused AI guidance.', icon: FileText, color: '#A779FF', actions: [] as HubAction[] },
+  business: { title: 'Business Hub', description: 'Plan, research, and develop business ideas in one focused workspace.', icon: Wand2, color: '#F7B83B', actions: [] as HubAction[] },
+  pdf: { title: 'PDF & Documents', description: 'A focused workspace for document planning and assistance.', icon: FileText, color: '#FF7777', actions: [] as HubAction[] },
+  image: { title: 'Image Hub', description: 'A focused workspace for image planning and assistance.', icon: Image, color: '#F78BCB', actions: [] as HubAction[] },
+  video: { title: 'Video Hub', description: 'A focused workspace for video planning and assistance.', icon: Video, color: '#48D9FF', actions: [] as HubAction[] },
+  audio: { title: 'Audio Hub', description: 'A focused workspace for audio planning and assistance.', icon: Video, color: '#FA8080', actions: [] as HubAction[] },
+  developer: { title: 'Developer Hub', description: 'A focused workspace for development planning and assistance.', icon: Code2, color: '#32D5B2', actions: [] as HubAction[] },
+  calculator: { title: 'Calculator & Converter', description: 'A focused workspace for calculation planning and assistance.', icon: Code2, color: '#B39BFF', actions: [] as HubAction[] },
+} satisfies Record<string, HubConfig>;
 
 type HubKey = keyof typeof HUBS;
 
@@ -484,36 +493,44 @@ function CreatorStudioWorkspace() {
   );
 }
 
+type UnifiedHubConfig = {
+  title: string;
+  subtitle: string;
+  icon: LucideIcon;
+  tools: readonly HubAction[];
+  modes: readonly HubAction[];
+};
+
 const UNIFIED_HUBS = {
   creator: {
     title: 'Creator Hub',
     subtitle: 'Create polished content, campaigns, and creative direction with AI.',
     icon: Wand2,
-    tools: [],
+    tools: [] as HubAction[],
     modes: [['Create', 'Turn an idea into production-ready content.'], ['Plan', 'Shape a clear creative brief and direction.'], ['Polish', 'Improve tone, structure, and clarity.'], ['Repurpose', 'Adapt one idea for multiple formats.']],
   },
   study: {
     title: 'Study Hub',
     subtitle: 'Learn faster with a focused AI tutor for understanding and practice.',
     icon: BookOpen,
-    tools: [],
+    tools: [] as HubAction[],
     modes: [['Explain', 'Break down a difficult topic step by step.'], ['Summarize', 'Turn notes into a clear revision guide.'], ['Practice', 'Test understanding with useful questions.'], ['Plan', 'Build a realistic study routine.']],
   },
   career: {
     title: 'Career Hub',
     subtitle: 'Prepare stronger applications and make confident career decisions with AI.',
     icon: BriefcaseBusiness,
-    tools: [],
+    tools: [] as HubAction[],
     modes: [['Resume', 'Strengthen experience and achievement statements.'], ['Cover Letter', 'Write a specific, persuasive application.'], ['Interview', 'Practice answers and improve your delivery.'], ['Career Advice', 'Turn your next goal into an action plan.']],
   },
   business: {
     title: 'Business Hub',
     subtitle: 'Think, plan, and execute business ideas in one focused AI workspace.',
     icon: BarChart3,
-    tools: [],
+    tools: [] as HubAction[],
     modes: [['Ideas', 'Turn rough thoughts into clear opportunities.'], ['Research', 'Explore customers, markets, and competitors.'], ['Build', 'Create plans, campaigns, and business documents.'], ['Money', 'Work through pricing, budgets, and revenue.']],
   },
-} as const;
+} satisfies Record<string, UnifiedHubConfig>;
 
 type UnifiedHubKey = keyof typeof UNIFIED_HUBS;
 
