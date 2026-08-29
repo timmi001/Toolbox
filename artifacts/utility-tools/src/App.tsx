@@ -7,7 +7,6 @@ import { CurrencyPreferenceProvider } from "@/contexts/CurrencyPreferenceContext
 import React, { Component, type ErrorInfo, type ReactNode } from "react";
 import Home from "@/pages/Home";
 import HubWorkspace from "@/pages/HubWorkspace";
-import HistoryPage from "@/pages/History";
 import NotFound from "@/pages/not-found";
 import BlogIndex from "@/pages/blog/BlogIndex";
 import BlogPost from "@/pages/blog/BlogPost";
@@ -68,7 +67,6 @@ function Router() {
           <Route path="/hub/:hub" component={HubWorkspace} />
           <Route path="/blog" component={BlogIndex} />
           <Route path="/blog/:slug" component={BlogPost} />
-          <Route path="/history" component={HistoryPage} />
           <Route path="/privacy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />
           <Route path="/copyright-policy" component={DmcaPolicy} />

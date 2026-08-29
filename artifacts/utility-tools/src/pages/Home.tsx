@@ -67,13 +67,6 @@ export default function Home() {
   return (
     <div className="home-redesign">
       <div className="home-frame">
-        <div className="home-frame-tab">
-          <div className="home-brand-mark">
-            <img src="/logo.png" alt="" />
-          </div>
-          <span>toolbuxx<span className="home-brand-dot">.</span></span>
-        </div>
-
         <div className="home-screen">
           <section className="home-intro">
             <div className="home-kicker"><span />Your workspace</div>

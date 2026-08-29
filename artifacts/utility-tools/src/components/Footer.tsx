@@ -5,7 +5,6 @@ const LINKS = {
     { label: 'AI Tools',        href: '/ai-tools' },
     { label: 'Utility Tools',   href: '/' },
     { label: 'Developer Tools', href: '/developer-tools' },
-    { label: 'History',         href: '/history' },
   ],
   Company: [
     { label: 'About',   href: '/about' },
@@ -51,10 +50,6 @@ export function Footer() {
 
           {/* Brand column — takes 2 of 5 cols on large screens */}
           <div className="md:col-span-2">
-            <Link href="/" className="mb-6 inline-flex items-center gap-2.5">
-              <img src="/logo.png" alt="ToolboXX logo" className="h-9 w-9 object-contain" />
-              <span className="text-base font-bold text-sidebar-foreground">Toolbuxx</span>
-            </Link>
             <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
               200+ free AI and utility tools for creators, students, developers and businesses. No sign-up. No tracking.
             </p>
