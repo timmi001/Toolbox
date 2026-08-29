@@ -36,6 +36,7 @@ import {
   Flame,
   Wand2,
 } from 'lucide-react';
+import { FeedbackButton } from './FeedbackButton';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -275,29 +276,38 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="min-h-screen bg-[#121212] text-white selection:bg-[#3BDDB2]/20">
-      <aside className={`fixed inset-y-0 left-0 z-50 hidden border-r border-[#172331] bg-[#0C121A] transition-[width] duration-200 lg:block ${collapsed ? 'w-[76px]' : 'w-[264px]'}`}>
-        <SidebarContent collapsed={collapsed} onNavigate={() => setMobileOpen(false)} />
-      </aside>
-
-      {mobileOpen && (
+      {location === '/' ? (
+        <div className="min-h-screen">
+          <main className="min-w-0 flex-1">{children}</main>
+          <FeedbackButton />
+        </div>
+      ) : (
         <>
-          <button type="button" className="fixed inset-0 z-40 bg-black/70 lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />
-          <aside className="fixed inset-y-0 left-0 z-50 w-[286px] border-r border-[#172331] bg-[#0C121A] shadow-2xl lg:hidden">
-            <div className="absolute right-3 top-5 z-10">
-              <button type="button" onClick={() => setMobileOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#263545] bg-[#111D29] text-[#A4B0BE]" aria-label="Close navigation"><X className="h-4 w-4" /></button>
-            </div>
-            <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} />
+          <aside className={`fixed inset-y-0 left-0 z-50 hidden border-r border-[#172331] bg-[#0C121A] transition-[width] duration-200 lg:block ${collapsed ? 'w-[76px]' : 'w-[264px]'}`}>
+            <SidebarContent collapsed={collapsed} onNavigate={() => setMobileOpen(false)} />
           </aside>
+
+          {mobileOpen && (
+            <>
+              <button type="button" className="fixed inset-0 z-40 bg-black/70 lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />
+              <aside className="fixed inset-y-0 left-0 z-50 w-[286px] border-r border-[#172331] bg-[#0C121A] shadow-2xl lg:hidden">
+                <div className="absolute right-3 top-5 z-10">
+                  <button type="button" onClick={() => setMobileOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#263545] bg-[#111D29] text-[#A4B0BE]" aria-label="Close navigation"><X className="h-4 w-4" /></button>
+                </div>
+                <SidebarContent collapsed={false} onNavigate={() => setMobileOpen(false)} />
+              </aside>
+            </>
+          )}
+
+          {location.startsWith('/hub/') && <HubNavigationSidebar />}
+
+          <div className={`flex min-h-screen flex-col transition-[margin] duration-200 ${location.startsWith('/hub/') ? 'lg:ml-[484px]' : collapsed ? 'lg:ml-[76px]' : 'lg:ml-[264px]'}`}>
+            {!location.startsWith('/hub/') && <GlobalHeader onDesktopToggle={() => setCollapsed((value) => !value)} onMobileOpen={() => setMobileOpen(true)} sidebarCollapsed={collapsed} />}
+            {location.startsWith('/hub/') && <MobileHubNavigation open={hubMobileOpen} onOpen={() => setHubMobileOpen(true)} onClose={() => setHubMobileOpen(false)} />}
+            <main className="min-w-0 flex-1">{children}</main>
+          </div>
         </>
       )}
-
-      {location.startsWith('/hub/') && <HubNavigationSidebar />}
-
-      <div className={`flex min-h-screen flex-col transition-[margin] duration-200 ${location.startsWith('/hub/') ? 'lg:ml-[484px]' : collapsed ? 'lg:ml-[76px]' : 'lg:ml-[264px]'}`}>
-        {!location.startsWith('/hub/') && <GlobalHeader onDesktopToggle={() => setCollapsed((value) => !value)} onMobileOpen={() => setMobileOpen(true)} sidebarCollapsed={collapsed} />}
-        {location.startsWith('/hub/') && <MobileHubNavigation open={hubMobileOpen} onOpen={() => setHubMobileOpen(true)} onClose={() => setHubMobileOpen(false)} />}
-        <main className="min-w-0 flex-1">{children}</main>
-      </div>
     </div>
   );
 }
