@@ -543,6 +543,9 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [attachmentName, setAttachmentName] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (hub === 'business' && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'insights') {
     return <BusinessInsights onBack={() => navigate('/hub/business')} />;
@@ -554,9 +557,10 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
     setLoading(true);
     setError('');
     try {
-      const answer = await generateHubResponse(hub, { prompt: value, mode });
+      const answer = await generateHubResponse(hub, { prompt: `${value}${attachmentName ? `\n\nAttached file: ${attachmentName}` : ''}`, mode });
       setMessages((current) => [...current, { role: 'user', text: value }, { role: 'assistant', text: answer }]);
       setPrompt('');
+      setAttachmentName('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to reach the AI service.');
     } finally {
@@ -567,173 +571,217 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const latestAnswer = messages.filter((message) => message.role === 'assistant').at(-1)?.text ?? '';
   const copyAnswer = async () => { if (latestAnswer) { await navigator.clipboard?.writeText(latestAnswer); setCopied(true); window.setTimeout(() => setCopied(false), 1500); } };
 
-  const focusCards = [
-    { label: 'Current mode', value: mode },
-    { label: 'Tailored for', value: config.title.replace(' Hub', '') },
-    { label: 'Response ready', value: loading ? 'Working…' : 'On demand' },
-  ];
+  const handleAttach = () => fileInputRef.current?.click();
+
+  const handleVoiceInput = () => {
+    const SpeechRecognitionCtor = (window as typeof window & {
+      webkitSpeechRecognition?: new () => any;
+      SpeechRecognition?: new () => any;
+    }).SpeechRecognition ?? (window as typeof window & {
+      webkitSpeechRecognition?: new () => any;
+      SpeechRecognition?: new () => any;
+    }).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionCtor) {
+      setError('Voice input is not available in this browser. Use the text box instead.');
+      return;
+    }
+
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event: any) => {
+      const transcript = event.results?.[0]?.[0]?.transcript as string | undefined;
+      if (transcript) {
+        setPrompt((current) => `${current}${current ? ' ' : ''}${transcript}`.trim());
+      }
+    };
+    recognition.onerror = () => setError('Voice input is unavailable right now. Please type your prompt instead.');
+    recognition.start();
+  };
 
   return (
-    <div className="min-h-[calc(100vh-76px)] bg-[#070B11] text-white">
-      <div className="mx-auto max-w-[1480px] px-3 py-4 sm:px-6 lg:px-8 lg:py-6">
-        <div className="overflow-hidden rounded-[30px] border border-[#1C2B39] bg-[#0B1118] shadow-[0_28px_90px_rgba(0,0,0,0.42)]">
-          <header className="flex items-center justify-between gap-4 border-b border-[#1B2936] bg-gradient-to-r from-[#0E1A24] via-[#0D151E] to-[#0D111A] px-4 py-4 sm:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#245143] bg-[#103027] text-[#5BE4B6] shadow-[0_0_24px_rgba(91,228,182,0.10)]">
-                <config.icon className="h-5 w-5" />
+    <div className="min-h-[100dvh] w-full overflow-hidden bg-[#000000] text-white">
+      <div className="mx-auto flex h-[100dvh] w-full max-w-md flex-col bg-[#000000] px-0 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <header className="relative flex items-center justify-between px-4 pb-2.5 pt-1">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label="Open menu"
+              onClick={() => setMenuOpen((open) => !open)}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#232323] bg-[#111111] text-[#dfe7ef]"
+            >
+              <div className="flex flex-col gap-1.5">
+                <span className="block h-0.5 w-4 rounded-full bg-current" />
+                <span className="block h-0.5 w-4 rounded-full bg-current" />
+                <span className="block h-0.5 w-4 rounded-full bg-current" />
               </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6E7F90]">Workspace</div>
-                <h1 className="truncate text-xl font-bold tracking-tight text-white">{config.title}</h1>
-              </div>
-            </div>
+            </button>
+            <div className="text-[15px] font-medium text-[#f5f7fa]">{config.title.replace(' Hub', '')}</div>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <div className="hidden items-center gap-2 rounded-full border border-[#24374A] bg-[#101B27] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A7BAC8] sm:flex">
-                <Sparkles className="h-3.5 w-3.5 text-[#5BE4B6]" />
-                Live AI
-              </div>
-              <button type="button" onClick={copyAnswer} className="flex h-9 items-center gap-2 rounded-xl border border-[#263746] bg-[#101A24] px-3 text-xs font-medium text-[#D3DEE9] hover:border-[#3DDBC0]/60 hover:text-white">
-                <Copy className="h-3.5 w-3.5" />
-                {copied ? 'Copied' : 'Copy result'}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setError('Upgrade flow is disabled in this demo, but your workspace is active.')}
+              className="rounded-full border border-[#2d3f3a] bg-[#111c18] px-2.5 py-1.5 text-[11px] font-semibold text-[#bff8d6]"
+            >
+              Upgrade
+            </button>
+            <button
+              type="button"
+              aria-label="Voice assistant"
+              onClick={handleVoiceInput}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#111111] text-[#dfe7ef]"
+            >
+              <Mic className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              aria-label="Profile"
+              onClick={() => setError('Profile panel is not available in this workspace demo.')}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#111111] text-[#dfe7ef]"
+            >
+              <UserRound className="h-4 w-4" />
+            </button>
+          </div>
+
+          {menuOpen && (
+            <div className="absolute left-4 top-[calc(100%+0.4rem)] z-20 w-[220px] rounded-2xl border border-[#2a2a2a] bg-[#101010] p-2 shadow-2xl">
+              <button type="button" onClick={() => { setMenuOpen(false); navigate('/'); }} className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
+                <span>Home</span>
+                <ArrowLeft className="h-4 w-4 rotate-180" />
+              </button>
+              <button type="button" onClick={() => { setMenuOpen(false); setMessages([]); setPrompt(''); setError(''); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
+                <span>Clear chat</span>
+                <Trash2 className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={() => { setMenuOpen(false); void copyAnswer(); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
+                <span>{copied ? 'Copied' : 'Copy answer'}</span>
+                <Copy className="h-4 w-4" />
               </button>
             </div>
-          </header>
+          )}
+        </header>
 
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <main className="min-w-0 border-b border-[#1B2936] lg:border-b-0 lg:border-r">
-              <div className="border-b border-[#1B2936] px-4 py-4 sm:px-6">
-                <div className="mb-4 flex flex-wrap items-center gap-2">
-                  {config.modes.map(([label]) => (
-                    <button
-                      key={label}
-                      type="button"
-                      onClick={() => setMode(label)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                        mode === label
-                          ? 'border-[#4FD9B0]/70 bg-[#12352D] text-[#A9F2D8] shadow-[0_0_20px_rgba(91,228,182,0.15)]'
-                          : 'border-[#1F2D3A] bg-[#0F171F] text-[#8DA0B4] hover:border-[#3DDBC0]/60 hover:text-white'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
+        <main className="relative flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-4 pb-2 pt-1">
+            {messages.length === 0 ? (
+              <div className="flex h-full min-h-[220px] items-center justify-center">
+                <div className="text-center text-[#6b7280]">
+                  <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#101828] text-[#8bb5ff]">
+                    <config.icon className="h-6 w-6" />
+                  </div>
+                  <p className="text-[13px] font-medium text-[#a9b4c1]">How can I help with {config.title.replace(' Hub', '')}?</p>
                 </div>
-
-                <p className="text-sm leading-6 text-[#A1B2C3]">{config.modes.find(([label]) => label === mode)?.[1] ?? config.subtitle}</p>
               </div>
-
-              <div className="flex min-h-[420px] flex-col px-4 pb-4 pt-5 sm:px-6">
-                <div className="flex-1 overflow-hidden rounded-[24px] border border-[#1B2936] bg-[#0A1118]">
-                  {messages.length === 0 ? (
-                    <div className="flex h-full min-h-[320px] flex-col items-center justify-center px-6 text-center">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#245143] bg-[#103027] text-[#5BE4B6] shadow-[0_0_28px_rgba(91,228,182,0.12)]">
-                        <config.icon className="h-7 w-7" />
-                      </div>
-                      <h2 className="mt-5 text-2xl font-bold tracking-tight text-white">How can AI help with {config.title.replace(' Hub', '')}?</h2>
-                      <p className="mt-3 max-w-lg text-sm leading-6 text-[#8492A3]">Choose a mode above or describe the exact outcome you want to work toward.</p>
-                    </div>
-                  ) : (
-                    <div className="max-h-[440px] space-y-5 overflow-y-auto p-4 sm:p-5">
-                      {messages.map((message, index) => (
-                        <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === 'user' ? 'bg-[#16483D] text-[#E7FFF7] shadow-[0_12px_30px_rgba(22,72,61,0.18)]' : 'border border-[#1F2E3D] bg-[#0E151D] text-[#D0D9E5]'}`}>
-                            {message.role === 'assistant' ? (
-                              <div className="prose prose-invert max-w-none prose-pre:rounded-xl prose-pre:border prose-pre:border-[#243447] prose-pre:bg-[#081018] prose-pre:p-3 prose-code:text-[11px]">
-                                <ReactMarkdown>{message.text}</ReactMarkdown>
-                              </div>
-                            ) : (
-                              <div className="whitespace-pre-wrap">{message.text}</div>
-                            )}
-                          </div>
+            ) : (
+              <div className="space-y-3 pb-3">
+                {messages.map((message, index) => (
+                  <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-[22px] px-3.5 py-2.5 text-[14px] leading-6 ${message.role === 'user' ? 'bg-[#1f2a38] text-[#eaf3ff]' : 'bg-[#111111] text-[#dfe6ef]'}`}>
+                      {message.role === 'assistant' ? (
+                        <div className="prose prose-invert max-w-none prose-p:my-1 prose-pre:rounded-xl prose-pre:border prose-pre:border-[#2b2b2b] prose-pre:bg-[#090909] prose-pre:p-2 prose-code:text-[11px]">
+                          <ReactMarkdown>{message.text}</ReactMarkdown>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-5">
-                  {error && (
-                    <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-200">
-                      <span>{error}</span>
-                      <button type="button" onClick={() => void submit()} className="font-semibold text-white underline">Retry</button>
-                    </div>
-                  )}
-
-                  {loading && <div className="mb-3 text-xs text-[#A9F2D8]">AI is thinking…</div>}
-
-                  <div className="rounded-[22px] border border-[#2A3A48] bg-[#0E151D] p-3 shadow-[0_18px_45px_rgba(0,0,0,0.22)] focus-within:border-[#3DDBC0]/70">
-                    <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void submit(); } }} rows={4} placeholder="Describe the outcome you want from AI…" className="w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-white outline-none placeholder:text-[#68798A]" />
-
-                    <div className="flex items-center justify-between gap-2 border-t border-[#1B2936] px-2 pb-1 pt-3">
-                      <div className="flex items-center gap-1">
-                        <button type="button" className="rounded-lg p-2 text-[#8190A0] hover:bg-[#17242F] hover:text-white" aria-label="Attach file"><Paperclip className="h-4 w-4" /></button>
-                        <button type="button" onClick={() => setError('Voice input is not available in this browser. Use the text box instead.')} className="rounded-lg p-2 text-[#8190A0] hover:bg-[#17242F] hover:text-white" aria-label="Voice input"><Mic className="h-4 w-4" /></button>
-                        <span className="rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB]">{config.title}</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => setPrompt('')} className="rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:text-white">Clear</button>
-                        <button type="button" onClick={() => void submit()} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#10B981] text-[#061410] transition hover:bg-[#34D399]" aria-label="Send message"><ArrowUp className="h-4 w-4" /></button>
-                      </div>
+                      ) : (
+                        <div className="whitespace-pre-wrap">{message.text}</div>
+                      )}
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
-            </main>
-
-            <aside className="bg-[#0D151D] p-4 sm:p-5">
-              <div className="rounded-[24px] border border-[#1B2936] bg-[#0F1A23] p-4">
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6F7F90]">Workspace focus</div>
-                <div className="mt-4 space-y-3">
-                  {focusCards.map(({ label, value }) => (
-                    <div key={label} className="rounded-2xl border border-[#1C2B39] bg-[#0B141D] p-3">
-                      <div className="text-[10px] uppercase tracking-[0.14em] text-[#728194]">{label}</div>
-                      <div className="mt-2 text-sm font-semibold text-white">{value}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-[24px] border border-[#1B2936] bg-[#0F1A23] p-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6F7F90]">Quick prompts</div>
-                  <Sparkles className="h-3.5 w-3.5 text-[#5BE4B6]" />
-                </div>
-                <div className="mt-4 space-y-2">
-                  {config.modes.map(([label, description]) => (
-                    <button key={label} type="button" onClick={() => setPrompt(`${label}: ${description}`)} className="w-full rounded-2xl border border-[#1C2B39] bg-[#0B141D] px-3 py-2 text-left transition hover:border-[#3DDBC0]/60 hover:bg-[#11212A]">
-                      <div className="text-xs font-semibold text-white">{label}</div>
-                      <div className="mt-1 text-[10px] leading-4 text-[#8EA0B1]">{description}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-[24px] border border-[#1B2936] bg-[#0F1A23] p-4">
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6F7F90]">Momentum</div>
-                <div className="mt-4 space-y-3 text-sm text-[#C9D7E4]">
-                  <div className="flex items-center justify-between rounded-xl border border-[#1C2B39] bg-[#0B141D] px-3 py-2">
-                    <span>Ideas</span>
-                    <span className="font-semibold text-[#5BE4B6]">12</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl border border-[#1C2B39] bg-[#0B141D] px-3 py-2">
-                    <span>Saved drafts</span>
-                    <span className="font-semibold text-[#A9C2FF]">04</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl border border-[#1C2B39] bg-[#0B141D] px-3 py-2">
-                    <span>Ready to refine</span>
-                    <span className="font-semibold text-[#F5C05A]">02</span>
-                  </div>
-                </div>
-              </div>
-            </aside>
+            )}
           </div>
-        </div>
+
+          {error && (
+            <div className="mx-4 mb-2 flex items-center justify-between gap-3 rounded-2xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-[12px] text-red-200">
+              <span className="flex-1">{error}</span>
+              <button type="button" onClick={() => void submit()} className="font-semibold text-white underline">Retry</button>
+            </div>
+          )}
+
+          <div className="px-4 pb-2 pt-1">
+            <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {config.modes.map(([label]) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setMode(label)}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
+                    mode === label
+                      ? 'border-[#2f6df6] bg-[#112c5d] text-[#dfeeff]'
+                      : 'border-[#232323] bg-[#121212] text-[#b0bcc9]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="rounded-[26px] border border-[#2a2a2a] bg-[#111111] p-2 shadow-[0_10px_28px_rgba(0,0,0,0.45)]">
+              <div className="flex items-end gap-2">
+                <button
+                  type="button"
+                  onClick={handleAttach}
+                  aria-label="Attach file"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#171717] text-[#e8edf5]"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+
+                <textarea
+                  value={prompt}
+                  onChange={(event) => setPrompt(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault();
+                      void submit();
+                    }
+                  }}
+                  rows={1}
+                  placeholder={`Ask ${config.title.replace(' Hub', '')}`}
+                  className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
+                />
+
+                <button
+                  type="button"
+                  aria-label="Voice input"
+                  onClick={handleVoiceInput}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#181818] text-[#e8edf5]"
+                >
+                  <Mic className="h-4 w-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => void submit()}
+                  aria-label="Send message"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2f6df6] text-[#ffffff] shadow-[0_8px_18px_rgba(47,109,246,0.45)]"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </button>
+              </div>
+
+              {attachmentName && (
+                <div className="mt-2 flex items-center justify-between rounded-xl border border-[#2a2a2a] bg-[#181818] px-2.5 py-1.5 text-[11px] text-[#c4d0df]">
+                  <span className="truncate">{attachmentName}</span>
+                  <button type="button" onClick={() => setAttachmentName('')} className="ml-2 text-[#8ca6d5]">Clear</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
       </div>
+
+      <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        setAttachmentName(file.name);
+        setPrompt((current) => `${current}${current ? '\n' : ''}Attachment: ${file.name}`);
+        event.target.value = '';
+      }} />
     </div>
   );
 }
