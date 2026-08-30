@@ -567,42 +567,191 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const latestAnswer = messages.filter((message) => message.role === 'assistant').at(-1)?.text ?? '';
   const copyAnswer = async () => { if (latestAnswer) { await navigator.clipboard?.writeText(latestAnswer); setCopied(true); window.setTimeout(() => setCopied(false), 1500); } };
 
-  return <div className="min-h-[calc(100vh-76px)] bg-[#090D12] text-white"><div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-[1180px] flex-col px-3 py-4 sm:px-6 lg:px-8 lg:py-6"><header className="flex items-start justify-between gap-4 border-b border-[#1B2936] pb-5"><div className="flex min-w-0 items-center gap-3"><Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard"><ArrowLeft className="h-4 w-4" /></Link><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#245143] bg-[#103027] text-[#5BE4B6]"><config.icon className="h-5 w-5" /></div><div className="min-w-0"><h1 className="truncate text-xl font-bold tracking-tight text-white">{config.title}</h1><p className="mt-1 hidden truncate text-sm text-[#8492A3] sm:block">{config.subtitle}</p></div></div></header><main className="mx-auto flex w-full max-w-3xl flex-1 flex-col"><div className="flex-1 py-5">{messages.length === 0 ? <div className="flex min-h-[280px] flex-col items-center justify-center text-center"><div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#245143] bg-[#103027] text-[#5BE4B6]"><config.icon className="h-7 w-7" /></div><h2 className="mt-5 text-2xl font-bold tracking-tight text-white">How can AI help with {config.title.replace(' Hub', '')}?</h2><p className="mt-3 max-w-md text-sm leading-6 text-[#8492A3]">Choose a focused mode or describe what you need in your own words.</p></div> : <div className="space-y-5">{messages.map((message, index) => <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}><div className={`max-w-[90%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === 'user' ? 'bg-[#16483D] text-[#E7FFF7]' : 'border border-[#1E2D3B] bg-[#0E151D] text-[#CBD6E0]'}`}>{message.text}{message.role === 'assistant' && index === messages.length - 1 && <button type="button" onClick={copyAnswer} className="mt-3 flex items-center gap-1.5 border-t border-[#1E2D3B] pt-2 text-xs text-[#8492A3] hover:text-white"><Copy className="h-3.5 w-3.5" />{copied ? 'Copied' : 'Copy response'}</button>}</div></div>)}</div>}</div><div className="sticky bottom-3 mt-auto pt-3"><div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">{config.modes.map(([label, description]) => <button key={label} type="button" onClick={() => { setMode(label); setPrompt(`${label}: `); }} className={`min-w-[130px] shrink-0 rounded-xl border p-3 text-left transition ${mode === label ? 'border-[#4FD9B0]/60 bg-[#12352D] text-[#A9F2D8]' : 'border-[#1F2D3A] bg-[#0E151D] text-[#91A0B0] hover:border-[#3DDBC0]/60'}`}><span className="block text-xs font-semibold text-white">{label}</span><span className="mt-1 block line-clamp-2 text-[10px] leading-4 text-[#718194]">{description}</span></button>)}</div>{error && <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-200"><span>{error}</span><button type="button" onClick={() => void submit()} className="font-semibold text-white underline">Retry</button></div>}{loading && <div className="mb-3 text-xs text-[#A9F2D8]">Toolbuxx AI is thinking...</div>}<div className="rounded-2xl border border-[#2A3A48] bg-[#0E151D] p-2 shadow-[0_12px_40px_rgba(0,0,0,0.3)] focus-within:border-[#3DDBC0]/70"><textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void submit(); } }} rows={3} placeholder="Describe what you need..." className="w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-white outline-none placeholder:text-[#68798A]" /><div className="flex items-center justify-between px-2 pb-1"><span className="text-[11px] text-[#718194]">{mode} mode</span><button type="button" onClick={() => void submit()} disabled={!prompt.trim() || loading} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#10B981] text-[#061410] transition hover:bg-[#34D399] disabled:cursor-not-allowed disabled:opacity-50" aria-label={`Generate ${config.title} response`}><ArrowUp className="h-4 w-4" /></button></div></div><div className="mt-4 flex flex-wrap gap-2">{config.tools.map(([label, href]) => <Link key={label} href={href} className="inline-flex items-center gap-1.5 rounded-lg border border-[#263746] bg-[#101A24] px-3 py-2 text-xs text-[#A9F2D8] hover:border-[#3DDBC0]/60">{label}<ArrowRight className="h-3 w-3" /></Link>)}</div></div></main></div></div>;
+  const focusCards = [
+    { label: 'Current mode', value: mode },
+    { label: 'Tailored for', value: config.title.replace(' Hub', '') },
+    { label: 'Response ready', value: loading ? 'Working…' : 'On demand' },
+  ];
+
+  return (
+    <div className="min-h-[calc(100vh-76px)] bg-[#070B11] text-white">
+      <div className="mx-auto max-w-[1480px] px-3 py-4 sm:px-6 lg:px-8 lg:py-6">
+        <div className="overflow-hidden rounded-[30px] border border-[#1C2B39] bg-[#0B1118] shadow-[0_28px_90px_rgba(0,0,0,0.42)]">
+          <header className="flex items-center justify-between gap-4 border-b border-[#1B2936] bg-gradient-to-r from-[#0E1A24] via-[#0D151E] to-[#0D111A] px-4 py-4 sm:px-6">
+            <div className="flex min-w-0 items-center gap-3">
+              <Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#263746] bg-[#101A24] text-[#91A0B0] hover:text-white" aria-label="Back to dashboard">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#245143] bg-[#103027] text-[#5BE4B6] shadow-[0_0_24px_rgba(91,228,182,0.10)]">
+                <config.icon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6E7F90]">Workspace</div>
+                <h1 className="truncate text-xl font-bold tracking-tight text-white">{config.title}</h1>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="hidden items-center gap-2 rounded-full border border-[#24374A] bg-[#101B27] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A7BAC8] sm:flex">
+                <Sparkles className="h-3.5 w-3.5 text-[#5BE4B6]" />
+                Live AI
+              </div>
+              <button type="button" onClick={copyAnswer} className="flex h-9 items-center gap-2 rounded-xl border border-[#263746] bg-[#101A24] px-3 text-xs font-medium text-[#D3DEE9] hover:border-[#3DDBC0]/60 hover:text-white">
+                <Copy className="h-3.5 w-3.5" />
+                {copied ? 'Copied' : 'Copy result'}
+              </button>
+            </div>
+          </header>
+
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <main className="min-w-0 border-b border-[#1B2936] lg:border-b-0 lg:border-r">
+              <div className="border-b border-[#1B2936] px-4 py-4 sm:px-6">
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  {config.modes.map(([label]) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setMode(label)}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                        mode === label
+                          ? 'border-[#4FD9B0]/70 bg-[#12352D] text-[#A9F2D8] shadow-[0_0_20px_rgba(91,228,182,0.15)]'
+                          : 'border-[#1F2D3A] bg-[#0F171F] text-[#8DA0B4] hover:border-[#3DDBC0]/60 hover:text-white'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                <p className="text-sm leading-6 text-[#A1B2C3]">{config.modes.find(([label]) => label === mode)?.[1] ?? config.subtitle}</p>
+              </div>
+
+              <div className="flex min-h-[420px] flex-col px-4 pb-4 pt-5 sm:px-6">
+                <div className="flex-1 overflow-hidden rounded-[24px] border border-[#1B2936] bg-[#0A1118]">
+                  {messages.length === 0 ? (
+                    <div className="flex h-full min-h-[320px] flex-col items-center justify-center px-6 text-center">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#245143] bg-[#103027] text-[#5BE4B6] shadow-[0_0_28px_rgba(91,228,182,0.12)]">
+                        <config.icon className="h-7 w-7" />
+                      </div>
+                      <h2 className="mt-5 text-2xl font-bold tracking-tight text-white">How can AI help with {config.title.replace(' Hub', '')}?</h2>
+                      <p className="mt-3 max-w-lg text-sm leading-6 text-[#8492A3]">Choose a mode above or describe the exact outcome you want to work toward.</p>
+                    </div>
+                  ) : (
+                    <div className="max-h-[440px] space-y-5 overflow-y-auto p-4 sm:p-5">
+                      {messages.map((message, index) => (
+                        <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === 'user' ? 'bg-[#16483D] text-[#E7FFF7] shadow-[0_12px_30px_rgba(22,72,61,0.18)]' : 'border border-[#1F2E3D] bg-[#0E151D] text-[#D0D9E5]'}`}>
+                            {message.role === 'assistant' ? (
+                              <div className="prose prose-invert max-w-none prose-pre:rounded-xl prose-pre:border prose-pre:border-[#243447] prose-pre:bg-[#081018] prose-pre:p-3 prose-code:text-[11px]">
+                                <ReactMarkdown>{message.text}</ReactMarkdown>
+                              </div>
+                            ) : (
+                              <div className="whitespace-pre-wrap">{message.text}</div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-5">
+                  {error && (
+                    <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-200">
+                      <span>{error}</span>
+                      <button type="button" onClick={() => void submit()} className="font-semibold text-white underline">Retry</button>
+                    </div>
+                  )}
+
+                  {loading && <div className="mb-3 text-xs text-[#A9F2D8]">AI is thinking…</div>}
+
+                  <div className="rounded-[22px] border border-[#2A3A48] bg-[#0E151D] p-3 shadow-[0_18px_45px_rgba(0,0,0,0.22)] focus-within:border-[#3DDBC0]/70">
+                    <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void submit(); } }} rows={4} placeholder="Describe the outcome you want from AI…" className="w-full resize-none bg-transparent px-3 py-2 text-sm leading-6 text-white outline-none placeholder:text-[#68798A]" />
+
+                    <div className="flex items-center justify-between gap-2 border-t border-[#1B2936] px-2 pb-1 pt-3">
+                      <div className="flex items-center gap-1">
+                        <button type="button" className="rounded-lg p-2 text-[#8190A0] hover:bg-[#17242F] hover:text-white" aria-label="Attach file"><Paperclip className="h-4 w-4" /></button>
+                        <button type="button" onClick={() => setError('Voice input is not available in this browser. Use the text box instead.')} className="rounded-lg p-2 text-[#8190A0] hover:bg-[#17242F] hover:text-white" aria-label="Voice input"><Mic className="h-4 w-4" /></button>
+                        <span className="rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB]">{config.title}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => setPrompt('')} className="rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:text-white">Clear</button>
+                        <button type="button" onClick={() => void submit()} className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#10B981] text-[#061410] transition hover:bg-[#34D399]" aria-label="Send message"><ArrowUp className="h-4 w-4" /></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </main>
+
+            <aside className="bg-[#0D151D] p-4 sm:p-5">
+              <div className="rounded-[24px] border border-[#1B2936] bg-[#0F1A23] p-4">
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6F7F90]">Workspace focus</div>
+                <div className="mt-4 space-y-3">
+                  {focusCards.map(({ label, value }) => (
+                    <div key={label} className="rounded-2xl border border-[#1C2B39] bg-[#0B141D] p-3">
+                      <div className="text-[10px] uppercase tracking-[0.14em] text-[#728194]">{label}</div>
+                      <div className="mt-2 text-sm font-semibold text-white">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-[24px] border border-[#1B2936] bg-[#0F1A23] p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6F7F90]">Quick prompts</div>
+                  <Sparkles className="h-3.5 w-3.5 text-[#5BE4B6]" />
+                </div>
+                <div className="mt-4 space-y-2">
+                  {config.modes.map(([label, description]) => (
+                    <button key={label} type="button" onClick={() => setPrompt(`${label}: ${description}`)} className="w-full rounded-2xl border border-[#1C2B39] bg-[#0B141D] px-3 py-2 text-left transition hover:border-[#3DDBC0]/60 hover:bg-[#11212A]">
+                      <div className="text-xs font-semibold text-white">{label}</div>
+                      <div className="mt-1 text-[10px] leading-4 text-[#8EA0B1]">{description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-[24px] border border-[#1B2936] bg-[#0F1A23] p-4">
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6F7F90]">Momentum</div>
+                <div className="mt-4 space-y-3 text-sm text-[#C9D7E4]">
+                  <div className="flex items-center justify-between rounded-xl border border-[#1C2B39] bg-[#0B141D] px-3 py-2">
+                    <span>Ideas</span>
+                    <span className="font-semibold text-[#5BE4B6]">12</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-[#1C2B39] bg-[#0B141D] px-3 py-2">
+                    <span>Saved drafts</span>
+                    <span className="font-semibold text-[#A9C2FF]">04</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-[#1C2B39] bg-[#0B141D] px-3 py-2">
+                    <span>Ready to refine</span>
+                    <span className="font-semibold text-[#F5C05A]">02</span>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function HubWorkspace() {
-  const [, params] = useRoute('/hub/:hub');
-  const key = (params?.hub ?? 'ai') as HubKey;
-  const hub = HUBS[key] ?? HUBS.ai;
-  const Icon = hub.icon;
+  const [match, params] = useRoute('/hub/:hub');
+  const hub = params?.hub as UnifiedHubKey | undefined;
 
-  if (key === 'ai') return <AiAssistantWorkspace />;
-  if (key === 'creator') return <UnifiedHubWorkspace hub="creator" />;
-  if (key === 'study') return <UnifiedHubWorkspace hub="study" />;
-  if (key === 'career') return <UnifiedHubWorkspace hub="career" />;
-  if (key === 'business') return <UnifiedHubWorkspace hub="business" />;
+  if (!match || !hub || !(hub in UNIFIED_HUBS)) {
+    return (
+      <div className="min-h-[calc(100vh-76px)] bg-[#070B11] px-6 py-16 text-white">
+        <div className="mx-auto max-w-xl rounded-2xl border border-[#1B2936] bg-[#0D151E] p-8 text-center">
+          <h1 className="text-xl font-bold">Workspace not found</h1>
+          <p className="mt-3 text-sm text-[#9BA9B8]">This hub path is invalid or no longer available.</p>
+        </div>
+      </div>
+    );
+  }
 
-  return (
-    <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-      <div className="mb-6 flex items-center gap-3 text-sm text-[#8492A3]"><Link href="/" className="hover:text-white">Home</Link><ArrowRight className="h-4 w-4" /><span className="text-white">{hub.title}</span></div>
-      <section className="overflow-hidden rounded-[28px] border border-[#1E2D3B] bg-[#0D1721] shadow-[0_20px_70px_rgba(0,0,0,0.25)]">
-        <div className="border-b border-[#1E2D3B] bg-gradient-to-br from-[#142D35] via-[#101B28] to-[#0D1721] p-6 sm:p-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-[#0A1118]" style={{ boxShadow: `0 0 28px ${hub.color}35` }}><Icon className="h-5 w-5" style={{ color: hub.color }} /></div>
-          <div className="mt-5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#718194]">Focused workspace</div>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-white">{hub.title}</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#9BA9B8]">{hub.description}</p>
-        </div>
-        <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <div className="rounded-2xl border border-[#1E2D3B] bg-[#0A1118] p-5">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#728194]">Start with a tool</div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {hub.actions.map(([label, href]) => <Link key={label} href={href} className="group rounded-2xl border border-[#243544] bg-[#111D28] p-4 transition hover:-translate-y-0.5 hover:border-[#3DDBC0]/60"><div className="flex items-center justify-between gap-3"><span className="text-sm font-semibold text-white">{label}</span><ArrowRight className="h-4 w-4 text-[#718194] transition group-hover:text-[#5BE4B6]" /></div><p className="mt-3 text-xs leading-5 text-[#8492A3]">Open this focused workflow.</p></Link>)}
-            </div>
-            <div className="mt-6 rounded-2xl border border-dashed border-[#2A3A48] bg-[#0D1822] p-5"><div className="text-sm font-semibold text-white">Your workspace is ready</div><p className="mt-2 text-sm leading-6 text-[#8492A3]">Choose a tool above to start. Your existing inputs and local history remain handled by the original tool pages.</p></div>
-          </div>
-          <div className="rounded-2xl border border-[#1E2D3B] bg-[#0A1118] p-5"><div className="text-xs font-bold uppercase tracking-[0.18em] text-[#728194]">Included</div><div className="mt-4 space-y-3">{['No account required', 'Browser-first workflows', 'Existing tool history', 'Fast, focused actions'].map((item) => <div key={item} className="flex items-center gap-3 text-sm text-[#C5D0DB]"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#153D38] text-[#5BE4B6]"><Check className="h-3 w-3" /></span>{item}</div>)}</div><Link href="/" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#72EBC9] hover:text-white">Browse all tools <ArrowRight className="h-4 w-4" /></Link></div>
-        </div>
-      </section>
-    </div>
-  );
+  return <UnifiedHubWorkspace hub={hub} />;
 }
