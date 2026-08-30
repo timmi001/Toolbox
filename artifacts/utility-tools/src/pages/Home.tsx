@@ -65,8 +65,8 @@ export default function Home() {
   };
 
   return (
-    <div className="home-redesign">
-      <div className="home-frame">
+    <div className="home-redesign w-full min-h-[100dvh] overflow-x-hidden">
+      <div className="home-frame w-full">
         <div className="home-screen">
           <section className="home-intro">
             <div className="home-kicker"><span />Your workspace</div>
