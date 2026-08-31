@@ -655,7 +655,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
         </header>
 
         <main className="relative flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto px-4 pb-2 pt-1">
+          <div className="flex-1 overflow-y-auto bg-[#000000] px-4 pb-2 pt-1">
             {messages.length === 0 ? (
               <div className="flex h-full min-h-[220px] items-center justify-center">
                 <div className="text-center text-[#6b7280]">
@@ -669,7 +669,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
               <div className="space-y-3 pb-3">
                 {messages.map((message, index) => (
                   <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-[22px] px-3.5 py-2.5 text-[14px] leading-6 ${message.role === 'user' ? 'bg-[#1f2a38] text-[#eaf3ff]' : 'bg-[#111111] text-[#dfe6ef]'}`}>
+                    <div className={`max-w-[85%] rounded-[22px] px-3.5 py-2.5 text-[14px] leading-6 ${message.role === 'user' ? 'bg-[#101010] text-[#eaf3ff]' : 'bg-[#090909] text-[#dfe6ef]'}`}>
                       {message.role === 'assistant' ? (
                         <div className="prose prose-invert max-w-none prose-p:my-1 prose-pre:rounded-xl prose-pre:border prose-pre:border-[#2b2b2b] prose-pre:bg-[#090909] prose-pre:p-2 prose-code:text-[11px]">
                           <ReactMarkdown>{message.text}</ReactMarkdown>
@@ -709,7 +709,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
               ))}
             </div>
 
-            <div className="rounded-[26px] border border-[#2a2a2a] bg-[#111111] p-2 shadow-[0_10px_28px_rgba(0,0,0,0.45)]">
+            <div className="rounded-[26px] border border-[#1a1a1a] bg-[#000000] p-2 shadow-none">
               <div className="flex items-end gap-2">
                 <button
                   type="button"
