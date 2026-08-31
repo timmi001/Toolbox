@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Check, ChevronDown, Code2, Copy, Download, FileText, Image, Paperclip, Plus, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2, X, type LucideIcon } from 'lucide-react';
 import { Link, useLocation, useRoute } from 'wouter';
 import { generateHubResponse } from '@/lib/hub-ai';
+import { openFeedbackForm } from '@/components/FeedbackButton';
 
 type HubAction = readonly [string, string];
 type HubConfig = {
@@ -629,22 +630,6 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
             >
               Upgrade
             </button>
-            <button
-              type="button"
-              aria-label="Voice assistant"
-              onClick={handleVoiceInput}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#111111] text-[#dfe7ef]"
-            >
-              <Mic className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              aria-label="Profile"
-              onClick={() => setError('Profile panel is not available in this workspace demo.')}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#111111] text-[#dfe7ef]"
-            >
-              <UserRound className="h-4 w-4" />
-            </button>
           </div>
 
           {menuOpen && (
@@ -660,6 +645,10 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
               <button type="button" onClick={() => { setMenuOpen(false); void copyAnswer(); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
                 <span>{copied ? 'Copied' : 'Copy answer'}</span>
                 <Copy className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={() => { setMenuOpen(false); openFeedbackForm(); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
+                <span>Feedback</span>
+                <MessageCircleQuestion className="h-4 w-4" />
               </button>
             </div>
           )}

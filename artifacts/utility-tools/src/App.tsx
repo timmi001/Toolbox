@@ -15,6 +15,7 @@ import TermsOfService from "@/pages/TermsOfService";
 import DmcaPolicy from "@/pages/DmcaPolicy";
 import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
+import AiTools from "@/pages/AiTools";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -64,6 +65,7 @@ function Router() {
       <Layout>
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/ai-tools" component={AiTools} />
           <Route path="/hub/:hub" component={HubWorkspace} />
           <Route path="/blog" component={BlogIndex} />
           <Route path="/blog/:slug" component={BlogPost} />
