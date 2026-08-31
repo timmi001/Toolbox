@@ -16,15 +16,11 @@
   position: relative;
   width: min(100%, 1360px);
   max-width: none;
-  padding: 11px;
-  border: 1px solid rgba(238, 245, 255, 0.75);
-  border-radius: clamp(27px, 4vw, 45px);
-  background:
-    linear-gradient(145deg, #8796a7 0%, #f8fbff 8%, #d9e1ea 22%, #8c9aaa 46%, #f4f7fb 67%, #778697 100%);
-  box-shadow:
-    0 42px 90px rgba(0, 0, 0, 0.58),
-    0 0 0 1px rgba(255, 255, 255, 0.22) inset,
-    0 8px 18px rgba(255, 255, 255, 0.28) inset;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .home-frame::before,
@@ -96,14 +92,10 @@
   min-height: min(790px, calc(100svh - 42px));
   overflow: hidden;
   padding: clamp(58px, 7vw, 88px) clamp(18px, 5vw, 72px) clamp(28px, 5vw, 58px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: clamp(21px, 3.2vw, 34px);
-  background:
-    radial-gradient(circle at 50% 4%, rgba(61, 85, 118, 0.2), transparent 29%),
-    linear-gradient(145deg, #070b12 0%, #0c111a 45%, #06090f 100%);
-  box-shadow:
-    0 0 0 6px rgba(18, 28, 42, 0.38) inset,
-    0 14px 30px rgba(8, 13, 22, 0.44) inset;
+  border: none;
+  border-radius: 0;
+  background: #000000;
+  box-shadow: none;
 }
 
 .home-screen::before {
@@ -333,9 +325,9 @@
 
   .home-card-rail {
     display: flex;
-    gap: 12px;
-    margin: 0 -14px;
-    padding: 0 14px 10px;
+    gap: 10px;
+    margin: 0 -6px;
+    padding: 0 6px 10px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -347,12 +339,12 @@
   }
 
   .home-card-link {
-    flex: 0 0 84%;
+    flex: 0 0 72%;
     scroll-snap-align: start;
   }
 
   .home-hub-card {
-    min-height: 280px;
+    min-height: 250px;
   }
 
   .home-section-heading {
