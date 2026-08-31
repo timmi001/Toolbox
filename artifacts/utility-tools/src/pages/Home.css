@@ -391,7 +391,7 @@
 
   .home-screen {
     min-height: 100dvh;
-    padding: 56px 14px 18px;
+    padding: 32px 12px 18px;
     border-radius: 0;
   }
 
@@ -399,10 +399,21 @@
     max-width: none;
   }
 
+  .home-intro h1 {
+    font-size: clamp(30px, 9vw, 42px);
+    line-height: 0.96;
+    letter-spacing: -0.06em;
+  }
+
+  .home-intro p {
+    margin-top: 10px;
+    font-size: 13px;
+  }
+
   .home-tech-brief-scroll {
-    margin-top: 18px;
+    margin-top: 16px;
     overflow-x: auto;
-    padding-bottom: 4px;
+    padding-bottom: 3px;
     scrollbar-width: none;
   }
 
@@ -411,15 +422,73 @@
   }
 
   .home-tech-brief-card {
-    width: min(78vw, 360px);
-    min-width: 250px;
+    width: min(100%, 360px);
+    min-width: 0;
+    padding: 10px 11px 9px;
+    border-radius: 14px;
+  }
+
+  .home-tech-brief-top {
+    margin-bottom: 8px;
+  }
+
+  .home-tech-brief-label {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+  }
+
+  .home-tech-brief-time {
+    font-size: 9px;
+  }
+
+  .home-tech-brief-body {
+    gap: 8px;
+  }
+
+  .home-tech-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+  }
+
+  .home-tech-brief-copy-wrap h3 {
+    font-size: 14px;
+  }
+
+  .home-tech-brief-copy-wrap p {
+    font-size: 10.5px;
+    line-height: 1.45;
+  }
+
+  .home-tech-brief-action {
+    margin-top: 8px;
+    font-size: 10px;
+  }
+
+  .home-hubs {
+    margin-top: 24px;
+  }
+
+  .home-section-label {
+    margin-bottom: 8px;
+  }
+
+  .home-section-heading {
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .home-section-heading p {
+    max-width: none;
+    margin-top: 8px;
+    text-align: left;
   }
 
   .home-card-rail {
     display: flex;
-    gap: 10px;
-    margin: 0 -6px;
-    padding: 0 6px 10px;
+    gap: 8px;
+    margin: 0;
+    padding: 0 0 4px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -431,23 +500,31 @@
   }
 
   .home-card-link {
-    flex: 0 0 72%;
+    flex: 0 0 calc(82% - 8px);
+    min-width: 0;
     scroll-snap-align: start;
   }
 
   .home-hub-card {
-    min-height: 250px;
+    min-height: 210px;
+    padding: 14px 14px 12px;
+    border-radius: 18px;
   }
 
-  .home-section-heading {
-    display: block;
-    margin-bottom: 16px;
+  .home-hub-card h3 {
+    font-size: 16px;
   }
 
-  .home-section-heading p {
-    max-width: none;
-    margin-top: 8px;
-    text-align: left;
+  .home-hub-card p {
+    margin-top: 10px;
+    font-size: 10px;
+    line-height: 1.45;
+    max-width: 100%;
+  }
+
+  .home-card-cta {
+    margin-top: 10px;
+    font-size: 10px;
   }
 }
 

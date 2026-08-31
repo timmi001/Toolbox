@@ -503,6 +503,20 @@ type UnifiedHubConfig = {
 };
 
 const UNIFIED_HUBS = {
+  ai: {
+    title: 'AI Assistant',
+    subtitle: 'Write, research, plan, and create in one focused AI workspace.',
+    icon: Sparkles,
+    tools: [] as HubAction[],
+    modes: [['Write', 'Draft a clear, useful response for your next task.'], ['Research', 'Explore ideas and synthesize the best options.'], ['Plan', 'Turn a rough goal into a concrete next step.'], ['Brainstorm', 'Generate creative directions and fresh ideas.']],
+  },
+  'ai-assistant': {
+    title: 'AI Assistant',
+    subtitle: 'Write, research, plan, and create in one focused AI workspace.',
+    icon: Sparkles,
+    tools: [] as HubAction[],
+    modes: [['Write', 'Draft a clear, useful response for your next task.'], ['Research', 'Explore ideas and synthesize the best options.'], ['Plan', 'Turn a rough goal into a concrete next step.'], ['Brainstorm', 'Generate creative directions and fresh ideas.']],
+  },
   creator: {
     title: 'Creator Hub',
     subtitle: 'Create polished content, campaigns, and creative direction with AI.',
@@ -558,7 +572,8 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
     setLoading(true);
     setError('');
     try {
-      const answer = await generateHubResponse(hub, { prompt: `${value}${attachmentName ? `\n\nAttached file: ${attachmentName}` : ''}`, mode });
+      const targetHub: 'ai-assistant' | typeof hub = hub === 'ai' || hub === 'ai-assistant' ? 'ai-assistant' : hub;
+      const answer = await generateHubResponse(targetHub, { prompt: `${value}${attachmentName ? `\n\nAttached file: ${attachmentName}` : ''}`, mode });
       setMessages((current) => [...current, { role: 'user', text: value }, { role: 'assistant', text: answer }]);
       setPrompt('');
       setAttachmentName('');
