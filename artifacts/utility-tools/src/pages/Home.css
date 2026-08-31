@@ -1,15 +1,12 @@
 .home-redesign {
-  min-height: 100svh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+  display: block;
   overflow: hidden;
-  padding: clamp(14px, 4vw, 52px);
+  margin: 0;
+  padding: 0;
   color: #f7f8fb;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(41, 57, 77, 0.28), transparent 30%),
-    radial-gradient(circle at 92% 78%, rgba(26, 32, 53, 0.3), transparent 34%),
-    #05070b;
+  background: transparent;
 }
 
 .home-frame {
@@ -89,12 +86,13 @@
 
 .home-screen {
   position: relative;
-  min-height: min(790px, calc(100svh - 42px));
+  width: 100%;
+  min-height: 100vh;
   overflow: hidden;
   padding: clamp(58px, 7vw, 88px) clamp(18px, 5vw, 72px) clamp(28px, 5vw, 58px);
   border: none;
   border-radius: 0;
-  background: #000000;
+  background: transparent;
   box-shadow: none;
 }
 
@@ -151,29 +149,107 @@
   font-size: clamp(13px, 1.4vw, 16px);
 }
 
-.home-brief-button {
-  position: absolute;
-  top: -5px;
-  right: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 38px;
-  padding: 0 13px;
-  border: 1px solid rgba(116, 210, 181, 0.32);
-  border-radius: 999px;
-  color: #b5f6df;
-  font-size: 12px;
-  font-weight: 700;
-  background: rgba(29, 74, 68, 0.48);
-  box-shadow: 0 10px 25px rgba(21, 165, 129, 0.08);
+.home-tech-brief-scroll {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.home-tech-brief-card {
+  display: block;
+  width: min(100%, 440px);
+  padding: 14px 14px 12px;
+  border: 1px solid rgba(15, 23, 31, 0.08);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 250, 0.96));
+  box-shadow: 0 14px 30px rgba(15, 23, 31, 0.12), 0 2px 8px rgba(15, 23, 31, 0.05);
+  color: #111827;
+  text-align: left;
   transition: 180ms ease;
 }
 
-.home-brief-button:hover {
-  border-color: rgba(142, 240, 205, 0.7);
-  background: rgba(35, 99, 87, 0.6);
-  transform: translateY(-1px);
+.home-tech-brief-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(15, 23, 31, 0.14), 0 2px 8px rgba(15, 23, 31, 0.06);
+}
+
+.home-tech-brief-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.home-tech-brief-label {
+  color: #0f172a;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.home-tech-brief-time {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.home-tech-brief-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.home-tech-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.home-tech-brief-copy-wrap {
+  min-width: 0;
+}
+
+.home-tech-brief-copy-wrap h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.04em;
+}
+
+.home-tech-brief-copy-wrap p {
+  margin: 5px 0 0;
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.home-tech-brief-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: #0f172a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.home-tech-brief-action svg {
+  width: 14px;
+  height: 14px;
 }
 
 .home-brief-panel {
@@ -321,6 +397,22 @@
 
   .home-intro {
     max-width: none;
+  }
+
+  .home-tech-brief-scroll {
+    margin-top: 18px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .home-tech-brief-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-tech-brief-card {
+    width: min(78vw, 360px);
+    min-width: 250px;
   }
 
   .home-card-rail {

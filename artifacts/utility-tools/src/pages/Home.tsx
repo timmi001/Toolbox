@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import {
   ArrowRight,
@@ -20,6 +20,12 @@ const HUB_CARDS = [
   { title: 'Study Hub', href: '/hub/study', description: 'Learn faster, practice more and build a better study routine.', icon: BookOpen, accent: '#6E9BFF', gradient: 'from-[#1C3569] via-[#17294E] to-[#131D31]', glow: 'rgba(110,155,255,0.24)' },
   { title: 'Career Hub', href: '/hub/career', description: 'Prepare for your next opportunity with practical AI guidance.', icon: BriefcaseBusiness, accent: '#B18AFF', gradient: 'from-[#39265E] via-[#292244] to-[#171A2C]', glow: 'rgba(177,138,255,0.24)' },
   { title: 'Business Hub', href: '/hub/business', description: 'Plan, organize and grow your business in one focused workspace.', icon: BarChart3, accent: '#F5C05A', gradient: 'from-[#55401D] via-[#3A2E20] to-[#1B1D2A]', glow: 'rgba(245,192,90,0.24)' },
+] as const;
+
+const TECH_BRIEF_ITEMS = [
+  { title: 'OpenAI unveils a faster AI model', summary: 'The latest release focuses on lower latency, stronger reasoning, and broader productivity gains for teams building AI workflows.' },
+  { title: 'AI agents are moving from demos to daily ops', summary: 'Product teams are using agentic workflows to automate routine tasks, accelerate research, and reduce repetitive decision cycles.' },
+  { title: 'Operational clarity is becoming the edge', summary: 'The strongest teams are pairing fast AI tools with better planning, stronger prompts, and clearer weekly priorities.' },
 ] as const;
 
 type HubObjectVariant = 'spark' | 'ribbon' | 'flower' | 'cluster' | 'orb';
@@ -47,6 +53,15 @@ export default function Home() {
   const [brief, setBrief] = useState(() => getDailyBrief()?.content ?? '');
   const [briefLoading, setBriefLoading] = useState(false);
   const [briefError, setBriefError] = useState('');
+  const [briefIndex, setBriefIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setBriefIndex((current) => (current + 1) % TECH_BRIEF_ITEMS.length);
+    }, 10000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   const generateBrief = async () => {
     setBriefLoading(true);
@@ -72,28 +87,35 @@ export default function Home() {
             <div className="home-kicker"><span />Your workspace</div>
             <h1>{greeting}</h1>
             <p>What would you like to accomplish today?</p>
-            <button type="button" onClick={() => { setBriefOpen(true); if (!brief) void generateBrief(); }} className="home-brief-button">
-              <CalendarDays className="h-4 w-4" />Daily Brief<ArrowRight className="h-4 w-4" />
-            </button>
+
+            <div className="home-tech-brief-scroll">
+              <button type="button" onClick={() => { setBriefOpen(true); if (!brief) void generateBrief(); }} className="home-tech-brief-card">
+                <div className="home-tech-brief-top">
+                  <span className="home-tech-brief-label">TECH BRIEF</span>
+                  <span className="home-tech-brief-time">{new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+                </div>
+
+                <div className="home-tech-brief-body">
+                  <div className="home-tech-icon" aria-hidden="true">
+                    <Sparkles className="h-3.5 w-3.5" />
+                  </div>
+
+                  <div className="home-tech-brief-copy-wrap">
+                    <h3>{TECH_BRIEF_ITEMS[briefIndex].title}</h3>
+                    <p>{brief || TECH_BRIEF_ITEMS[briefIndex].summary}</p>
+                  </div>
+                </div>
+
+                <div className="home-tech-brief-action">
+                  <span>Read more</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </div>
+              </button>
+            </div>
           </section>
 
-          {briefOpen && <section className="home-brief-panel">
-            <div className="home-brief-heading">
-              <div><div className="home-brief-label">Today</div><h2>Daily Brief</h2></div>
-              <div className="home-brief-actions">
-                <button type="button" onClick={() => void generateBrief()} disabled={briefLoading}><RefreshCw className={briefLoading ? 'animate-spin' : ''} />Refresh</button>
-                <button type="button" onClick={() => setBriefOpen(false)}>Close</button>
-              </div>
-            </div>
-            {briefLoading ? <p className="home-brief-copy home-brief-loading">Preparing your brief...</p> : briefError ? <div className="home-brief-copy home-brief-error"><span>{briefError}</span><button type="button" onClick={() => void generateBrief()}>Retry</button></div> : <p className="home-brief-copy">{brief || 'No brief generated yet.'}</p>}
-          </section>}
-
           <section className="home-hubs">
-            <div className="home-section-heading">
-              <div className="home-section-label">Start here</div>
-              <h2>Your core hubs</h2>
-              <p>Focused spaces for creating, learning, planning, and getting work done.</p>
-            </div>
+            <div className="home-section-label">Start here</div>
             <div className="home-card-rail">
               {HUB_CARDS.map(({ title, href, description }, index) => (
                 <Link key={title} href={href} className="home-card-link">

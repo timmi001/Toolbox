@@ -12,7 +12,7 @@ function ScrollToTop() {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-[#121212] text-foreground">
+    <div className="w-full min-h-screen bg-[#07090c] text-foreground">
       <ScrollToTop />
       <AppShell>
         {children}

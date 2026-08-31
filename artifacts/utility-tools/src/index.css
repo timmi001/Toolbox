@@ -99,6 +99,27 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #07090c;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  background: #07090c;
+  color: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 @media (max-width: 767px) {
   html, body, #root {
     max-width: 100%;
