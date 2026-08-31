@@ -619,7 +619,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
 
   return (
     <div className="min-h-[100dvh] w-full overflow-hidden bg-[#000000] text-white">
-      <div className="mx-auto flex h-[100dvh] w-full max-w-md flex-col bg-[#000000] px-0 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
+      <div className="flex h-[100dvh] w-full flex-col bg-[#000000] px-0 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
         <header className="relative flex items-center justify-between px-4 pb-2.5 pt-1">
           <div className="flex items-center gap-3">
             <button

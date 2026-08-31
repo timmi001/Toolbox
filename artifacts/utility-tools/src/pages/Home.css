@@ -488,7 +488,7 @@
     display: flex;
     gap: 8px;
     margin: 0;
-    padding: 0 0 4px;
+    padding: 0 8px 4px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -500,13 +500,13 @@
   }
 
   .home-card-link {
-    flex: 0 0 calc(82% - 8px);
+    flex: 0 0 clamp(230px, 68vw, 290px);
     min-width: 0;
     scroll-snap-align: start;
   }
 
   .home-hub-card {
-    min-height: 210px;
+    min-height: 190px;
     padding: 14px 14px 12px;
     border-radius: 18px;
   }
