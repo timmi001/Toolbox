@@ -256,40 +256,55 @@ function ChatPdfShell({
           {menuOpen && (
             <div className="border-b border-[#1A1A1A] bg-[#060606] p-3 md:hidden">
               <div className="space-y-1.5">
-                {sideNav.map(({ label, icon: Icon, route, action }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      if (action === 'upload') { onUpload(); return; }
-                      if (action === 'new-document') {
-                        setActiveChatPdfConversationId(null);
-                        setActiveChatPdfDocumentId(null);
-                        navigate('/chat-with-pdf');
-                        window.dispatchEvent(new CustomEvent('chat-pdf-reset'));
-                        return;
-                      }
-                      if (action === 'settings') {
-                        navigate('/chat-with-pdf');
-                        return;
-                      }
-                      navigate(route);
-                    }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]"
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{label}</span>
+                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                  <FileText className="h-4 w-4" />
+                  <span>Chat with PDF</span>
+                </button>
+
+                <button type="button" onClick={() => { setMenuOpen(false); setActiveChatPdfConversationId(null); setActiveChatPdfDocumentId(null); navigate('/chat-with-pdf'); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                  <Plus className="h-4 w-4" />
+                  <span>New Document</span>
+                </button>
+
+                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf/history'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                  <Clock3 className="h-4 w-4" />
+                  <span>History</span>
+                </button>
+
+                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf/documents'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                  <FolderOpen className="h-4 w-4" />
+                  <span>My Documents</span>
+                </button>
+
+                <button type="button" onClick={() => { setMenuOpen(false); onUpload(); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                  <Upload className="h-4 w-4" />
+                  <span>Upload PDF</span>
+                </button>
+
+                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf/tools'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                  <Sparkles className="h-4 w-4" />
+                  <span>Tools</span>
+                </button>
+
+                <div className="mt-2 border-t border-[#1A1A1A] pt-2">
+                  <div className="mb-1 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6b7786]">Tools</div>
+                  <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                    <MessageCircleQuestion className="h-4 w-4" />
+                    <span>Ask PDF</span>
                   </button>
-                ))}
-                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf/saved'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                  <Bookmark className="h-4 w-4" />
-                  <span>Saved</span>
-                </button>
-                <button type="button" onClick={() => { setMenuOpen(false); openFeedbackForm(); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                  <MessageCircleQuestion className="h-4 w-4" />
-                  <span>Feedback</span>
-                </button>
+                  <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                    <FileText className="h-4 w-4" />
+                    <span>Summarize</span>
+                  </button>
+                  <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                    <Search className="h-4 w-4" />
+                    <span>Extract Information</span>
+                  </button>
+                  <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Analyze</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
