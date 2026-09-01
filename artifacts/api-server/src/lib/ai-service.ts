@@ -785,9 +785,69 @@ const MAX_RETRIES_PER_PROVIDER = 2;
  * Tries AgentRouter → Gemini → Groq → OpenRouter in order. Throws only when
  * all providers are exhausted or a fatal (non-fallbackable) error occurs.
  */
+function hasAnyConfiguredProvider(): boolean {
+  return [
+    Boolean(process.env["AGENTROUTER_API_KEY"]),
+    Boolean(process.env["GEMINI_API_KEY"] ?? process.env["GOOGLE_API_KEY"]),
+    Boolean(process.env["GROQ_API_KEY"]),
+    Boolean(process.env["OPENROUTER_API_KEY"]),
+  ].some(Boolean);
+}
+
+function buildDemoText(params: GenerationParams): string {
+  const normalizedPrompt = params.prompt.replace(/\s+/g, " ").trim();
+  const preview = normalizedPrompt.length > 320 ? `${normalizedPrompt.slice(0, 320)}…` : normalizedPrompt;
+  const mode = params.toolId.replace(/^hub-/, "").replace(/-/g, " ");
+
+  return [
+    "Demo response: this workspace is running without live AI provider credentials, so a local fallback response was generated to keep the workflow functional.",
+    "",
+    `Request mode: ${mode}`,
+    `Prompt preview: ${preview || "No prompt provided."}`,
+    "",
+    "What this means:",
+    "- The PDF/chat flow, hub tools, and UI actions are working in demo mode.",
+    "- The app remains ready to switch to a live provider as soon as API keys are configured.",
+    "- For production use, add AGENTROUTER_API_KEY or one of the fallback provider keys in the server environment.",
+    "",
+    "Suggested next step:",
+    "Set AGENTROUTER_API_KEY and restart the API server to enable real provider-backed generation for all hubs and PDF workflows.",
+  ].join("\n");
+}
+
 export async function generateText(params: GenerationParams): Promise<GenerationOutput> {
   const chain   = buildChain(params.isComplex);
   const attempts: ProviderAttempt[] = [];
+
+  if (!hasAnyConfiguredProvider() && process.env["AI_DEMO_MODE"] !== "false") {
+    const demoText = buildDemoText(params);
+    logger.warn(
+      {
+        requestId: params.requestId,
+        toolId: params.toolId,
+        mode: params.isComplex ? "complex" : "standard",
+        ts: new Date().toISOString(),
+      },
+      `[ai-service][${params.requestId}] no providers configured — returning demo-safe local response`,
+    );
+
+    const result: GenerationResult = {
+      text: demoText,
+      provider: "demo",
+      model: "local-demo",
+      durationMs: 0,
+    };
+
+    return {
+      result,
+      attempts: [{
+        provider: "demo",
+        model: "local-demo",
+        durationMs: 0,
+        succeeded: true,
+      }],
+    };
+  }
 
   for (const provider of chain) {
     // Skip providers with no key configured

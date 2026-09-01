@@ -2,8 +2,10 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { validateGeminiEnv, validateAgentRouterEnv } from "./lib/ai-service";
 
-// Validate AgentRouter first — it's the PRIMARY provider and critical for the system.
-// This validation happens early so failures are visible in the deploy log.
+// Validate configured providers early so bad credentials fail loudly in logs,
+// but do not crash the server when the app is intentionally running in local
+// demo mode without any external AI credentials. This keeps the app usable in
+// development and staging while still surfacing misconfigurations.
 if (process.env["AGENTROUTER_API_KEY"]) {
   try {
     validateAgentRouterEnv();
@@ -16,10 +18,16 @@ if (process.env["AGENTROUTER_API_KEY"]) {
   }
 }
 
-// Validate Gemini only when a Gemini-style key is actually configured.
-// This avoids preventing AgentRouter-only deployments from starting.
 if (process.env["GEMINI_API_KEY"] || process.env["GOOGLE_API_KEY"]) {
-  validateGeminiEnv();
+  try {
+    validateGeminiEnv();
+  } catch (err) {
+    logger.error(
+      { error: err instanceof Error ? err.message : String(err) },
+      "Gemini validation failed",
+    );
+    throw err;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -42,10 +50,10 @@ const configuredProviders = AI_KEYS.filter(({ name }) => {
 });
 
 if (configuredProviders.length === 0) {
-  logger.error(
+  logger.warn(
     { configured: 0, required: AI_KEYS.length },
-    "No AI provider keys are configured — every /ai/generate request will fail. " +
-      "Configure at least AGENTROUTER_API_KEY (primary), or fall back to: GEMINI_API_KEY (or GOOGLE_API_KEY), GROQ_API_KEY, OPENROUTER_API_KEY.",
+    "No AI provider keys are configured — app will run in demo-safe mode and return generated local responses instead of failing. " +
+      "Configure AGENTROUTER_API_KEY (primary) or fallback keys for live AI responses.",
   );
 } else {
   const missingProviders = AI_KEYS.filter(({ name }) => {
