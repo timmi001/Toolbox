@@ -5,7 +5,9 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   return (
     <div className="w-full min-h-screen bg-[#07090c] text-white selection:bg-[#3BDDB2]/20">
-      <main className="min-h-screen w-full min-w-0">{children}</main>
+      <main className="flex min-h-screen w-full min-w-0 justify-center">
+        <div className="mx-auto w-full max-w-[1480px]">{children}</div>
+      </main>
     </div>
   );
 }
