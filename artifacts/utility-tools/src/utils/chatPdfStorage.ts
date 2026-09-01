@@ -10,6 +10,9 @@ export type ChatPdfConversation = {
   title: string;
   documentId?: string | null;
   documentName?: string | null;
+  documentIds?: string[];
+  activeDocumentIds?: string[];
+  viewedDocumentId?: string | null;
   createdAt: string;
   updatedAt: string;
   messages: ChatPdfMessage[];
@@ -39,6 +42,8 @@ export type ChatPdfSavedItem = {
 
 const DOCS_KEY = 'toolboxx-chat-pdf-documents';
 const ACTIVE_DOC_KEY = 'toolboxx-chat-pdf-active-document';
+const ACTIVE_DOCS_KEY = 'toolboxx-chat-pdf-active-documents';
+const VIEWED_DOC_KEY = 'toolboxx-chat-pdf-viewed-document';
 const ACTIVE_CONVO_KEY = 'toolboxx-chat-pdf-active-conversation';
 const HISTORY_KEY = 'toolboxx-chat-pdf-history';
 const SAVED_KEY = 'toolboxx-chat-pdf-saved';
@@ -89,10 +94,8 @@ export function removeChatPdfDocument(documentId: string) {
   const docs = loadChatPdfDocuments();
   const next = docs.filter((item) => item.id !== documentId);
   saveChatPdfDocuments(next);
-  const activeId = getActiveChatPdfDocumentId();
-  if (activeId === documentId) {
-    setActiveChatPdfDocumentId(null);
-  }
+  setActiveChatPdfDocumentIds(getActiveChatPdfDocumentIds().filter((id) => id !== documentId));
+  if (getViewedChatPdfDocumentId() === documentId) setViewedChatPdfDocumentId(next[0]?.id ?? null);
   return next;
 }
 
@@ -108,6 +111,32 @@ export function setActiveChatPdfDocumentId(documentId: string | null) {
     return;
   }
   window.localStorage.removeItem(ACTIVE_DOC_KEY);
+}
+
+export function getActiveChatPdfDocumentIds(): string[] {
+  const stored = readJson<string[]>(ACTIVE_DOCS_KEY, []);
+  if (stored.length) return stored;
+  const legacyId = getActiveChatPdfDocumentId();
+  return legacyId ? [legacyId] : [];
+}
+
+export function setActiveChatPdfDocumentIds(documentIds: string[]) {
+  const uniqueIds = [...new Set(documentIds)];
+  writeJson(ACTIVE_DOCS_KEY, uniqueIds);
+  setActiveChatPdfDocumentId(uniqueIds[0] ?? null);
+}
+
+export function getViewedChatPdfDocumentId(): string | null {
+  return readJson<string | null>(VIEWED_DOC_KEY, getActiveChatPdfDocumentId());
+}
+
+export function setViewedChatPdfDocumentId(documentId: string | null) {
+  if (typeof window === 'undefined') return;
+  if (documentId) {
+    window.localStorage.setItem(VIEWED_DOC_KEY, documentId);
+  } else {
+    window.localStorage.removeItem(VIEWED_DOC_KEY);
+  }
 }
 
 export function getActiveChatPdfDocument(): ChatPdfDocument | null {

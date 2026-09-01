@@ -15,6 +15,8 @@ import {
   History,
   MessageCircleQuestion,
   Mic,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Search,
   Settings2,
@@ -31,8 +33,10 @@ import {
   createPdfConversationId,
   deleteChatPdfConversation,
   getActiveChatPdfConversationId,
+  getActiveChatPdfDocumentIds,
   getActiveChatPdfDocument,
   getActiveChatPdfDocumentId,
+  getViewedChatPdfDocumentId,
   loadChatPdfDocuments,
   loadChatPdfHistory,
   loadChatPdfSavedItems,
@@ -40,7 +44,9 @@ import {
   removeChatPdfSavedItem,
   saveChatPdfSavedItems,
   setActiveChatPdfConversationId,
+  setActiveChatPdfDocumentIds,
   setActiveChatPdfDocumentId,
+  setViewedChatPdfDocumentId,
   type ChatPdfConversation,
   type ChatPdfDocument,
   type ChatPdfSavedItem,
@@ -48,21 +54,24 @@ import {
 } from '@/utils/chatPdfStorage';
 import { openFeedbackForm } from '@/components/FeedbackButton';
 
+const MAX_CHAT_PDF_FILES = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILES ?? 12);
+const MAX_CHAT_PDF_FILE_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILE_SIZE ?? 25 * 1024 * 1024);
+const MAX_CHAT_PDF_TOTAL_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_TOTAL_SIZE ?? 100 * 1024 * 1024);
+
 const sideNav: Array<{ label: string; icon: LucideIcon; route: string; action?: 'upload' | 'new-document' | 'settings' | 'feedback' }> = [
   { label: 'Chat with PDF', icon: FileText, route: '/chat-with-pdf' },
   { label: 'New Document', icon: Plus, route: '/chat-with-pdf', action: 'new-document' },
   { label: 'History', icon: Clock3, route: '/chat-with-pdf/history' },
   { label: 'My Documents', icon: FolderOpen, route: '/chat-with-pdf/documents' },
   { label: 'Upload PDF', icon: Upload, route: '/chat-with-pdf', action: 'upload' },
-  { label: 'Saved', icon: Bookmark, route: '/chat-with-pdf/saved' },
   { label: 'Tools', icon: Sparkles, route: '/chat-with-pdf/tools' },
   { label: 'Settings', icon: Settings2, route: '/chat-with-pdf', action: 'settings' },
 ];
 
-function buildGroundedPrompt(question: string, document: ChatPdfDocument) {
-  const text = document.pageTexts.map((pageText, index) => `Page ${index + 1}: ${pageText}`).join('\n\n');
+function buildGroundedPrompt(question: string, documents: ChatPdfDocument[]) {
+  const text = documents.map((document) => `Document: ${document.fileName}\n${document.pageTexts.map((pageText, index) => `Page ${index + 1}: ${pageText}`).join('\n\n')}`).join('\n\n');
   return [
-    'You are answering from the uploaded PDF only. Use the document content as the source of truth.',
+    'You are answering from the selected uploaded PDFs only. Use the document content as the source of truth. Cite the PDF filename and page number for each source.',
     `Question: ${question}`,
     'If the answer is not explicitly in the PDF, say it is not present in the uploaded document.',
     'Cite page numbers when possible and keep the answer clear and practical.',
@@ -98,8 +107,7 @@ function formatDate(date: string) {
 }
 
 async function extractPdfText(file: File): Promise<ChatPdfDocument> {
-  const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
+  const { getDocument } = await loadPdfJs();
 
   const bytes = new Uint8Array(await file.arrayBuffer());
   const pdf = await getDocument({ data: bytes }).promise;
@@ -128,6 +136,18 @@ async function extractPdfText(file: File): Promise<ChatPdfDocument> {
   };
 }
 
+let pdfJsPromise: Promise<typeof import('pdfjs-dist/legacy/build/pdf.mjs')> | null = null;
+
+async function loadPdfJs() {
+  if (!pdfJsPromise) {
+    pdfJsPromise = import('pdfjs-dist/legacy/build/pdf.mjs').then((pdfjs) => {
+      pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
+      return pdfjs;
+    });
+  }
+  return pdfJsPromise;
+}
+
 function ChatPdfShell({
   title,
   subtitle,
@@ -145,27 +165,20 @@ function ChatPdfShell({
 }) {
   const [, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#000000] text-white">
       <div className="flex min-h-screen flex-col md:flex-row">
-        <aside className="hidden w-[260px] shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 md:flex md:flex-col">
-          <div className="mb-4 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-3 py-2.5">
-            <button
-              type="button"
-              aria-label="Back to dashboard"
-              onClick={() => navigate('/')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#1A1A1A] bg-[#0A0A0A] text-[#a8b7c8] transition hover:border-[#3dd9a7] hover:text-[#dffdf4]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </button>
+        <aside className={`hidden shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[260px]'}`}>
+          <div className={`mb-4 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-2.5 py-2.5 ${sidebarCollapsed ? 'justify-center' : ''}`}>
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0E2D3B] text-[#A5D8FF]">
               <FileText className="h-4 w-4" />
             </div>
-            <div className="min-w-0">
+            {!sidebarCollapsed && <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-[0.25em] text-[#6b7786]">Workspace</div>
               <div className="truncate text-sm font-semibold text-white">Chat with PDF</div>
-            </div>
+            </div>}
           </div>
 
           <nav className="space-y-1.5">
@@ -183,6 +196,7 @@ function ChatPdfShell({
                     if (action === 'new-document') {
                       const nextDocId = getActiveChatPdfDocumentId();
                       if (nextDocId) setActiveChatPdfDocumentId(null);
+                      setActiveChatPdfDocumentIds([]);
                       setActiveChatPdfConversationId(null);
                       navigate('/chat-with-pdf');
                       window.dispatchEvent(new CustomEvent('chat-pdf-reset')); 
@@ -198,30 +212,40 @@ function ChatPdfShell({
                     }
                     navigate(route);
                   }}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${isActive ? 'bg-[#171717] text-white' : 'text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white'}`}
+                  title={sidebarCollapsed ? label : undefined}
+                  aria-label={label}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${sidebarCollapsed ? 'justify-center px-0' : ''} ${isActive ? 'bg-[#172554] text-white' : 'text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white'}`}
                 >
                   <Icon className="h-4 w-4" />
-                  <span>{label}</span>
+                  {!sidebarCollapsed && <span>{label}</span>}
                 </button>
               );
             })}
           </nav>
 
-          <div className="mt-auto space-y-1.5 pt-4">
-            <button type="button" onClick={() => navigate('/chat-with-pdf/saved')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white">
-              <Bookmark className="h-4 w-4" />
-              <span>Saved</span>
-            </button>
-            <button type="button" onClick={openFeedbackForm} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white">
-              <MessageCircleQuestion className="h-4 w-4" />
-              <span>Feedback</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            onClick={() => setSidebarCollapsed((value) => !value)}
+            className={`mt-2 flex h-9 w-full items-center justify-center rounded-xl border border-[#1E3A8A] bg-[#111827] text-[#93C5FD] transition hover:border-[#3B82F6] hover:bg-[#172554] hover:text-white ${sidebarCollapsed ? 'px-0' : ''}`}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </button>
+
         </aside>
 
         <main className="flex min-w-0 flex-1 flex-col">
           <header className="flex items-center justify-between border-b border-[#1A1A1A] bg-[#000000] px-4 py-3 md:px-5">
             <div className="flex items-center gap-3">
+              <button
+                type="button"
+                aria-label="Back to dashboard"
+                onClick={() => navigate('/')}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#3B82F6] hover:text-[#DBEAFE]"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
               <button
                 type="button"
                 aria-label="Open menu"
@@ -234,22 +258,13 @@ function ChatPdfShell({
                   <span className="block h-0.5 w-4 rounded-full bg-current" />
                 </div>
               </button>
-                  <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-[#6b7786]">PDF workspace</div>
-                <div className="truncate text-sm font-semibold text-white">{activeDocumentName ?? 'Ready to analyze'}</div>
+              <div className="min-w-0">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-[#6b7786]">{subtitle}</div>
+                <div className="truncate text-sm font-semibold text-white">{title}</div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label="Back to dashboard"
-                onClick={() => navigate('/')}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] md:hidden"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-              <button type="button" onClick={openFeedbackForm} className="rounded-full border border-[#23463d] bg-[#112b26] px-2.5 py-1.5 text-[11px] font-semibold text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#17382f]">Feedback</button>
             </div>
           </header>
 
@@ -261,7 +276,7 @@ function ChatPdfShell({
                   <span>Chat with PDF</span>
                 </button>
 
-                <button type="button" onClick={() => { setMenuOpen(false); setActiveChatPdfConversationId(null); setActiveChatPdfDocumentId(null); navigate('/chat-with-pdf'); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                <button type="button" onClick={() => { setMenuOpen(false); setActiveChatPdfConversationId(null); setActiveChatPdfDocumentId(null); setActiveChatPdfDocumentIds([]); navigate('/chat-with-pdf'); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
                   <Plus className="h-4 w-4" />
                   <span>New Document</span>
                 </button>
@@ -322,17 +337,24 @@ function ChatPdfWorkspacePage() {
   const [messages, setMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; content: string; createdAt: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [activeDocument, setActiveDocument] = useState<ChatPdfDocument | null>(null);
+  const [documents, setDocuments] = useState<ChatPdfDocument[]>(() => loadChatPdfDocuments());
+  const [activeDocumentIds, setActiveDocumentIdsState] = useState<string[]>(() => getActiveChatPdfDocumentIds());
+  const [viewedDocumentId, setViewedDocumentIdState] = useState<string | null>(() => getViewedChatPdfDocumentId());
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [generatedTitle, setGeneratedTitle] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const activeDocument = documents.find((document) => document.id === viewedDocumentId) ?? documents[0] ?? null;
 
   useEffect(() => {
     const applyStoredState = () => {
-      const storedDocument = getActiveChatPdfDocument();
+      const storedDocuments = loadChatPdfDocuments();
+      const storedActiveIds = getActiveChatPdfDocumentIds().filter((id) => storedDocuments.some((document) => document.id === id));
+      const storedViewedId = getViewedChatPdfDocumentId();
       const storedConversationId = getActiveChatPdfConversationId();
-      setActiveDocument(storedDocument);
+      setDocuments(storedDocuments);
+      setActiveDocumentIdsState(storedActiveIds);
+      setViewedDocumentIdState(storedDocuments.some((document) => document.id === storedViewedId) ? storedViewedId : storedActiveIds[0] ?? storedDocuments[0]?.id ?? null);
       setConversationId(storedConversationId);
 
       if (storedConversationId) {
@@ -347,7 +369,9 @@ function ChatPdfWorkspacePage() {
     applyStoredState();
 
     const handleReset = () => {
-      setActiveDocument(null);
+      setDocuments([]);
+      setActiveDocumentIdsState([]);
+      setViewedDocumentIdState(null);
       setConversationId(null);
       setMessages([]);
       setMessage('');
@@ -359,17 +383,21 @@ function ChatPdfWorkspacePage() {
   }, []);
 
   const persistConversation = (nextMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; createdAt: string }>, customDocument?: ChatPdfDocument | null) => {
-    const finalDocument = customDocument ?? activeDocument;
+    const finalDocument = customDocument ?? documents.find((document) => document.id === viewedDocumentId) ?? null;
     const nextId = conversationId ?? createPdfConversationId();
     setConversationId(nextId);
     setActiveChatPdfConversationId(nextId);
 
-    const docName = finalDocument?.name ?? activeDocument?.name ?? null;
+    const selectedDocuments = documents.filter((document) => activeDocumentIds.includes(document.id));
+    const docName = finalDocument?.name ?? selectedDocuments[0]?.name ?? null;
     const nextConversation: ChatPdfConversation = {
       id: nextId,
       title: generatedTitle || getConversationTitle(docName),
-      documentId: finalDocument?.id ?? activeDocument?.id ?? null,
+      documentId: finalDocument?.id ?? selectedDocuments[0]?.id ?? null,
       documentName: docName,
+      documentIds: selectedDocuments.map((document) => document.id),
+      activeDocumentIds,
+      viewedDocumentId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       messages: nextMessages,
@@ -377,38 +405,74 @@ function ChatPdfWorkspacePage() {
     upsertChatPdfConversation(nextConversation);
   };
 
-  const handleUpload = async (file?: File | null) => {
-    const target = file ?? inputRef.current?.files?.[0];
-    if (!target) return;
-    if (target.type !== 'application/pdf' && !target.name.toLowerCase().endsWith('.pdf')) {
-      setError('Please upload a valid PDF file.');
+  const handleUpload = async (files?: File | File[] | null) => {
+    const selectedFiles = files
+      ? Array.isArray(files) ? files : [files]
+      : Array.from(inputRef.current?.files ?? []);
+    if (!selectedFiles.length) return;
+
+    const invalidFile = selectedFiles.find((file) => file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf'));
+    if (invalidFile) {
+      setError(`Please upload valid PDF files. "${invalidFile.name}" is not a PDF.`);
+      return;
+    }
+
+    const existingNames = new Set(documents.map((document) => document.fileName));
+    const filesToProcess = selectedFiles.filter((file) => !existingNames.has(file.name));
+    if (!filesToProcess.length) {
+      setError('Those PDFs are already in this session.');
+      return;
+    }
+    if (documents.length + filesToProcess.length > MAX_CHAT_PDF_FILES) {
+      setError(`You can keep up to ${MAX_CHAT_PDF_FILES} PDFs in one session.`);
+      return;
+    }
+    const oversizedFile = filesToProcess.find((file) => file.size > MAX_CHAT_PDF_FILE_SIZE);
+    if (oversizedFile) {
+      setError(`"${oversizedFile.name}" exceeds the ${Math.round(MAX_CHAT_PDF_FILE_SIZE / 1024 / 1024)} MB per-file limit.`);
+      return;
+    }
+    const totalSize = documents.reduce((total, document) => total + document.size, 0) + filesToProcess.reduce((total, file) => total + file.size, 0);
+    if (totalSize > MAX_CHAT_PDF_TOTAL_SIZE) {
+      setError(`These files exceed the ${Math.round(MAX_CHAT_PDF_TOTAL_SIZE / 1024 / 1024)} MB combined session limit.`);
       return;
     }
 
     setUploading(true);
     setError('');
-    try {
-      const document = await extractPdfText(target);
-      addChatPdfDocument(document);
-      setActiveDocument(document);
-      setActiveChatPdfDocumentId(document.id);
-      setGeneratedTitle(document.name);
-      setMessages([]);
-      setConversationId(null);
-      setActiveChatPdfConversationId(null);
-      navigate('/chat-with-pdf');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'The PDF could not be processed. Please try again.');
-    } finally {
-      setUploading(false);
-      if (inputRef.current) inputRef.current.value = '';
+    const processed: ChatPdfDocument[] = [];
+    const failures: string[] = [];
+    for (const file of filesToProcess) {
+      try {
+        const document = await extractPdfText(file);
+        processed.push(document);
+        addChatPdfDocument(document);
+      } catch {
+        failures.push(file.name);
+      }
     }
+    const nextDocuments = [...documents, ...processed];
+    const nextActiveIds = [...new Set([...activeDocumentIds, ...processed.map((document) => document.id)])];
+    const viewedId = processed.at(-1)?.id ?? viewedDocumentId ?? nextDocuments[0]?.id ?? null;
+    setDocuments(nextDocuments);
+    setActiveDocumentIdsState(nextActiveIds);
+    setViewedDocumentIdState(viewedId);
+    setActiveChatPdfDocumentIds(nextActiveIds);
+    if (viewedId) {
+      setActiveChatPdfDocumentId(viewedId);
+      setViewedChatPdfDocumentId(viewedId);
+      setGeneratedTitle(nextDocuments.find((document) => document.id === viewedId)?.name ?? 'PDF discussion');
+    }
+    if (failures.length) setError(`Could not process: ${failures.join(', ')}`);
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = '';
   };
 
   const sendPrompt = async (customPrompt?: string) => {
     const value = (customPrompt ?? message).trim();
     if (!value) return;
-    if (!activeDocument) {
+    const selectedDocuments = documents.filter((document) => activeDocumentIds.includes(document.id));
+    if (!selectedDocuments.length) {
       setError('Please upload or select a PDF before asking a question.');
       return;
     }
@@ -421,7 +485,7 @@ function ChatPdfWorkspacePage() {
     setMessage('');
 
     try {
-      const grounded = buildGroundedPrompt(value, activeDocument);
+      const grounded = buildGroundedPrompt(value, selectedDocuments);
       const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: 'Chat with PDF' });
       const assistantMessage: { id: string; role: 'assistant'; content: string; createdAt: string } = {
         id: crypto.randomUUID(),
@@ -432,9 +496,10 @@ function ChatPdfWorkspacePage() {
       const finalMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; createdAt: string }> = [...nextMessages, assistantMessage];
       setMessages(finalMessages);
       persistConversation(finalMessages, activeDocument);
-      const pages = inferRelevantPages(value, activeDocument.pageTexts);
+      const viewedDocument = documents.find((document) => document.id === viewedDocumentId) ?? selectedDocuments[0];
+      const pages = inferRelevantPages(value, viewedDocument.pageTexts);
       if (pages[0]) {
-        setGeneratedTitle(`${activeDocument.name} — page ${pages[0]}`);
+        setGeneratedTitle(`${viewedDocument.name} — page ${pages[0]}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The AI service could not answer this request.');
@@ -458,7 +523,8 @@ function ChatPdfWorkspacePage() {
   };
 
   const runContextAction = async (type: 'summary' | 'extract' | 'analysis', customPrompt?: string) => {
-    if (!activeDocument) {
+    const selectedDocuments = documents.filter((document) => activeDocumentIds.includes(document.id));
+    if (!selectedDocuments.length) {
       setError('Select or upload a PDF before running this action.');
       return;
     }
@@ -471,7 +537,7 @@ function ChatPdfWorkspacePage() {
     setLoading(true);
     setError('');
     try {
-      const grounded = buildGroundedPrompt(promptText, activeDocument);
+      const grounded = buildGroundedPrompt(promptText, selectedDocuments);
       const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: type === 'summary' ? 'Summarize' : type === 'extract' ? 'Extract Information' : 'Analyze' });
       const userActionMessage: { id: string; role: 'user'; content: string; createdAt: string } = {
         id: crypto.randomUUID(),
@@ -488,12 +554,38 @@ function ChatPdfWorkspacePage() {
       const finalMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; createdAt: string }> = [...messages, userActionMessage, assistantMessage];
       setMessages(finalMessages);
       persistConversation(finalMessages, activeDocument);
-      saveCurrentResponse(type, `${type.charAt(0).toUpperCase()}${type.slice(1)}: ${activeDocument.name}`, reply);
+      saveCurrentResponse(type, `${type.charAt(0).toUpperCase()}${type.slice(1)}: ${selectedDocuments.map((document) => document.name).join(', ')}`, reply);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The workspace could not generate the requested result.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const selectDocument = (documentId: string) => {
+    setViewedDocumentIdState(documentId);
+    setViewedChatPdfDocumentId(documentId);
+    setActiveChatPdfDocumentId(documentId);
+  };
+
+  const toggleDocument = (documentId: string) => {
+    const nextIds = activeDocumentIds.includes(documentId)
+      ? activeDocumentIds.filter((id) => id !== documentId)
+      : [...activeDocumentIds, documentId];
+    setActiveDocumentIdsState(nextIds);
+    setActiveChatPdfDocumentIds(nextIds);
+  };
+
+  const removeDocument = (documentId: string) => {
+    const nextDocuments = documents.filter((document) => document.id !== documentId);
+    const nextActiveIds = activeDocumentIds.filter((id) => id !== documentId);
+    const nextViewedId = viewedDocumentId === documentId ? nextDocuments[0]?.id ?? null : viewedDocumentId;
+    setDocuments(nextDocuments);
+    setActiveDocumentIdsState(nextActiveIds);
+    setViewedDocumentIdState(nextViewedId);
+    setActiveChatPdfDocumentIds(nextActiveIds);
+    setViewedChatPdfDocumentId(nextViewedId);
+    removeChatPdfDocument(documentId);
   };
 
   return (
@@ -505,7 +597,35 @@ function ChatPdfWorkspacePage() {
         activeDocumentName={activeDocument?.name ?? null}
         onUpload={() => inputRef.current?.click()}
       >
-        <div className="mx-auto max-w-5xl">
+        <div
+          className="mx-auto max-w-5xl"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            void handleUpload(Array.from(event.dataTransfer.files));
+          }}
+        >
+          {documents.length > 0 && (
+            <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-2xl border border-[#1A1A1A] bg-[#090909] p-2 [scrollbar-width:none]">
+              {documents.map((document) => {
+                const selected = activeDocumentIds.includes(document.id);
+                const viewed = viewedDocumentId === document.id;
+                return (
+                  <div key={document.id} className={`flex shrink-0 items-center gap-1 rounded-xl border px-2 py-1.5 text-xs ${viewed ? 'border-[#3B82F6] bg-[#172554]' : 'border-[#1A1A1A] bg-[#101010]'}`}>
+                    <button type="button" onClick={() => selectDocument(document.id)} className="flex max-w-[180px] items-center gap-1.5 truncate text-left text-[#dfeaf8]" title={`View ${document.fileName}`}>
+                      <FileText className="h-3.5 w-3.5 shrink-0 text-[#93C5FD]" />
+                      <span className="truncate">{document.fileName}</span>
+                    </button>
+                    <button type="button" onClick={() => toggleDocument(document.id)} aria-label={`${selected ? 'Deselect' : 'Select'} ${document.fileName}`} className={`text-sm ${selected ? 'text-[#60A5FA]' : 'text-[#718194]'}`}>{selected ? '✓' : '○'}</button>
+                    <button type="button" onClick={() => removeDocument(document.id)} aria-label={`Remove ${document.fileName}`} className="text-[#718194] hover:text-red-300">×</button>
+                  </div>
+                );
+              })}
+              <button type="button" onClick={() => inputRef.current?.click()} className="flex shrink-0 items-center gap-1 rounded-xl border border-dashed border-[#1E3A8A] px-2.5 py-1.5 text-xs font-medium text-[#93C5FD] hover:bg-[#172554]">+ Add PDF</button>
+              <button type="button" onClick={() => { const ids = documents.map((document) => document.id); setActiveDocumentIdsState(ids); setActiveChatPdfDocumentIds(ids); }} className="ml-auto shrink-0 px-2 text-[11px] text-[#93C5FD]">Select all</button>
+              <button type="button" onClick={() => { setActiveDocumentIdsState([]); setActiveChatPdfDocumentIds([]); }} className="shrink-0 px-2 text-[11px] text-[#93C5FD]">Deselect all</button>
+            </div>
+          )}
           {activeDocument ? (
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_320px]">
               <div className="space-y-3">
@@ -544,6 +664,10 @@ function ChatPdfWorkspacePage() {
                     <div className="mt-1 font-medium text-white">{activeDocument.name}</div>
                   </div>
                   <div className="rounded-xl border border-[#1A1A1A] bg-[#0d1117] p-3">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">AI context</div>
+                    <div className="mt-1 font-medium text-[#93C5FD]">{activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'} selected</div>
+                  </div>
+                  <div className="rounded-xl border border-[#1A1A1A] bg-[#0d1117] p-3">
                     <div className="text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">Pages</div>
                     <div className="mt-1 font-medium text-white">{activeDocument.pageCount}</div>
                   </div>
@@ -579,9 +703,9 @@ function ChatPdfWorkspacePage() {
           )}
 
           <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-6">
-            <div className="pointer-events-auto mx-auto max-w-5xl rounded-[26px] border border-[#1a1a1a] bg-[#0b0f12] p-2 shadow-[0_-10px_20px_rgba(0,0,0,0.25)]">
+            <div className="pointer-events-auto relative mx-auto max-w-5xl rounded-[26px] border border-[#1a1a1a] bg-[#0b0f12] p-2 shadow-[0_-10px_20px_rgba(0,0,0,0.25)]">
               <div className="flex items-end gap-2">
-                <button type="button" onClick={() => inputRef.current?.click()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#17463b] bg-[#12352d] text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#173d35]" aria-label="Upload PDF">
+                <button type="button" onClick={() => inputRef.current?.click()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1E3A8A] bg-[#172554] text-[#BFDBFE] transition hover:border-[#3B82F6] hover:bg-[#1E40AF]" aria-label="Upload PDF">
                   <Upload className="h-4 w-4" />
                 </button>
 
@@ -599,7 +723,11 @@ function ChatPdfWorkspacePage() {
                   className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
                 />
 
-                <button type="button" onClick={() => { const next = message.trim(); if (next) void sendPrompt(next); }} aria-label="Send message" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#5BE4B6] text-[#071713] shadow-[0_8px_18px_rgba(91,228,182,0.35)] transition hover:bg-[#78f0c6]">
+                {activeDocumentIds.length > 0 && (
+                  <div className="absolute bottom-14 left-14 text-[10px] text-[#93C5FD]">Using {activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'}</div>
+                )}
+
+                <button type="button" onClick={() => { const next = message.trim(); if (next) void sendPrompt(next); }} aria-label="Send message" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-[0_8px_18px_rgba(37,99,235,0.35)] transition hover:bg-[#3B82F6]">
                   <ArrowUp className="h-4 w-4" />
                 </button>
               </div>
@@ -612,8 +740,9 @@ function ChatPdfWorkspacePage() {
         ref={inputRef}
         type="file"
         accept="application/pdf"
+        multiple
         className="hidden"
-        onChange={(event) => { const file = event.target.files?.[0]; void handleUpload(file); event.target.value = ''; }}
+        onChange={(event) => { void handleUpload(Array.from(event.target.files ?? [])); }}
       />
     </>
   );
@@ -630,9 +759,13 @@ function ChatPdfHistoryPage() {
   }, [history, query]);
 
   const openConversation = (conversation: ChatPdfConversation) => {
-    const doc = loadChatPdfDocuments().find((item) => item.id === conversation.documentId) ?? getActiveChatPdfDocument();
+    const storedDocuments = loadChatPdfDocuments();
+    const restoredIds = conversation.documentIds?.filter((id) => storedDocuments.some((document) => document.id === id)) ?? (conversation.documentId ? [conversation.documentId] : []);
+    const doc = storedDocuments.find((item) => item.id === (conversation.viewedDocumentId ?? conversation.documentId)) ?? getActiveChatPdfDocument();
+    setActiveChatPdfDocumentIds(conversation.activeDocumentIds?.filter((id) => restoredIds.includes(id)) ?? restoredIds);
     if (doc) {
       setActiveChatPdfDocumentId(doc.id);
+      setViewedChatPdfDocumentId(doc.id);
     }
     setActiveChatPdfConversationId(conversation.id);
     navigate('/chat-with-pdf');
@@ -813,7 +946,7 @@ function ChatPdfToolsPage() {
     }[toolName] ?? `Use ${toolName} on the active PDF document.`;
 
     try {
-      const reply = await generateHubResponse('ai-assistant', { prompt: buildGroundedPrompt(promptText, activeDocument), mode: toolName });
+      const reply = await generateHubResponse('ai-assistant', { prompt: buildGroundedPrompt(promptText, [activeDocument]), mode: toolName });
       const item: ChatPdfSavedItem = {
         id: crypto.randomUUID(),
         type: 'result',
