@@ -808,16 +808,6 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
             <div className="text-[15px] font-medium text-[#f5f7fa]">{config.title.replace(' Hub', '')}</div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setError('Upgrade flow is disabled in this demo, but your workspace is active.')}
-              className="rounded-full border border-[#2d3f3a] bg-[#111c18] px-2.5 py-1.5 text-[11px] font-semibold text-[#bff8d6]"
-            >
-              Upgrade
-            </button>
-          </div>
-
           {menuOpen && (
             <div data-menu-panel="true" className="absolute left-4 top-[calc(100%+0.4rem)] z-20 w-[220px] rounded-2xl border border-[#1A1A1A] bg-[#050505] p-2 shadow-none">
               <button type="button" onClick={() => { setMenuOpen(false); navigate('/'); }} className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
@@ -916,38 +906,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
           )}
 
           <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[#000000]">
-            <div className="flex items-center justify-between border-b border-[#1A1A1A] bg-[#000000] px-4 py-3 md:px-5">
-              <div className="flex items-center gap-3">
-                <Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef] transition hover:text-white" aria-label="Back to dashboard">
-                  <ArrowLeft className="h-4 w-4" />
-                </Link>
-                {!isAiHub && (
-                  <button
-                    type="button"
-                    aria-label="Open menu"
-                    onClick={() => setMenuOpen((open) => !open)}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef] md:hidden"
-                  >
-                    <div className="flex flex-col gap-1.5">
-                      <span className="block h-0.5 w-4 rounded-full bg-current" />
-                      <span className="block h-0.5 w-4 rounded-full bg-current" />
-                      <span className="block h-0.5 w-4 rounded-full bg-current" />
-                    </div>
-                  </button>
-                )}
-                <div className="text-[15px] font-medium text-[#f5f7fa]">{config.title.replace(' Hub', '')}</div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setError('Upgrade flow is disabled in this demo, but your workspace is active.')}
-                className="rounded-full border border-[#2d3f3a] bg-[#111c18] px-2.5 py-1.5 text-[11px] font-semibold text-[#bff8d6]"
-              >
-                Upgrade
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-2 pt-3 md:px-4">
+            <div className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-[calc(11.25rem+env(safe-area-inset-bottom))] pt-3 md:px-4 md:pb-6">
               {isAiHub && pdfDocument && (
                 <div className="mb-4 rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3">
                   <div className="flex items-center justify-between gap-3">
@@ -989,11 +948,8 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                       {isAiHub ? 'Upload a PDF and ask questions, summarize content, extract information, or analyze the document.' : `How can I help with ${config.title.replace(' Hub', '')}?`}
                     </p>
                     {isAiHub && (
-                      <div className="mt-5 flex flex-wrap justify-center gap-2">
-                        <button type="button" onClick={() => pdfInputRef.current?.click()} className="rounded-full border border-[#2d3f3a] bg-[#111c18] px-4 py-2 text-[12px] font-semibold text-[#bff8d6]">+ Upload PDF</button>
-                        {['Summarize a document', 'Find information', 'Explain a difficult section', 'Generate a quiz'].map((label) => (
-                          <button key={label} type="button" onClick={() => setPrompt(`${label}: `)} className="rounded-full border border-[#232323] bg-[#121212] px-3 py-2 text-[11px] text-[#dfeaff]">{label}</button>
-                        ))}
+                      <div className="mt-5 flex justify-center">
+                        <button type="button" onClick={() => pdfInputRef.current?.click()} className="rounded-full border border-[#2d3f3a] bg-[#111c18] px-4 py-2 text-[12px] font-semibold text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#173d35]">+ Upload PDF</button>
                       </div>
                     )}
                   </div>
@@ -1035,74 +991,76 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
               </div>
             )}
 
-            <div className="border-t border-[#1A1A1A] bg-[#000000] px-3 pb-2 pt-3 md:px-4">
-              <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {config.modes.map(([label]) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => setMode(label)}
-                    className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
-                      mode === label
-                        ? 'border-[#2f6df6] bg-[#112c5d] text-[#dfeeff]'
-                        : 'border-[#232323] bg-[#121212] text-[#b0bcc9]'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="rounded-[26px] border border-[#1a1a1a] bg-[#000000] p-2 shadow-none">
-                <div className="flex items-end gap-2">
-                  <button
-                    type="button"
-                    onClick={isAiHub ? () => pdfInputRef.current?.click() : handleAttach}
-                    aria-label={isAiHub ? 'Upload PDF' : 'Attach file'}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#171717] text-[#e8edf5]"
-                  >
-                    {isAiHub ? <Upload className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                  </button>
-
-                  <textarea
-                    value={prompt}
-                    onChange={(event) => setPrompt(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' && !event.shiftKey) {
-                        event.preventDefault();
-                        void submit();
-                      }
-                    }}
-                    rows={1}
-                    placeholder={isAiHub ? 'Ask anything about this PDF...' : `Ask ${config.title.replace(' Hub', '')}`}
-                    className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
-                  />
-
-                  <button
-                    type="button"
-                    aria-label="Voice input"
-                    onClick={handleVoiceInput}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#181818] text-[#e8edf5]"
-                  >
-                    <Mic className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => void submit()}
-                    aria-label="Send message"
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2f6df6] text-[#ffffff] shadow-[0_8px_18px_rgba(47,109,246,0.45)]"
-                  >
-                    <ArrowUp className="h-4 w-4" />
-                  </button>
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 bg-gradient-to-t from-[#000000] via-[#000000]/95 to-transparent px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-4 md:px-4">
+              <div className="pointer-events-auto mx-auto max-w-5xl">
+                <div className="mb-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {config.modes.map(([label]) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setMode(label)}
+                      className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
+                        mode === label
+                          ? 'border-[#5BE4B6] bg-[#12352d] text-[#dffdf6]'
+                          : 'border-[#232323] bg-[#121212] text-[#b0bcc9]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
 
-                {attachmentName && (
-                  <div className="mt-2 flex items-center justify-between rounded-xl border border-[#1A1A1A] bg-[#181818] px-2.5 py-1.5 text-[11px] text-[#c4d0df]">
-                    <span className="truncate">{attachmentName}</span>
-                    <button type="button" onClick={() => setAttachmentName('')} className="ml-2 text-[#8ca6d5]">Clear</button>
+                <div className="rounded-[26px] border border-[#1a1a1a] bg-[#0b0f12] p-2 shadow-[0_-10px_24px_rgba(0,0,0,0.25)]">
+                  <div className="flex items-end gap-2">
+                    <button
+                      type="button"
+                      onClick={isAiHub ? () => pdfInputRef.current?.click() : handleAttach}
+                      aria-label={isAiHub ? 'Upload PDF' : 'Attach file'}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#17463b] bg-[#12352d] text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#173d35]"
+                    >
+                      {isAiHub ? <Upload className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                    </button>
+
+                    <textarea
+                      value={prompt}
+                      onChange={(event) => setPrompt(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' && !event.shiftKey) {
+                          event.preventDefault();
+                          void submit();
+                        }
+                      }}
+                      rows={1}
+                      placeholder={isAiHub ? 'Ask anything about this PDF...' : `Ask ${config.title.replace(' Hub', '')}`}
+                      className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
+                    />
+
+                    <button
+                      type="button"
+                      aria-label="Voice input"
+                      onClick={handleVoiceInput}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#181818] text-[#e8edf5]"
+                    >
+                      <Mic className="h-4 w-4" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => void submit()}
+                      aria-label="Send message"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#5BE4B6] text-[#071713] shadow-[0_8px_18px_rgba(91,228,182,0.35)] transition hover:bg-[#78f0c6]"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
                   </div>
-                )}
+
+                  {attachmentName && (
+                    <div className="mt-2 flex items-center justify-between rounded-xl border border-[#1A1A1A] bg-[#181818] px-2.5 py-1.5 text-[11px] text-[#c4d0df]">
+                      <span className="truncate">{attachmentName}</span>
+                      <button type="button" onClick={() => setAttachmentName('')} className="ml-2 text-[#8ca6d5]">Clear</button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </main>
