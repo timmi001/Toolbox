@@ -282,6 +282,14 @@ function ChatPdfShell({
                     <span>{label}</span>
                   </button>
                 ))}
+                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf/saved'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                  <Bookmark className="h-4 w-4" />
+                  <span>Saved</span>
+                </button>
+                <button type="button" onClick={() => { setMenuOpen(false); openFeedbackForm(); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+                  <MessageCircleQuestion className="h-4 w-4" />
+                  <span>Feedback</span>
+                </button>
               </div>
             </div>
           )}
