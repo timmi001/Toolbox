@@ -96,15 +96,6 @@
   box-shadow: none;
 }
 
-.home-screen::before {
-  position: absolute;
-  inset: 7px;
-  border: 1px solid rgba(255, 255, 255, 0.045);
-  border-radius: inherit;
-  content: "";
-  pointer-events: none;
-}
-
 .home-intro {
   position: relative;
   text-align: center;
