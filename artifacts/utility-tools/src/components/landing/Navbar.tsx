@@ -32,6 +32,37 @@ export function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [sidebarOpen]);
 
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const handleTyping = (event: Event) => {
+      const target = event.target as HTMLElement | null;
+      const isInsideSidebar = !!target?.closest('[data-sidebar-panel="true"]');
+      const isModifierPressed = event instanceof KeyboardEvent && (event.metaKey || event.ctrlKey || event.altKey);
+      const isIgnoredKey = event instanceof KeyboardEvent && (
+        event.key === 'Tab' ||
+        event.key === 'Escape' ||
+        event.key === 'Shift' ||
+        event.key === 'CapsLock' ||
+        event.key === 'Meta' ||
+        event.key === 'Control' ||
+        event.key === 'Alt' ||
+        event.key === 'ContextMenu'
+      );
+
+      if (isInsideSidebar || isModifierPressed || isIgnoredKey) return;
+      setSidebarOpen(false);
+    };
+
+    document.addEventListener('keydown', handleTyping, true);
+    document.addEventListener('input', handleTyping, true);
+
+    return () => {
+      document.removeEventListener('keydown', handleTyping, true);
+      document.removeEventListener('input', handleTyping, true);
+    };
+  }, [sidebarOpen]);
+
   return (
     <>
       <header
@@ -90,6 +121,7 @@ export function Navbar() {
             {/* Sidebar panel */}
             <motion.aside
               key="sidebar"
+              data-sidebar-panel="true"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}

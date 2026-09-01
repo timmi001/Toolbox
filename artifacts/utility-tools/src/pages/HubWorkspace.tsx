@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Check, ChevronDown, Code2, Copy, Download, FileText, Image, Paperclip, Plus, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2, X, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Check, ChevronDown, Clock3, Code2, Copy, Download, FileText, FolderOpen, Image, Paperclip, Plus, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2, X, type LucideIcon } from 'lucide-react';
 import { Link, useLocation, useRoute } from 'wouter';
 import { generateHubResponse } from '@/lib/hub-ai';
 import { openFeedbackForm } from '@/components/FeedbackButton';
@@ -549,6 +549,43 @@ const UNIFIED_HUBS = {
 
 type UnifiedHubKey = keyof typeof UNIFIED_HUBS;
 
+type PdfDocument = {
+  id: string;
+  name: string;
+  pageCount: number;
+  pageTexts: string[];
+  file: File;
+};
+
+function inferRelevantPages(question: string, pageTexts: string[]) {
+  const normalized = question.toLowerCase();
+  if (!normalized.trim()) return [1];
+
+  const tokens = normalized.split(/[^a-z0-9]+/).filter(Boolean);
+  if (!tokens.length) return [1];
+
+  return pageTexts
+    .map((pageText, index) => {
+      const lower = pageText.toLowerCase();
+      const score = tokens.reduce((total, token) => total + (lower.match(new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'))?.length ?? 0), 0);
+      return { page: index + 1, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(({ page }) => page);
+}
+
+function buildGroundedPrompt(question: string, document: PdfDocument) {
+  const text = document.pageTexts.map((pageText, index) => `Page ${index + 1}: ${pageText}`).join('\n\n');
+  return [
+    'You are answering from the uploaded PDF only. Use the document content as the source of truth.',
+    `Question: ${question}`,
+    'If the answer is not explicitly in the PDF, say that it is not present in the uploaded document.',
+    'Base your response on the text below and keep it clear and practical.',
+    text.slice(0, 18_000),
+  ].join('\n\n');
+}
+
 function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const [location, navigate] = useLocation();
   const config = UNIFIED_HUBS[hub];
@@ -560,11 +597,89 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [attachmentName, setAttachmentName] = useState('');
+  const [pdfDocument, setPdfDocument] = useState<PdfDocument | null>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handleTyping = (event: Event) => {
+      const target = event.target as HTMLElement | null;
+      const isInsideMenu = !!target?.closest('[data-menu-panel="true"]');
+      const isIgnoredKey = event instanceof KeyboardEvent && (
+        event.key === 'Tab' ||
+        event.key === 'Escape' ||
+        event.key === 'Shift' ||
+        event.key === 'CapsLock' ||
+        event.key === 'Meta' ||
+        event.key === 'Control' ||
+        event.key === 'Alt' ||
+        event.key === 'ContextMenu'
+      );
+
+      if (isInsideMenu || isIgnoredKey) return;
+      setMenuOpen(false);
+    };
+
+    document.addEventListener('keydown', handleTyping, true);
+    document.addEventListener('input', handleTyping, true);
+
+    return () => {
+      document.removeEventListener('keydown', handleTyping, true);
+      document.removeEventListener('input', handleTyping, true);
+    };
+  }, [menuOpen]);
+  const [pdfPreviewPage, setPdfPreviewPage] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isAiHub = hub === 'ai' || hub === 'ai-assistant';
 
   if (hub === 'business' && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'insights') {
     return <BusinessInsights onBack={() => navigate('/hub/business')} />;
   }
+
+  const handlePdfUpload = async (file: File | null) => {
+    if (!file) return;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setError('Please upload a valid PDF file.');
+      return;
+    }
+
+    try {
+      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist');
+      GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).href;
+
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const pdf = await getDocument({ data: bytes }).promise;
+      const pageTexts: string[] = [];
+
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent();
+        const pageText = content.items
+          .map((item) => ('str' in item ? item.str : ''))
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        pageTexts.push(pageText || 'No extractable text found on this page.');
+      }
+
+      setPdfDocument({
+        id: `${Date.now()}-${file.name}`,
+        name: file.name.replace(/\.pdf$/i, ''),
+        file,
+        pageCount: pdf.numPages,
+        pageTexts,
+      });
+      setPdfPreviewPage(1);
+      setAttachmentName(file.name);
+      setPrompt((current) => current || 'Summarize this PDF and highlight the most important points.');
+      setMessages([]);
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to read that PDF file.');
+    }
+  };
 
   const submit = async () => {
     const value = prompt.trim();
@@ -573,10 +688,15 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
     setError('');
     try {
       const targetHub: 'ai-assistant' | typeof hub = hub === 'ai' || hub === 'ai-assistant' ? 'ai-assistant' : hub;
-      const answer = await generateHubResponse(targetHub, { prompt: `${value}${attachmentName ? `\n\nAttached file: ${attachmentName}` : ''}`, mode });
+      const promptText = isAiHub && pdfDocument ? buildGroundedPrompt(value, pdfDocument) : `${value}${attachmentName ? `\n\nAttached file: ${attachmentName}` : ''}`;
+      const answer = await generateHubResponse(targetHub, { prompt: promptText, mode });
       setMessages((current) => [...current, { role: 'user', text: value }, { role: 'assistant', text: answer }]);
       setPrompt('');
       setAttachmentName('');
+      if (isAiHub && pdfDocument) {
+        const pageHints = inferRelevantPages(value, pdfDocument.pageTexts);
+        setPdfPreviewPage(pageHints[0] ?? 1);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to reach the AI service.');
     } finally {
@@ -617,6 +737,39 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
     recognition.start();
   };
 
+  useEffect(() => {
+    if (!isAiHub || !pdfDocument || !previewCanvasRef.current) return;
+
+    let cancelled = false;
+
+    const renderPdfPage = async () => {
+      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist');
+      GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).href;
+      const pdf = await getDocument({ data: new Uint8Array(await pdfDocument.file.arrayBuffer()) }).promise;
+      const page = await pdf.getPage(pdfPreviewPage);
+      const viewport = page.getViewport({ scale: 1.25 });
+      const canvas = previewCanvasRef.current;
+      if (!canvas || cancelled) return;
+
+      const context = canvas.getContext('2d');
+      if (!context) return;
+
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(viewport.width * ratio);
+      canvas.height = Math.floor(viewport.height * ratio);
+      canvas.style.width = `${viewport.width}px`;
+      canvas.style.height = `${viewport.height}px`;
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvas, canvasContext: context, viewport }).promise;
+    };
+
+    void renderPdfPage();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAiHub, pdfDocument, pdfPreviewPage]);
+
   return (
     <div className="min-h-[100dvh] w-full overflow-hidden bg-[#000000] text-white">
       <div className="flex h-[100dvh] w-full flex-col bg-[#000000] px-0 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
@@ -648,22 +801,26 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
           </div>
 
           {menuOpen && (
-            <div className="absolute left-4 top-[calc(100%+0.4rem)] z-20 w-[220px] rounded-2xl border border-[#1A1A1A] bg-[#050505] p-2 shadow-none">
+            <div data-menu-panel="true" className="absolute left-4 top-[calc(100%+0.4rem)] z-20 w-[220px] rounded-2xl border border-[#1A1A1A] bg-[#050505] p-2 shadow-none">
               <button type="button" onClick={() => { setMenuOpen(false); navigate('/'); }} className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
-                <span>Home</span>
-                <ArrowLeft className="h-4 w-4 rotate-180" />
+                <span>✦ New Document</span>
+                <FileText className="h-4 w-4" />
               </button>
               <button type="button" onClick={() => { setMenuOpen(false); setMessages([]); setPrompt(''); setError(''); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
-                <span>Clear chat</span>
-                <Trash2 className="h-4 w-4" />
+                <span>◷ History</span>
+                <Clock3 className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={() => { setMenuOpen(false); setMessages([]); setPrompt(''); setError(''); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
+                <span>📁 My Documents</span>
+                <FolderOpen className="h-4 w-4" />
               </button>
               <button type="button" onClick={() => { setMenuOpen(false); void copyAnswer(); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
-                <span>{copied ? 'Copied' : 'Copy answer'}</span>
-                <Copy className="h-4 w-4" />
+                <span>★ Saved</span>
+                <Bookmark className="h-4 w-4" />
               </button>
               <button type="button" onClick={() => { setMenuOpen(false); openFeedbackForm(); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
-                <span>Feedback</span>
-                <MessageCircleQuestion className="h-4 w-4" />
+                <span>⚙ Settings</span>
+                <Settings2 className="h-4 w-4" />
               </button>
             </div>
           )}
@@ -671,13 +828,47 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
 
         <main className="relative flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto bg-[#000000] px-4 pb-2 pt-1">
+            {isAiHub && pdfDocument && (
+              <div className="mb-3 rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Active PDF</div>
+                    <div className="truncate text-sm font-semibold text-white">{pdfDocument.name}.pdf</div>
+                  </div>
+                  <button type="button" onClick={() => pdfInputRef.current?.click()} className="rounded-xl border border-[#1A1A1A] bg-[#121212] px-2.5 py-1.5 text-[11px] font-medium text-[#bff8d6]">Replace PDF</button>
+                </div>
+
+                <div className="mt-3 flex flex-col gap-3 md:flex-row">
+                  <div className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#1A1A1A] bg-[#000000] p-2">
+                    <canvas ref={previewCanvasRef} className="max-w-[220px] rounded-lg bg-white" />
+                  </div>
+
+                  <div className="min-w-0 flex-1 rounded-xl border border-[#1A1A1A] bg-[#000000] p-3">
+                    <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Document details</div>
+                    <div className="space-y-2 text-[12px] text-[#dfe6ef]">
+                      <div className="flex items-center justify-between gap-3"><span>Pages</span><span>{pdfDocument.pageCount}</span></div>
+                      <div className="flex items-center justify-between gap-3"><span>Extracted text</span><span>{pdfDocument.pageTexts.length}</span></div>
+                      <div className="flex items-center justify-between gap-3"><span>Page</span><span>{pdfPreviewPage} / {pdfDocument.pageCount}</span></div>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button type="button" onClick={() => setPdfPreviewPage((page) => Math.max(1, page - 1))} className="rounded-lg border border-[#1A1A1A] bg-[#121212] px-2 py-1 text-[11px] text-[#dfe6ef]">Prev</button>
+                      <button type="button" onClick={() => setPdfPreviewPage((page) => Math.min(pdfDocument.pageCount, page + 1))} className="rounded-lg border border-[#1A1A1A] bg-[#121212] px-2 py-1 text-[11px] text-[#dfe6ef]">Next</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {messages.length === 0 ? (
               <div className="flex h-full min-h-[220px] items-center justify-center">
                 <div className="text-center text-[#6b7280]">
                   <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#101828] text-[#8bb5ff]">
                     <config.icon className="h-6 w-6" />
                   </div>
-                  <p className="text-[13px] font-medium text-[#a9b4c1]">How can I help with {config.title.replace(' Hub', '')}?</p>
+                  <p className="text-[13px] font-medium text-[#a9b4c1]">{isAiHub ? 'Upload a PDF and ask a focused question about it.' : `How can I help with ${config.title.replace(' Hub', '')}?`}</p>
+                  {isAiHub && (
+                    <button type="button" onClick={() => pdfInputRef.current?.click()} className="mt-4 rounded-full border border-[#2d3f3a] bg-[#111c18] px-3 py-2 text-[11px] font-semibold text-[#bff8d6]">Upload PDF</button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -728,11 +919,11 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
               <div className="flex items-end gap-2">
                 <button
                   type="button"
-                  onClick={handleAttach}
-                  aria-label="Attach file"
+                  onClick={isAiHub ? () => pdfInputRef.current?.click() : handleAttach}
+                  aria-label={isAiHub ? 'Upload PDF' : 'Attach file'}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#171717] text-[#e8edf5]"
                 >
-                  <Plus className="h-4 w-4" />
+                  {isAiHub ? <Upload className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                 </button>
 
                 <textarea
@@ -779,13 +970,31 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
         </main>
       </div>
 
-      <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        setAttachmentName(file.name);
-        setPrompt((current) => `${current}${current ? '\n' : ''}Attachment: ${file.name}`);
-        event.target.value = '';
-      }} />
+      {!isAiHub && (
+        <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          setAttachmentName(file.name);
+          setPrompt((current) => `${current}${current ? '\n' : ''}Attachment: ${file.name}`);
+          event.target.value = '';
+        }} />
+      )}
+
+      {isAiHub && (
+        <input
+          ref={pdfInputRef}
+          type="file"
+          accept="application/pdf"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void handlePdfUpload(file);
+            }
+            event.target.value = '';
+          }}
+        />
+      )}
     </div>
   );
 }
