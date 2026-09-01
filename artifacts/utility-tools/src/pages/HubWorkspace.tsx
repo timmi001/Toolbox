@@ -639,8 +639,8 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
     }
 
     try {
-      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist');
-      GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).href;
+      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+      GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
 
       const bytes = new Uint8Array(await file.arrayBuffer());
       const pdf = await getDocument({ data: bytes }).promise;
@@ -736,8 +736,8 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
     let cancelled = false;
 
     const renderPdfPage = async () => {
-      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist');
-      GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).href;
+      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+      GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
       const pdf = await getDocument({ data: new Uint8Array(await pdfDocument.file.arrayBuffer()) }).promise;
       const page = await pdf.getPage(pdfPreviewPage);
       const viewport = page.getViewport({ scale: 1.25 });

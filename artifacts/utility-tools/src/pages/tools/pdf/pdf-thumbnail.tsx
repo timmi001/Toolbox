@@ -12,8 +12,8 @@ export default function PdfThumbnail() {
   async function handleFile(file: File) {
     setLoading(true); setThumbnail('');
     try {
-      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist');
-      GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).href;
+      const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+      GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
       const buf = await file.arrayBuffer();
       const pdf = await getDocument({ data: buf }).promise;
       const page = await pdf.getPage(1);
