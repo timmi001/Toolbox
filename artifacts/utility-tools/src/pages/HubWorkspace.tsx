@@ -856,6 +856,9 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
           {isAiHub && (
             <aside className="hidden w-[240px] shrink-0 border-r border-[#1A1A1A] bg-[#090909] px-3 py-4 md:flex md:flex-col">
               <div className="mb-3 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-3 py-2.5">
+                <Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#1A1A1A] bg-[#0A0A0A] text-[#91A0B0] transition hover:text-white" aria-label="Back to dashboard">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#112c5d] text-[#dfeeff]">
                   <FileText className="h-4 w-4" />
                 </div>
@@ -915,6 +918,9 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
           <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[#000000]">
             <div className="flex items-center justify-between border-b border-[#1A1A1A] bg-[#000000] px-4 py-3 md:px-5">
               <div className="flex items-center gap-3">
+                <Link href="/" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef] transition hover:text-white" aria-label="Back to dashboard">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
                 {!isAiHub && (
                   <button
                     type="button"

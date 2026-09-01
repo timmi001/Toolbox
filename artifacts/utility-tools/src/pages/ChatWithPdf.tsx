@@ -151,6 +151,14 @@ function ChatPdfShell({
       <div className="flex min-h-screen flex-col md:flex-row">
         <aside className="hidden w-[260px] shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 md:flex md:flex-col">
           <div className="mb-4 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-3 py-2.5">
+            <button
+              type="button"
+              aria-label="Back to dashboard"
+              onClick={() => navigate('/')}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#1A1A1A] bg-[#0A0A0A] text-[#a8b7c8] transition hover:border-[#3dd9a7] hover:text-[#dffdf4]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0E2D3B] text-[#A5D8FF]">
               <FileText className="h-4 w-4" />
             </div>
@@ -226,13 +234,21 @@ function ChatPdfShell({
                   <span className="block h-0.5 w-4 rounded-full bg-current" />
                 </div>
               </button>
-              <div className="min-w-0">
+                  <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-[#6b7786]">PDF workspace</div>
                 <div className="truncate text-sm font-semibold text-white">{activeDocumentName ?? 'Ready to analyze'}</div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label="Back to dashboard"
+                onClick={() => navigate('/')}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] md:hidden"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
               <button type="button" onClick={openFeedbackForm} className="rounded-full border border-[#23463d] bg-[#112b26] px-2.5 py-1.5 text-[11px] font-semibold text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#17382f]">Feedback</button>
             </div>
           </header>
@@ -270,7 +286,7 @@ function ChatPdfShell({
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-24 pt-4 md:px-5">{children}</div>
+          <div className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-32 pt-4 md:px-5">{children}</div>
         </main>
       </div>
     </div>
@@ -539,8 +555,8 @@ function ChatPdfWorkspacePage() {
             <div className="mt-4 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-3 py-2 text-sm text-[#cfe5ff]">Processing PDF…</div>
           )}
 
-          <div className="sticky bottom-0 z-10 mt-5 border-t border-[#1A1A1A] bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3">
-            <div className="mx-auto max-w-5xl rounded-[26px] border border-[#1a1a1a] bg-[#0b0f12] p-2 shadow-[0_-10px_20px_rgba(0,0,0,0.25)]">
+          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-6">
+            <div className="pointer-events-auto mx-auto max-w-5xl rounded-[26px] border border-[#1a1a1a] bg-[#0b0f12] p-2 shadow-[0_-10px_20px_rgba(0,0,0,0.25)]">
               <div className="flex items-end gap-2">
                 <button type="button" onClick={() => inputRef.current?.click()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#17463b] bg-[#12352d] text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#173d35]" aria-label="Upload PDF">
                   <Upload className="h-4 w-4" />
