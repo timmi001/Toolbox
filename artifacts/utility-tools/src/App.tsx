@@ -16,6 +16,7 @@ import DmcaPolicy from "@/pages/DmcaPolicy";
 import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
 import AiTools from "@/pages/AiTools";
+import ChatWithPdfRoutes from "@/pages/ChatWithPdf";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -67,6 +68,11 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/ai-tools" component={AiTools} />
           <Route path="/hub/:hub" component={HubWorkspace} />
+          <Route path="/chat-with-pdf" component={ChatWithPdfRoutes} />
+          <Route path="/chat-with-pdf/history" component={ChatWithPdfRoutes} />
+          <Route path="/chat-with-pdf/documents" component={ChatWithPdfRoutes} />
+          <Route path="/chat-with-pdf/tools" component={ChatWithPdfRoutes} />
+          <Route path="/chat-with-pdf/saved" component={ChatWithPdfRoutes} />
           <Route path="/blog" component={BlogIndex} />
           <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/privacy" component={PrivacyPolicy} />

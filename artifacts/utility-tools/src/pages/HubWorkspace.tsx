@@ -770,10 +770,28 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
     };
   }, [isAiHub, pdfDocument, pdfPreviewPage]);
 
+  const navItems = isAiHub
+    ? [
+        { label: 'Chat with PDF', icon: FileText, active: true },
+        { label: 'New Document', icon: FileText },
+        { label: 'History', icon: Clock3 },
+        { label: 'My Documents', icon: FolderOpen },
+        { label: 'Upload PDF', icon: Upload },
+      ]
+    : [
+        { label: 'Home', icon: FileText, active: true },
+        { label: 'History', icon: Clock3 },
+        { label: 'My Documents', icon: FolderOpen },
+        { label: 'Saved', icon: Bookmark },
+        { label: 'Settings', icon: Settings2 },
+      ];
+
+  const quickActions = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
+
   return (
     <div className="min-h-[100dvh] w-full overflow-hidden bg-[#000000] text-white">
-      <div className="flex h-[100dvh] w-full flex-col bg-[#000000] px-0 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <header className="relative flex items-center justify-between px-4 pb-2.5 pt-1">
+      <div className="flex h-[100dvh] w-full flex-col bg-[#000000]">
+        <header className="relative flex items-center justify-between border-b border-[#1A1A1A] bg-[#000000] px-4 pb-2.5 pt-1 md:hidden">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -803,6 +821,10 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
           {menuOpen && (
             <div data-menu-panel="true" className="absolute left-4 top-[calc(100%+0.4rem)] z-20 w-[220px] rounded-2xl border border-[#1A1A1A] bg-[#050505] p-2 shadow-none">
               <button type="button" onClick={() => { setMenuOpen(false); navigate('/'); }} className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
+                <span>Home</span>
+                <ArrowLeft className="h-4 w-4 rotate-180" />
+              </button>
+              <button type="button" onClick={() => { setMenuOpen(false); setMessages([]); setPrompt(''); setError(''); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
                 <span>✦ New Document</span>
                 <FileText className="h-4 w-4" />
               </button>
@@ -819,6 +841,10 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                 <Bookmark className="h-4 w-4" />
               </button>
               <button type="button" onClick={() => { setMenuOpen(false); openFeedbackForm(); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
+                <span>Feedback</span>
+                <MessageCircleQuestion className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={() => { setMenuOpen(false); setError('Settings are not available in this demo yet.'); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
                 <span>⚙ Settings</span>
                 <Settings2 className="h-4 w-4" />
               </button>
@@ -826,148 +852,303 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
           )}
         </header>
 
-        <main className="relative flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto bg-[#000000] px-4 pb-2 pt-1">
-            {isAiHub && pdfDocument && (
-              <div className="mb-3 rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Active PDF</div>
-                    <div className="truncate text-sm font-semibold text-white">{pdfDocument.name}.pdf</div>
-                  </div>
-                  <button type="button" onClick={() => pdfInputRef.current?.click()} className="rounded-xl border border-[#1A1A1A] bg-[#121212] px-2.5 py-1.5 text-[11px] font-medium text-[#bff8d6]">Replace PDF</button>
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          {isAiHub && (
+            <aside className="hidden w-[240px] shrink-0 border-r border-[#1A1A1A] bg-[#090909] px-3 py-4 md:flex md:flex-col">
+              <div className="mb-3 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-3 py-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#112c5d] text-[#dfeeff]">
+                  <FileText className="h-4 w-4" />
                 </div>
-
-                <div className="mt-3 flex flex-col gap-3 md:flex-row">
-                  <div className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#1A1A1A] bg-[#000000] p-2">
-                    <canvas ref={previewCanvasRef} className="max-w-[220px] rounded-lg bg-white" />
-                  </div>
-
-                  <div className="min-w-0 flex-1 rounded-xl border border-[#1A1A1A] bg-[#000000] p-3">
-                    <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">Document details</div>
-                    <div className="space-y-2 text-[12px] text-[#dfe6ef]">
-                      <div className="flex items-center justify-between gap-3"><span>Pages</span><span>{pdfDocument.pageCount}</span></div>
-                      <div className="flex items-center justify-between gap-3"><span>Extracted text</span><span>{pdfDocument.pageTexts.length}</span></div>
-                      <div className="flex items-center justify-between gap-3"><span>Page</span><span>{pdfPreviewPage} / {pdfDocument.pageCount}</span></div>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <button type="button" onClick={() => setPdfPreviewPage((page) => Math.max(1, page - 1))} className="rounded-lg border border-[#1A1A1A] bg-[#121212] px-2 py-1 text-[11px] text-[#dfe6ef]">Prev</button>
-                      <button type="button" onClick={() => setPdfPreviewPage((page) => Math.min(pdfDocument.pageCount, page + 1))} className="rounded-lg border border-[#1A1A1A] bg-[#121212] px-2 py-1 text-[11px] text-[#dfe6ef]">Next</button>
-                    </div>
-                  </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-[0.24em] text-[#6b7786]">Workspace</div>
+                  <div className="truncate text-sm font-semibold text-white">Chat with PDF</div>
                 </div>
               </div>
-            )}
 
-            {messages.length === 0 ? (
-              <div className="flex h-full min-h-[220px] items-center justify-center">
-                <div className="text-center text-[#6b7280]">
-                  <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#101828] text-[#8bb5ff]">
-                    <config.icon className="h-6 w-6" />
-                  </div>
-                  <p className="text-[13px] font-medium text-[#a9b4c1]">{isAiHub ? 'Upload a PDF and ask a focused question about it.' : `How can I help with ${config.title.replace(' Hub', '')}?`}</p>
-                  {isAiHub && (
-                    <button type="button" onClick={() => pdfInputRef.current?.click()} className="mt-4 rounded-full border border-[#2d3f3a] bg-[#111c18] px-3 py-2 text-[11px] font-semibold text-[#bff8d6]">Upload PDF</button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3 pb-3">
-                {messages.map((message, index) => (
-                  <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-[22px] px-3.5 py-2.5 text-[14px] leading-6 ${message.role === 'user' ? 'bg-[#050505] text-[#eaf3ff]' : 'bg-[#090909] text-[#dfe6ef]'}`}>
-                      {message.role === 'assistant' ? (
-                        <div className="prose prose-invert max-w-none prose-p:my-1 prose-pre:rounded-xl prose-pre:border prose-pre:border-[#2b2b2b] prose-pre:bg-[#090909] prose-pre:p-2 prose-code:text-[11px]">
-                          <ReactMarkdown>{message.text}</ReactMarkdown>
-                        </div>
-                      ) : (
-                        <div className="whitespace-pre-wrap">{message.text}</div>
-                      )}
-                    </div>
-                  </div>
+              <nav className="space-y-1.5">
+                {navItems.map(({ label, icon: Icon, active }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${
+                      active ? 'bg-[#171717] text-white' : 'text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{label}</span>
+                  </button>
                 ))}
-              </div>
-            )}
-          </div>
+              </nav>
 
-          {error && (
-            <div className="mx-4 mb-2 flex items-center justify-between gap-3 rounded-2xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-[12px] text-red-200">
-              <span className="flex-1">{error}</span>
-              <button type="button" onClick={() => void submit()} className="font-semibold text-white underline">Retry</button>
-            </div>
+              <div className="my-4 h-px bg-[#1A1A1A]" />
+
+              <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#6b7786]">Tools</div>
+              <nav className="space-y-1.5">
+                {['Ask PDF', 'Summarize', 'Extract Information', 'Analyze'].map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#b4c0ce] transition hover:bg-[#0f0f0f] hover:text-white"
+                  >
+                    {label === 'Ask PDF' && <MessageCircleQuestion className="h-4 w-4" />}
+                    {label === 'Summarize' && <FileText className="h-4 w-4" />}
+                    {label === 'Extract Information' && <Search className="h-4 w-4" />}
+                    {label === 'Analyze' && <BarChart3 className="h-4 w-4" />}
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </nav>
+
+              <div className="mt-auto space-y-1.5 pt-4">
+                <button type="button" className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white">
+                  <Bookmark className="h-4 w-4" />
+                  <span>Saved</span>
+                </button>
+                <button type="button" className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white">
+                  <Settings2 className="h-4 w-4" />
+                  <span>Settings</span>
+                </button>
+              </div>
+            </aside>
           )}
 
-          <div className="px-4 pb-2 pt-1">
-            <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {config.modes.map(([label]) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => setMode(label)}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
-                    mode === label
-                      ? 'border-[#2f6df6] bg-[#112c5d] text-[#dfeeff]'
-                      : 'border-[#232323] bg-[#121212] text-[#b0bcc9]'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <div className="rounded-[26px] border border-[#1a1a1a] bg-[#000000] p-2 shadow-none">
-              <div className="flex items-end gap-2">
-                <button
-                  type="button"
-                  onClick={isAiHub ? () => pdfInputRef.current?.click() : handleAttach}
-                  aria-label={isAiHub ? 'Upload PDF' : 'Attach file'}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#171717] text-[#e8edf5]"
-                >
-                  {isAiHub ? <Upload className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                </button>
-
-                <textarea
-                  value={prompt}
-                  onChange={(event) => setPrompt(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      event.preventDefault();
-                      void submit();
-                    }
-                  }}
-                  rows={1}
-                  placeholder={`Ask ${config.title.replace(' Hub', '')}`}
-                  className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
-                />
-
-                <button
-                  type="button"
-                  aria-label="Voice input"
-                  onClick={handleVoiceInput}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#181818] text-[#e8edf5]"
-                >
-                  <Mic className="h-4 w-4" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => void submit()}
-                  aria-label="Send message"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2f6df6] text-[#ffffff] shadow-[0_8px_18px_rgba(47,109,246,0.45)]"
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </button>
+          <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[#000000]">
+            <div className="flex items-center justify-between border-b border-[#1A1A1A] bg-[#000000] px-4 py-3 md:px-5">
+              <div className="flex items-center gap-3">
+                {!isAiHub && (
+                  <button
+                    type="button"
+                    aria-label="Open menu"
+                    onClick={() => setMenuOpen((open) => !open)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef] md:hidden"
+                  >
+                    <div className="flex flex-col gap-1.5">
+                      <span className="block h-0.5 w-4 rounded-full bg-current" />
+                      <span className="block h-0.5 w-4 rounded-full bg-current" />
+                      <span className="block h-0.5 w-4 rounded-full bg-current" />
+                    </div>
+                  </button>
+                )}
+                <div className="text-[15px] font-medium text-[#f5f7fa]">{config.title.replace(' Hub', '')}</div>
               </div>
 
-              {attachmentName && (
-                <div className="mt-2 flex items-center justify-between rounded-xl border border-[#1A1A1A] bg-[#181818] px-2.5 py-1.5 text-[11px] text-[#c4d0df]">
-                  <span className="truncate">{attachmentName}</span>
-                  <button type="button" onClick={() => setAttachmentName('')} className="ml-2 text-[#8ca6d5]">Clear</button>
+              <button
+                type="button"
+                onClick={() => setError('Upgrade flow is disabled in this demo, but your workspace is active.')}
+                className="rounded-full border border-[#2d3f3a] bg-[#111c18] px-2.5 py-1.5 text-[11px] font-semibold text-[#bff8d6]"
+              >
+                Upgrade
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-2 pt-3 md:px-4">
+              {isAiHub && pdfDocument && (
+                <div className="mb-4 rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#1A1A1A] bg-[#121212] text-[#8bb5ff]">
+                        <FileText className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-white">{pdfDocument.name}.pdf</div>
+                        <div className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">{pdfDocument.pageCount} pages · Processed</div>
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => pdfInputRef.current?.click()} className="rounded-xl border border-[#1A1A1A] bg-[#121212] px-2.5 py-1.5 text-[11px] font-medium text-[#bff8d6]">More</button>
+                  </div>
+
+                  <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    {quickActions.map((action) => (
+                      <button
+                        key={action}
+                        type="button"
+                        onClick={() => setPrompt(`${action}: `)}
+                        className="shrink-0 rounded-full border border-[#232323] bg-[#121212] px-3 py-1.5 text-[11px] text-[#dfeaff] transition hover:border-[#3DDBC0]/60"
+                      >
+                        {action}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {messages.length === 0 ? (
+                <div className="flex h-full min-h-[260px] items-center justify-center">
+                  <div className="max-w-md text-center">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#101828] text-[#8bb5ff]">
+                      <config.icon className="h-6 w-6" />
+                    </div>
+                    <h2 className="text-[22px] font-semibold tracking-tight text-white">Chat with your PDFs</h2>
+                    <p className="mt-3 text-sm leading-6 text-[#8f9aad]">
+                      {isAiHub ? 'Upload a PDF and ask questions, summarize content, extract information, or analyze the document.' : `How can I help with ${config.title.replace(' Hub', '')}?`}
+                    </p>
+                    {isAiHub && (
+                      <div className="mt-5 flex flex-wrap justify-center gap-2">
+                        <button type="button" onClick={() => pdfInputRef.current?.click()} className="rounded-full border border-[#2d3f3a] bg-[#111c18] px-4 py-2 text-[12px] font-semibold text-[#bff8d6]">+ Upload PDF</button>
+                        {['Summarize a document', 'Find information', 'Explain a difficult section', 'Generate a quiz'].map((label) => (
+                          <button key={label} type="button" onClick={() => setPrompt(`${label}: `)} className="rounded-full border border-[#232323] bg-[#121212] px-3 py-2 text-[11px] text-[#dfeaff]">{label}</button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3 pb-3">
+                  {messages.map((message, index) => {
+                    const citationPages = message.role === 'assistant' ? inferRelevantPages(message.text, pdfDocument?.pageTexts ?? []) : [];
+                    return (
+                      <div key={`${message.role}-${index}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[85%] rounded-[22px] px-3.5 py-2.5 text-[14px] leading-6 ${message.role === 'user' ? 'bg-[#050505] text-[#eaf3ff]' : 'bg-[#090909] text-[#dfe6ef]'}`}>
+                          {message.role === 'assistant' ? (
+                            <div className="prose prose-invert max-w-none prose-p:my-1 prose-pre:rounded-xl prose-pre:border prose-pre:border-[#2b2b2b] prose-pre:bg-[#090909] prose-pre:p-2 prose-code:text-[11px]">
+                              <ReactMarkdown>{message.text}</ReactMarkdown>
+                            </div>
+                          ) : (
+                            <div className="whitespace-pre-wrap">{message.text}</div>
+                          )}
+
+                          {message.role === 'assistant' && isAiHub && pdfDocument && citationPages.length > 0 && (
+                            <div className="mt-3 border-t border-[#1A1A1A] pt-2 text-[11px] text-[#8ea1bc]">
+                              <span className="font-medium text-[#b7c7dc]">Sources</span>
+                              <span className="ml-2">·</span>
+                              <button type="button" onClick={() => setPdfPreviewPage(citationPages[0] ?? 1)} className="ml-2 underline decoration-dotted underline-offset-2">Pages {citationPages[0]}{citationPages.length > 1 ? `–${citationPages[citationPages.length - 1]}` : ''}</button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
-          </div>
-        </main>
+
+            {error && (
+              <div className="mx-4 mb-2 flex items-center justify-between gap-3 rounded-2xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-[12px] text-red-200">
+                <span className="flex-1">{error}</span>
+                <button type="button" onClick={() => void submit()} className="font-semibold text-white underline">Retry</button>
+              </div>
+            )}
+
+            <div className="border-t border-[#1A1A1A] bg-[#000000] px-3 pb-2 pt-3 md:px-4">
+              <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {config.modes.map(([label]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setMode(label)}
+                    className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
+                      mode === label
+                        ? 'border-[#2f6df6] bg-[#112c5d] text-[#dfeeff]'
+                        : 'border-[#232323] bg-[#121212] text-[#b0bcc9]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="rounded-[26px] border border-[#1a1a1a] bg-[#000000] p-2 shadow-none">
+                <div className="flex items-end gap-2">
+                  <button
+                    type="button"
+                    onClick={isAiHub ? () => pdfInputRef.current?.click() : handleAttach}
+                    aria-label={isAiHub ? 'Upload PDF' : 'Attach file'}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#171717] text-[#e8edf5]"
+                  >
+                    {isAiHub ? <Upload className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  </button>
+
+                  <textarea
+                    value={prompt}
+                    onChange={(event) => setPrompt(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        void submit();
+                      }
+                    }}
+                    rows={1}
+                    placeholder={isAiHub ? 'Ask anything about this PDF...' : `Ask ${config.title.replace(' Hub', '')}`}
+                    className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
+                  />
+
+                  <button
+                    type="button"
+                    aria-label="Voice input"
+                    onClick={handleVoiceInput}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#181818] text-[#e8edf5]"
+                  >
+                    <Mic className="h-4 w-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => void submit()}
+                    aria-label="Send message"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2f6df6] text-[#ffffff] shadow-[0_8px_18px_rgba(47,109,246,0.45)]"
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {attachmentName && (
+                  <div className="mt-2 flex items-center justify-between rounded-xl border border-[#1A1A1A] bg-[#181818] px-2.5 py-1.5 text-[11px] text-[#c4d0df]">
+                    <span className="truncate">{attachmentName}</span>
+                    <button type="button" onClick={() => setAttachmentName('')} className="ml-2 text-[#8ca6d5]">Clear</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </main>
+
+          {isAiHub && (
+            <aside className="hidden w-[320px] shrink-0 border-l border-[#1A1A1A] bg-[#090909] p-3 xl:flex xl:flex-col">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6b7786]">PDF Viewer</div>
+                <button type="button" className="rounded-lg border border-[#1A1A1A] bg-[#121212] px-2 py-1 text-[10px] text-[#dfeaff]">Full</button>
+              </div>
+
+              <div className="rounded-[20px] border border-[#1A1A1A] bg-[#000000] p-3">
+                <div className="flex items-center justify-center overflow-hidden rounded-xl border border-[#1A1A1A] bg-[#0d1117] p-2">
+                  <canvas ref={previewCanvasRef} className="max-h-[260px] max-w-full rounded-lg bg-white" />
+                </div>
+
+                <div className="mt-3 flex items-center justify-between text-[11px] text-[#cbd6e2]">
+                  <span>Page {pdfPreviewPage}</span>
+                  <span>{pdfDocument?.pageCount ?? 0} total</span>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <button type="button" onClick={() => setPdfPreviewPage((page) => Math.max(1, page - 1))} className="flex-1 rounded-xl border border-[#1A1A1A] bg-[#121212] px-2 py-1.5 text-[11px] text-[#dfeaff]">Prev</button>
+                  <button type="button" onClick={() => setPdfPreviewPage((page) => Math.min(pdfDocument?.pageCount ?? 1, page + 1))} className="flex-1 rounded-xl border border-[#1A1A1A] bg-[#121212] px-2 py-1.5 text-[11px] text-[#dfeaff]">Next</button>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-[#dfeaff]">
+                  <button type="button" className="rounded-xl border border-[#1A1A1A] bg-[#121212] px-2 py-1.5">Zoom -</button>
+                  <button type="button" className="rounded-xl border border-[#1A1A1A] bg-[#121212] px-2 py-1.5">Zoom +</button>
+                  <button type="button" className="rounded-xl border border-[#1A1A1A] bg-[#121212] px-2 py-1.5 col-span-2">Search in PDF</button>
+                </div>
+              </div>
+
+              <div className="mt-3 rounded-[20px] border border-[#1A1A1A] bg-[#0b1016] p-3">
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#6b7786]">Page thumbnails</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {Array.from({ length: Math.min(pdfDocument?.pageCount ?? 4, 4) }, (_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setPdfPreviewPage(index + 1)}
+                      className={`rounded-xl border p-2 text-left ${pdfPreviewPage === index + 1 ? 'border-[#2f6df6] bg-[#112c5d]' : 'border-[#1A1A1A] bg-[#121212]'}`}
+                    >
+                      <div className="mb-1 text-[10px] text-[#b7c7dc]">Page {index + 1}</div>
+                      <div className="h-12 rounded-lg bg-[#000000] border border-[#1A1A1A]" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          )}
+        </div>
       </div>
 
       {!isAiHub && (
