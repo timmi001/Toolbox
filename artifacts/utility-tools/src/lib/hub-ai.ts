@@ -29,7 +29,7 @@ export async function generateHubResponse(hub: HubId, input: HubGenerationInput)
   });
 
   if (!response.result?.trim()) throw new Error('The AI provider returned an empty response. Please retry.');
-  const hubName = hub === 'ai-assistant' ? 'AI Assistant' : `${hub[0].toUpperCase()}${hub.slice(1)} Hub`;
+  const hubName = hub === 'ai-assistant' ? 'Chat with PDF' : `${hub[0].toUpperCase()}${hub.slice(1)} Hub`;
   saveHistoryEntry({
     toolSlug: `hub-${hub}`,
     toolName: hubName,
