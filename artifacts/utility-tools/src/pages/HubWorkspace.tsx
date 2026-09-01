@@ -826,6 +826,31 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                 <span>📁 My Documents</span>
                 <FolderOpen className="h-4 w-4" />
               </button>
+              <button type="button" onClick={() => { setMenuOpen(false); setMessages([]); setPrompt(''); setError(''); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
+                <span>Upload PDF</span>
+                <Upload className="h-4 w-4" />
+              </button>
+
+              {isAiHub && (
+                <div className="mt-2 border-t border-[#1A1A1A] pt-2">
+                  <div className="mb-1 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6b7786]">Tools</div>
+                  {['Ask PDF', 'Summarize', 'Extract Information', 'Analyze'].map((label) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => { setMenuOpen(false); setError(''); setPrompt(label === 'Ask PDF' ? 'Ask about this PDF: ' : label === 'Summarize' ? 'Summarize this PDF: ' : label === 'Extract Information' ? 'Extract key information from this PDF: ' : 'Analyze this PDF: '); }}
+                      className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]"
+                    >
+                      <span>{label}</span>
+                      {label === 'Ask PDF' && <MessageCircleQuestion className="h-4 w-4" />}
+                      {label === 'Summarize' && <FileText className="h-4 w-4" />}
+                      {label === 'Extract Information' && <Search className="h-4 w-4" />}
+                      {label === 'Analyze' && <BarChart3 className="h-4 w-4" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <button type="button" onClick={() => { setMenuOpen(false); void copyAnswer(); }} className="mt-1 flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
                 <span>★ Saved</span>
                 <Bookmark className="h-4 w-4" />
