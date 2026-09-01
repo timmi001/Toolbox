@@ -226,20 +226,14 @@ function ChatPdfShell({
                   <span className="block h-0.5 w-4 rounded-full bg-current" />
                 </div>
               </button>
-              <div>
+              <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-[#6b7786]">PDF workspace</div>
-                <div className="text-base font-semibold text-white">{title}</div>
+                <div className="truncate text-sm font-semibold text-white">{activeDocumentName ?? 'Ready to analyze'}</div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              {activeDocumentName ? (
-                <div className="hidden items-center gap-2 rounded-full border border-[#1A1A1A] bg-[#0E151D] px-2.5 py-1 text-[11px] text-[#cfe5ff] md:flex">
-                  <FileText className="h-3.5 w-3.5 text-[#7FC7FF]" />
-                  <span className="truncate max-w-[180px]">{activeDocumentName}</span>
-                </div>
-              ) : null}
-              <button type="button" onClick={openFeedbackForm} className="rounded-full border border-[#2d3f3a] bg-[#111c18] px-2.5 py-1.5 text-[11px] font-semibold text-[#bff8d6]">Feedback</button>
+              <button type="button" onClick={openFeedbackForm} className="rounded-full border border-[#23463d] bg-[#112b26] px-2.5 py-1.5 text-[11px] font-semibold text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#17382f]">Feedback</button>
             </div>
           </header>
 
@@ -276,7 +270,7 @@ function ChatPdfShell({
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-6 pt-4 md:px-5">{children}</div>
+          <div className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-24 pt-4 md:px-5">{children}</div>
         </main>
       </div>
     </div>
@@ -473,28 +467,6 @@ function ChatPdfWorkspacePage() {
         onUpload={() => inputRef.current?.click()}
       >
         <div className="mx-auto max-w-5xl">
-          <div className="mb-4 rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#1A1A1A] bg-[#111111] text-[#7FC7FF]">
-                  <FileText className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-white">{activeDocument ? activeDocument.name : 'No document selected'}</div>
-                  <div className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">
-                    {activeDocument ? `${activeDocument.pageCount} pages • Ready` : 'Upload a PDF to start'}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={() => runContextAction('summary')} className="rounded-full border border-[#1A1A1A] bg-[#121212] px-3 py-1.5 text-[11px] text-[#dfeaff]">Summarize</button>
-                <button type="button" onClick={() => runContextAction('extract')} className="rounded-full border border-[#1A1A1A] bg-[#121212] px-3 py-1.5 text-[11px] text-[#dfeaff]">Extract Information</button>
-                <button type="button" onClick={() => runContextAction('analysis')} className="rounded-full border border-[#1A1A1A] bg-[#121212] px-3 py-1.5 text-[11px] text-[#dfeaff]">Analyze</button>
-              </div>
-            </div>
-          </div>
-
           {activeDocument ? (
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_320px]">
               <div className="space-y-3">
@@ -567,29 +539,31 @@ function ChatPdfWorkspacePage() {
             <div className="mt-4 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-3 py-2 text-sm text-[#cfe5ff]">Processing PDF…</div>
           )}
 
-          <div className="mt-5 rounded-[26px] border border-[#1a1a1a] bg-[#000000] p-2">
-            <div className="flex items-end gap-2">
-              <button type="button" onClick={() => inputRef.current?.click()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#171717] text-[#e8edf5]" aria-label="Upload PDF">
-                <Upload className="h-4 w-4" />
-              </button>
+          <div className="sticky bottom-0 z-10 mt-5 border-t border-[#1A1A1A] bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3">
+            <div className="mx-auto max-w-5xl rounded-[26px] border border-[#1a1a1a] bg-[#0b0f12] p-2 shadow-[0_-10px_20px_rgba(0,0,0,0.25)]">
+              <div className="flex items-end gap-2">
+                <button type="button" onClick={() => inputRef.current?.click()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#17463b] bg-[#12352d] text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#173d35]" aria-label="Upload PDF">
+                  <Upload className="h-4 w-4" />
+                </button>
 
-              <textarea
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    void sendPrompt();
-                  }
-                }}
-                rows={1}
-                placeholder={activeDocument ? 'Ask anything about this PDF…' : 'Upload a PDF to begin…'}
-                className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
-              />
+                <textarea
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault();
+                      void sendPrompt();
+                    }
+                  }}
+                  rows={1}
+                  placeholder={activeDocument ? 'Ask anything about this PDF…' : 'Upload a PDF to begin…'}
+                  className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
+                />
 
-              <button type="button" onClick={() => { const next = message.trim(); if (next) void sendPrompt(next); }} aria-label="Send message" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2f6df6] text-[#ffffff]">
-                <ArrowUp className="h-4 w-4" />
-              </button>
+                <button type="button" onClick={() => { const next = message.trim(); if (next) void sendPrompt(next); }} aria-label="Send message" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#5BE4B6] text-[#071713] shadow-[0_8px_18px_rgba(91,228,182,0.35)] transition hover:bg-[#78f0c6]">
+                  <ArrowUp className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
