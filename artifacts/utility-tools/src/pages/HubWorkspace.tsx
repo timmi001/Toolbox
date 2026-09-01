@@ -510,13 +510,6 @@ const UNIFIED_HUBS = {
     tools: [] as HubAction[],
     modes: [['Summarize', 'Pull out the core conclusions and main ideas.'], ['Explain', 'Break down complex sections into clear language.'], ['Compare', 'Highlight the key differences across documents.'], ['Turn into notes', 'Convert the content into practical takeaways.']],
   },
-  'ai-assistant': {
-    title: 'Chat with PDF',
-    subtitle: 'Upload PDFs and get clear summaries, insights, and document guidance in one focused workspace.',
-    icon: FileText,
-    tools: [] as HubAction[],
-    modes: [['Summarize', 'Pull out the core conclusions and main ideas.'], ['Explain', 'Break down complex sections into clear language.'], ['Compare', 'Highlight the key differences across documents.'], ['Turn into notes', 'Convert the content into practical takeaways.']],
-  },
   creator: {
     title: 'Creator Studio',
     subtitle: 'Create polished content, campaigns, and creative direction with AI.',
@@ -632,7 +625,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const isAiHub = hub === 'ai' || hub === 'ai-assistant';
+  const isAiHub = hub === 'ai';
 
   if (hub === 'business' && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'insights') {
     return <BusinessInsights onBack={() => navigate('/hub/business')} />;
@@ -687,7 +680,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
     setLoading(true);
     setError('');
     try {
-      const targetHub: 'ai-assistant' | typeof hub = hub === 'ai' || hub === 'ai-assistant' ? 'ai-assistant' : hub;
+      const targetHub: 'ai-assistant' | typeof hub = isAiHub ? 'ai-assistant' : hub;
       const promptText = isAiHub && pdfDocument ? buildGroundedPrompt(value, pdfDocument) : `${value}${attachmentName ? `\n\nAttached file: ${attachmentName}` : ''}`;
       const answer = await generateHubResponse(targetHub, { prompt: promptText, mode });
       setMessages((current) => [...current, { role: 'user', text: value }, { role: 'assistant', text: answer }]);

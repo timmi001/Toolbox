@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -67,6 +67,7 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/ai-tools" component={AiTools} />
+          <Route path="/hub/ai" component={() => <Redirect to="/chat-with-pdf" />} />
           <Route path="/hub/:hub" component={HubWorkspace} />
           <Route path="/chat-with-pdf" component={ChatWithPdfRoutes} />
           <Route path="/chat-with-pdf/history" component={ChatWithPdfRoutes} />

@@ -1,7 +1,7 @@
 import './_group.css';
 
 const cards = [
-  ['AI Assistant', 'Chat, write, research and brainstorm in one focused workspace.'],
+  ['Chat with PDF', 'Upload a PDF and get clear summaries, notes, and document analysis in one focused workspace.'],
   ['Creator Hub', 'Turn rough ideas into polished content and creative direction.'],
   ['Study Hub', 'Learn faster, practice more and build a better study routine.'],
   ['Career Hub', 'Prepare for your next opportunity with practical AI guidance.'],

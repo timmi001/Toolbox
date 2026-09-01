@@ -16,7 +16,7 @@ import { getDailyBrief, saveDailyBrief } from '@/utils/dailyBriefStorage';
 import './Home.css';
 
 const HUB_CARDS = [
-  { title: 'Chat with PDF', href: '/hub/ai', description: 'Upload a PDF and get clear summaries, notes, and document analysis in one focused workspace.', icon: FileText, accent: '#5BE4B6', gradient: 'from-[#123E37] via-[#102D30] to-[#101A28]', glow: 'rgba(91,228,182,0.24)' },
+  { title: 'Chat with PDF', href: '/chat-with-pdf', description: 'Upload a PDF and get clear summaries, notes, and document analysis in one focused workspace.', icon: FileText, accent: '#5BE4B6', gradient: 'from-[#123E37] via-[#102D30] to-[#101A28]', glow: 'rgba(91,228,182,0.24)' },
   { title: 'Creator Studio', href: '/hub/creator', description: 'Turn rough ideas into polished content and creative direction.', icon: Wand2, accent: '#FF72C2', gradient: 'from-[#4C1F43] via-[#33203C] to-[#171A2B]', glow: 'rgba(255,114,194,0.24)' },
   { title: 'Study Hub', href: '/hub/study', description: 'Learn faster, practice more and build a better study routine.', icon: BookOpen, accent: '#6E9BFF', gradient: 'from-[#1C3569] via-[#17294E] to-[#131D31]', glow: 'rgba(110,155,255,0.24)' },
   { title: 'Career Path', href: '/hub/career', description: 'Prepare for your next opportunity with practical AI guidance.', icon: BriefcaseBusiness, accent: '#B18AFF', gradient: 'from-[#39265E] via-[#292244] to-[#171A2C]', glow: 'rgba(177,138,255,0.24)' },
