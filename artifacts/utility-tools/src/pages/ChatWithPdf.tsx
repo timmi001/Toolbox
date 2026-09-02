@@ -632,6 +632,12 @@ function ChatPdfWorkspacePage() {
           {activeDocument ? (
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_320px]">
               <div className="space-y-3">
+                {/* DIAGNOSTIC: Verify responsive component rendering */}
+                <div className="fixed top-0 left-0 right-0 z-50 bg-[#1a3a52] text-[#5BE4B6] text-xs px-3 py-2 flex justify-between items-center">
+                  <span>ChatWithPDF v2.1 — Responsive Component</span>
+                  <span className="text-[#8fa2b8]">Viewport: {typeof window !== 'undefined' ? `${window.innerWidth}×${window.innerHeight}` : 'loading'}</span>
+                </div>
+                
                 {messages.length === 0 ? (
                   <div className="rounded-[26px] border border-[#1A1A1A] bg-[#0a0f15] p-6 text-center">
                     <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#1A1A1A] bg-[#101821] text-[#7FC7FF]">
