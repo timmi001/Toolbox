@@ -22,6 +22,7 @@ export type ChatPdfDocument = {
   id: string;
   name: string;
   fileName: string;
+  mimeType?: string;
   pageCount: number;
   pageTexts: string[];
   uploadDate: string;

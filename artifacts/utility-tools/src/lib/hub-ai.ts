@@ -14,6 +14,10 @@ export interface HubGenerationInput {
   industry?: string;
   experience?: string;
   businessType?: string;
+  pdfDocumentId?: string;
+  pdfDocumentName?: string;
+  pdfDocumentStatus?: string;
+  pdfContext?: string;
 }
 
 export async function generateHubResponse(hub: HubId, input: HubGenerationInput): Promise<string> {

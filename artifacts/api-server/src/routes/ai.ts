@@ -164,7 +164,7 @@ const aiLimiter = rateLimit({
 // Per-tool schema: required keys + max character lengths for each input field
 // ---------------------------------------------------------------------------
 const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<string, number> }> = {
-  "hub-ai-assistant": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, context: 1000 } },
+  "hub-ai-assistant": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, context: 1000, pdfDocumentId: 1000, pdfDocumentName: 2000, pdfDocumentStatus: 500, pdfContext: 500 } },
   "hub-creator": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, context: 1000 } },
   "hub-study": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, subject: 100, level: 100 } },
   "hub-career": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, role: 150, industry: 150, experience: 100 } },
@@ -274,7 +274,7 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
   const i = inputs;
   switch (toolId) {
     case "hub-ai-assistant":
-      return `You are Toolbuxx AI Assistant. Help the user with the selected mode: ${i.mode || "General help"}.\n\nUser request:\n${i.prompt}\n\nAdditional context: ${i.context || "None provided"}\n\nGive a direct, useful answer with clear steps. Use Markdown when it improves readability.`;
+      return `You are Toolbuxx AI Assistant. Help the user with the selected mode: ${i.mode || "General help"}.\n\nUser request:\n${i.prompt}\n\nAdditional context: ${i.context || "None provided"}${i.pdfDocumentId ? `\n\nSelected PDF context:\n- Document ID(s): ${i.pdfDocumentId}\n- Filename(s): ${i.pdfDocumentName || "Unknown"}\n- Processing status: ${i.pdfDocumentStatus || "unknown"}\n- Context source: ${i.pdfContext || "extracted text included in the request"}` : ""}\n\nGive a direct, useful answer with clear steps. Use Markdown when it improves readability.`;
 
     case "hub-creator":
       return `You are Toolbuxx Creator Studio. Help create a ${i.mode || "creative asset"}.\n\nCreator brief:\n${i.prompt}\n\nAdditional context: ${i.context || "None provided"}\n\nReturn production-ready copy, a structured concept, or a detailed generation brief as appropriate. Include practical next steps.`;
@@ -828,11 +828,36 @@ router.post("/ai/generate", aiLimiter, async (req, res) => {
         requestId,
         toolId,
         inputKeys: Object.keys(cleanInputs),
+        pdfContext: cleanInputs.pdfDocumentId ? {
+          documentIds: cleanInputs.pdfDocumentId,
+          fileNames: cleanInputs.pdfDocumentName,
+          statuses: cleanInputs.pdfDocumentStatus,
+          contextAttached: Boolean(cleanInputs.pdfContext),
+        } : undefined,
         timingMs: Number(timings.validateMs.toFixed(1)),
         ts: new Date().toISOString(),
       },
       `[ai/generate][${requestId}] request validation complete`,
     );
+
+    if (cleanInputs.pdfDocumentId) {
+      logger.info(
+        {
+          requestId,
+          documentIds: cleanInputs.pdfDocumentId,
+          fileNames: cleanInputs.pdfDocumentName,
+          processingStatus: cleanInputs.pdfDocumentStatus,
+          lookup: "client-extracted-text",
+          found: Boolean(cleanInputs.pdfContext),
+          payloadStructure: {
+            toolId: typeof toolId,
+            inputs: Object.keys(cleanInputs),
+            extractedTextInPrompt: Boolean(cleanInputs.pdfContext),
+          },
+        },
+        `[ai/generate][${requestId}] PDF context lookup completed`,
+      );
+    }
 
     // ---- Stage 2: prompt preparation ---------------------------------------
     const tPromptStart = nowMs();
