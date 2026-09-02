@@ -498,6 +498,7 @@ type UnifiedHubConfig = {
   title: string;
   subtitle: string;
   icon: LucideIcon;
+  color: string;
   tools: readonly HubAction[];
   modes: readonly HubAction[];
 };
@@ -507,6 +508,7 @@ const UNIFIED_HUBS = {
     title: 'Chat with PDF',
     subtitle: 'Upload PDFs and get clear summaries, insights, and document guidance in one focused workspace.',
     icon: FileText,
+    color: '#46E3B5',
     tools: [] as HubAction[],
     modes: [['Summarize', 'Pull out the core conclusions and main ideas.'], ['Explain', 'Break down complex sections into clear language.'], ['Compare', 'Highlight the key differences across documents.'], ['Turn into notes', 'Convert the content into practical takeaways.']],
   },
@@ -514,6 +516,7 @@ const UNIFIED_HUBS = {
     title: 'Creator Studio',
     subtitle: 'Create polished content, campaigns, and creative direction with AI.',
     icon: Wand2,
+    color: '#FF66B8',
     tools: [] as HubAction[],
     modes: [['Create', 'Turn an idea into production-ready content.'], ['Plan', 'Shape a clear creative brief and direction.'], ['Polish', 'Improve tone, structure, and clarity.'], ['Repurpose', 'Adapt one idea for multiple formats.']],
   },
@@ -521,6 +524,7 @@ const UNIFIED_HUBS = {
     title: 'Study Hub',
     subtitle: 'Learn faster with a focused AI tutor for understanding and practice.',
     icon: BookOpen,
+    color: '#5C8DFF',
     tools: [] as HubAction[],
     modes: [['Explain', 'Break down a difficult topic step by step.'], ['Summarize', 'Turn notes into a clear revision guide.'], ['Practice', 'Test understanding with useful questions.'], ['Plan', 'Build a realistic study routine.']],
   },
@@ -528,6 +532,7 @@ const UNIFIED_HUBS = {
     title: 'Career Path',
     subtitle: 'Prepare stronger applications and make confident career decisions with AI.',
     icon: BriefcaseBusiness,
+    color: '#A779FF',
     tools: [] as HubAction[],
     modes: [['Resume', 'Strengthen experience and achievement statements.'], ['Cover Letter', 'Write a specific, persuasive application.'], ['Interview', 'Practice answers and improve your delivery.'], ['Career Advice', 'Turn your next goal into an action plan.']],
   },
@@ -535,6 +540,7 @@ const UNIFIED_HUBS = {
     title: 'Personal Finance',
     subtitle: 'Think, plan, and execute business ideas in one focused AI workspace.',
     icon: BarChart3,
+    color: '#F7B83B',
     tools: [] as HubAction[],
     modes: [['Ideas', 'Turn rough thoughts into clear opportunities.'], ['Research', 'Explore customers, markets, and competitors.'], ['Build', 'Create plans, campaigns, and business documents.'], ['Money', 'Work through pricing, budgets, and revenue.']],
   },
@@ -948,7 +954,14 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                         <div className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">{pdfDocument.pageCount} pages · Processed</div>
                       </div>
                     </div>
-                    <button type="button" onClick={() => pdfInputRef.current?.click()} className="rounded-xl border border-[#1A1A1A] bg-[#121212] px-2.5 py-1.5 text-[11px] font-medium text-[#bff8d6]">More</button>
+                    <button 
+                      type="button" 
+                      onClick={() => pdfInputRef.current?.click()} 
+                      style={{ color: config.color }}
+                      className="rounded-xl border border-[#1A1A1A] bg-[#121212] px-2.5 py-1.5 text-[11px] font-medium"
+                    >
+                      More
+                    </button>
                   </div>
 
                   <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -957,7 +970,11 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                         key={action}
                         type="button"
                         onClick={() => setPrompt(`${action}: `)}
-                        className="shrink-0 rounded-full border border-[#232323] bg-[#121212] px-3 py-1.5 text-[11px] text-[#dfeaff] transition hover:border-[#3DDBC0]/60"
+                        style={{
+                          borderColor: config.color + '40',
+                          color: config.color,
+                        }}
+                        className="shrink-0 rounded-full border bg-[#121212] px-3 py-1.5 text-[11px] transition hover:opacity-80"
                       >
                         {action}
                       </button>
@@ -969,7 +986,13 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
               {messages.length === 0 ? (
                 <div className="flex h-full min-h-[260px] items-center justify-center">
                   <div className="max-w-md text-center">
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#101828] text-[#8bb5ff]">
+                    <div 
+                      className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
+                      style={{ 
+                        backgroundColor: config.color + '20',
+                        color: config.color
+                      }}
+                    >
                       <config.icon className="h-6 w-6" />
                     </div>
                     <h2 className="text-[22px] font-semibold tracking-tight text-white">Chat with your PDFs</h2>
@@ -978,7 +1001,18 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                     </p>
                     {isAiHub && (
                       <div className="mt-5 flex justify-center">
-                        <button type="button" onClick={() => pdfInputRef.current?.click()} className="rounded-full border border-[#2d3f3a] bg-[#111c18] px-4 py-2 text-[12px] font-semibold text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#173d35]">+ Upload PDF</button>
+                        <button 
+                          type="button" 
+                          onClick={() => pdfInputRef.current?.click()} 
+                          style={{
+                            borderColor: config.color + '60',
+                            backgroundColor: config.color + '15',
+                            color: config.color
+                          }}
+                          className="rounded-full border px-4 py-2 text-[12px] font-semibold transition hover:opacity-80"
+                        >
+                          + Upload PDF
+                        </button>
                       </div>
                     )}
                   </div>
@@ -1015,11 +1049,11 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                       <div className="max-w-[85%] rounded-[22px] bg-[#090909] px-3.5 py-2.5">
                         <div className="flex items-center gap-2">
                           <div className="flex gap-1">
-                            <span className="inline-block h-2 w-2 rounded-full bg-[#5BE4B6] animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                            <span className="inline-block h-2 w-2 rounded-full bg-[#5BE4B6] animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                            <span className="inline-block h-2 w-2 rounded-full bg-[#5BE4B6] animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full animate-bounce" style={{ backgroundColor: config.color, animationDelay: '0ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full animate-bounce" style={{ backgroundColor: config.color, animationDelay: '150ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full animate-bounce" style={{ backgroundColor: config.color, animationDelay: '300ms' }}></span>
                           </div>
-                          <span className="text-[12px] text-[#7dd3b0]">Thinking…</span>
+                          <span className="text-[12px]" style={{ color: config.color }}>Thinking…</span>
                         </div>
                       </div>
                     </div>
@@ -1045,11 +1079,12 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                       key={label}
                       type="button"
                       onClick={() => setMode(label)}
-                      className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
-                        mode === label
-                          ? 'border-[#5BE4B6] bg-[#12352d] text-[#dffdf6]'
-                          : 'border-[#232323] bg-[#121212] text-[#b0bcc9]'
-                      }`}
+                      style={{
+                        borderColor: mode === label ? config.color : '#232323',
+                        backgroundColor: mode === label ? config.color + '20' : '#121212',
+                        color: mode === label ? config.color : '#b0bcc9',
+                      }}
+                      className="shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition hover:opacity-80"
                     >
                       {label}
                     </button>
@@ -1062,7 +1097,12 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                       type="button"
                       onClick={isAiHub ? () => pdfInputRef.current?.click() : handleAttach}
                       aria-label={isAiHub ? 'Upload PDF' : 'Attach file'}
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#17463b] bg-[#12352d] text-[#bff8d6] transition hover:border-[#35d3a3] hover:bg-[#173d35]"
+                      style={{
+                        borderColor: config.color + '40',
+                        backgroundColor: config.color + '15',
+                        color: config.color,
+                      }}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition hover:opacity-80"
                     >
                       {isAiHub ? <Upload className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                     </button>
@@ -1096,7 +1136,11 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                       onClick={() => { if (!loading) void submit(); }}
                       disabled={loading}
                       aria-label={loading ? 'Generating response' : 'Send message'}
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#5BE4B6] text-[#071713] shadow-[0_8px_18px_rgba(91,228,182,0.35)] transition hover:bg-[#78f0c6] disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ 
+                        backgroundColor: config.color,
+                        boxShadow: `0_8px_18px_${config.color.replace('#', '')}59`
+                      }}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#000000] shadow-lg transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? (
                         <div className="flex gap-0.5">
