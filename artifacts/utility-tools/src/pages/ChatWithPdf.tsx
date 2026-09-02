@@ -228,6 +228,7 @@ function ChatPdfShell({
   const [, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="min-h-screen bg-[#000000] text-white">
@@ -314,7 +315,7 @@ function ChatPdfShell({
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-32 pt-4 md:px-5">{children}</div>
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-32 pt-4 md:px-5" data-chat-scroll-container>{children}</div>
         </main>
       </div>
     </div>
@@ -334,7 +335,19 @@ function ChatPdfWorkspacePage() {
   const [uploading, setUploading] = useState(false);
   const [generatedTitle, setGeneratedTitle] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const activeDocument = documents.find((document) => document.id === viewedDocumentId) ?? documents[0] ?? null;
+
+  // Auto-scroll to latest message when messages change or loading state changes
+  useEffect(() => {
+    // Small delay to ensure DOM has rendered the new message
+    const timer = setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [messages, loading]);
 
   useEffect(() => {
     const applyStoredState = () => {
@@ -642,6 +655,23 @@ function ChatPdfWorkspacePage() {
                         </div>
                       </div>
                     ))}
+                    
+                    {loading && (
+                      <div key="loading" className="flex justify-start">
+                        <div className="max-w-[88%] rounded-[20px] bg-[#101010] px-3.5 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1">
+                              <span className="inline-block h-2 w-2 rounded-full bg-[#60A5FA] animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                              <span className="inline-block h-2 w-2 rounded-full bg-[#60A5FA] animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                              <span className="inline-block h-2 w-2 rounded-full bg-[#60A5FA] animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            </div>
+                            <span className="text-[12px] text-[#93C5FD]">Thinking…</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div ref={messagesEndRef} />
                   </div>
                 )}
               </div>
@@ -703,22 +733,37 @@ function ChatPdfWorkspacePage() {
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
+                    if (event.key === 'Enter' && !event.shiftKey && !loading) {
                       event.preventDefault();
                       void sendPrompt();
                     }
                   }}
                   rows={1}
+                  disabled={loading}
                   placeholder={activeDocument ? 'Ask anything about this PDF…' : 'Upload a PDF to begin…'}
-                  className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
+                  className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none disabled:opacity-60"
                 />
 
                 {activeDocumentIds.length > 0 && (
                   <div className="absolute bottom-14 left-14 text-[10px] text-[#93C5FD]">Using {activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'}</div>
                 )}
 
-                <button type="button" onClick={() => { const next = message.trim(); if (next) void sendPrompt(next); }} aria-label="Send message" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-[0_8px_18px_rgba(37,99,235,0.35)] transition hover:bg-[#3B82F6]">
-                  <ArrowUp className="h-4 w-4" />
+                <button 
+                  type="button" 
+                  onClick={() => { if (!loading) { const next = message.trim(); if (next) void sendPrompt(next); } }} 
+                  disabled={loading || !activeDocument || !message.trim()}
+                  aria-label={loading ? 'Generating response' : 'Send message'} 
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-[0_8px_18px_rgba(37,99,235,0.35)] transition hover:bg-[#3B82F6] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <div className="flex gap-0.5">
+                      <span className="inline-block h-1 w-1 rounded-full bg-white animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                      <span className="inline-block h-1 w-1 rounded-full bg-white animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                      <span className="inline-block h-1 w-1 rounded-full bg-white animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    </div>
+                  ) : (
+                    <ArrowUp className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
