@@ -625,7 +625,18 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const isAiHub = hub === 'ai';
+
+  // Auto-scroll to latest message when messages change or loading state changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [messages, loading]);
 
   if (hub === 'business' && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'insights') {
     return <BusinessInsights onBack={() => navigate('/hub/business')} />;
@@ -998,6 +1009,23 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                       </div>
                     );
                   })}
+
+                  {loading && (
+                    <div key="loading" className="flex justify-start">
+                      <div className="max-w-[85%] rounded-[22px] bg-[#090909] px-3.5 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-1">
+                            <span className="inline-block h-2 w-2 rounded-full bg-[#5BE4B6] animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full bg-[#5BE4B6] animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full bg-[#5BE4B6] animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                          </div>
+                          <span className="text-[12px] text-[#7dd3b0]">Thinking…</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
@@ -1043,14 +1071,15 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                       value={prompt}
                       onChange={(event) => setPrompt(event.target.value)}
                       onKeyDown={(event) => {
-                        if (event.key === 'Enter' && !event.shiftKey) {
+                        if (event.key === 'Enter' && !event.shiftKey && !loading) {
                           event.preventDefault();
                           void submit();
                         }
                       }}
                       rows={1}
+                      disabled={loading}
                       placeholder={isAiHub ? 'Ask anything about this PDF...' : `Ask ${config.title.replace(' Hub', '')}`}
-                      className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none"
+                      className="max-h-28 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] placeholder:text-[#6c7784] outline-none disabled:opacity-60"
                     />
 
                     <button
@@ -1064,11 +1093,20 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
 
                     <button
                       type="button"
-                      onClick={() => void submit()}
-                      aria-label="Send message"
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#5BE4B6] text-[#071713] shadow-[0_8px_18px_rgba(91,228,182,0.35)] transition hover:bg-[#78f0c6]"
+                      onClick={() => { if (!loading) void submit(); }}
+                      disabled={loading}
+                      aria-label={loading ? 'Generating response' : 'Send message'}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#5BE4B6] text-[#071713] shadow-[0_8px_18px_rgba(91,228,182,0.35)] transition hover:bg-[#78f0c6] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <ArrowUp className="h-4 w-4" />
+                      {loading ? (
+                        <div className="flex gap-0.5">
+                          <span className="inline-block h-1 w-1 rounded-full bg-current animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                          <span className="inline-block h-1 w-1 rounded-full bg-current animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                          <span className="inline-block h-1 w-1 rounded-full bg-current animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                        </div>
+                      ) : (
+                        <ArrowUp className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
 
