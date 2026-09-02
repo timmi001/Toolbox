@@ -10,6 +10,7 @@ import {
   Bookmark,
   Check,
   Clock3,
+  Copy,
   FileText,
   FolderOpen,
   History,
@@ -18,7 +19,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
+  Pencil,
   Search,
+  Share2,
   Settings2,
   Sparkles,
   Trash2,
@@ -307,6 +310,9 @@ function ChatPdfWorkspacePage() {
   const [processingFiles, setProcessingFiles] = useState<Array<{ id: string; fileName: string; size: number }>>([]);
   const [retryFiles, setRetryFiles] = useState<File[]>([]);
   const [generatedTitle, setGeneratedTitle] = useState('');
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingMessageText, setEditingMessageText] = useState('');
+  const [messageActionFeedback, setMessageActionFeedback] = useState<{ id: string; label: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const activeDocument = documents.find((document) => document.id === viewedDocumentId) ?? documents[0] ?? null;
@@ -379,6 +385,68 @@ function ChatPdfWorkspacePage() {
       messages: nextMessages,
     };
     upsertChatPdfConversation(nextConversation);
+  };
+
+  const copyMessage = async (messageId: string, content: string, label = 'Copied') => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setMessageActionFeedback({ id: messageId, label });
+    } catch {
+      setError('Could not copy this message. Please try again.');
+    }
+  };
+
+  const shareMessage = async (messageId: string, content: string) => {
+    const title = activeDocument ? `${activeDocument.name} — PDF response` : 'PDF chat response';
+    try {
+      if (typeof navigator.share === 'function') {
+        await navigator.share({
+          title,
+          text: content,
+          url: window.location.href,
+        });
+        setMessageActionFeedback({ id: messageId, label: 'Shared' });
+        return;
+      }
+
+      await copyMessage(
+        messageId,
+        `${content}\n\nShared from PDF chat: ${window.location.href}`,
+        'Share text copied',
+      );
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      setError('Could not share this response. Please try again.');
+    }
+  };
+
+  const beginEditMessage = (messageId: string, content: string) => {
+    setEditingMessageId(messageId);
+    setEditingMessageText(content);
+    setMessageActionFeedback(null);
+  };
+
+  const cancelEditMessage = () => {
+    setEditingMessageId(null);
+    setEditingMessageText('');
+  };
+
+  const saveEditedMessage = (messageId: string) => {
+    const content = editingMessageText.trim();
+    if (!content) {
+      setError('A message cannot be empty.');
+      return;
+    }
+
+    const nextMessages = messages.map((item) => (
+      item.id === messageId ? { ...item, content } : item
+    ));
+    setMessages(nextMessages);
+    persistConversation(nextMessages);
+    setEditingMessageId(null);
+    setEditingMessageText('');
+    setMessageActionFeedback({ id: messageId, label: 'Saved' });
+    setError('');
   };
 
   const handleUpload = async (files?: File | File[] | null) => {
@@ -655,12 +723,95 @@ function ChatPdfWorkspacePage() {
                     {messages.map((item) => (
                       <div key={item.id} className={`flex ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[88%] rounded-[20px] px-3.5 py-2.5 text-[14px] leading-6 ${item.role === 'user' ? 'bg-[#0b1320] text-[#ebf5ff]' : 'bg-[#101010] text-[#dfeaf8]'}`}>
-                          {item.role === 'assistant' ? (
-                            <div className="prose prose-invert max-w-none prose-p:my-2 prose-pre:rounded-xl prose-pre:border prose-pre:border-[#262626] prose-pre:bg-[#050505] prose-pre:p-3">
-                              <ReactMarkdown>{item.content}</ReactMarkdown>
+                          {editingMessageId === item.id ? (
+                            <div className="min-w-[min(72vw,420px)]">
+                              <textarea
+                                autoFocus
+                                value={editingMessageText}
+                                onChange={(event) => setEditingMessageText(event.target.value)}
+                                onKeyDown={(event) => {
+                                  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                                    event.preventDefault();
+                                    saveEditedMessage(item.id);
+                                  }
+                                  if (event.key === 'Escape') cancelEditMessage();
+                                }}
+                                rows={3}
+                                className="w-full resize-y rounded-xl border border-[#71345A] bg-[#050505] px-3 py-2 text-[14px] leading-6 text-white outline-none focus:border-[#FF66B8]"
+                                aria-label="Edit message"
+                              />
+                              <div className="mt-2 flex items-center justify-end gap-2 text-[11px]">
+                                <button type="button" onClick={cancelEditMessage} className="rounded-lg px-2 py-1 text-[#9aa7b7] hover:bg-white/5 hover:text-white">Cancel</button>
+                                <button type="button" onClick={() => saveEditedMessage(item.id)} className="flex items-center gap-1 rounded-lg bg-[#FF66B8]/15 px-2 py-1 font-semibold text-[#FFB5D9] hover:bg-[#FF66B8]/25">
+                                  <Check className="h-3.5 w-3.5" />
+                                  Save
+                                </button>
+                              </div>
                             </div>
                           ) : (
-                            <div className="whitespace-pre-wrap">{item.content}</div>
+                            <>
+                              {item.role === 'assistant' ? (
+                                <div className="prose prose-invert max-w-none prose-p:my-2 prose-pre:rounded-xl prose-pre:border prose-pre:border-[#262626] prose-pre:bg-[#050505] prose-pre:p-3">
+                                  <ReactMarkdown>{item.content}</ReactMarkdown>
+                                </div>
+                              ) : (
+                                <div className="whitespace-pre-wrap">{item.content}</div>
+                              )}
+                              <div className={`mt-2 flex flex-wrap items-center gap-1 text-[11px] ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                {item.role === 'user' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => beginEditMessage(item.id, item.content)}
+                                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                    aria-label="Edit message"
+                                    title="Edit message"
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                    Edit
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => void copyMessage(item.id, item.content)}
+                                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                  aria-label={messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy message'}
+                                  title="Copy message"
+                                >
+                                  {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? <Check className="h-3.5 w-3.5 text-[#FFB5D9]" /> : <Copy className="h-3.5 w-3.5" />}
+                                  {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy'}
+                                </button>
+                                {item.role === 'assistant' && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => void shareMessage(item.id, item.content)}
+                                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                      aria-label="Share response"
+                                      title="Share response"
+                                    >
+                                      <Share2 className="h-3.5 w-3.5" />
+                                      Share
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        saveCurrentResponse('result', `Response: ${activeDocument?.name ?? 'PDF chat'}`, item.content);
+                                        setMessageActionFeedback({ id: item.id, label: 'Saved' });
+                                      }}
+                                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                      aria-label="Save response"
+                                      title="Save response"
+                                    >
+                                      <Bookmark className="h-3.5 w-3.5" />
+                                      Save
+                                    </button>
+                                  </>
+                                )}
+                                {messageActionFeedback?.id === item.id && messageActionFeedback.label !== 'Copied' && (
+                                  <span className="px-1 text-[#FFB5D9]" role="status">{messageActionFeedback.label}</span>
+                                )}
+                              </div>
+                            </>
                           )}
                         </div>
                       </div>
