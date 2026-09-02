@@ -27,6 +27,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { generateHubResponse } from '@/lib/hub-ai';
+import { pdf } from '@/lib/api';
 import {
   addChatPdfDocument,
   addChatPdfSavedItem,
@@ -154,45 +155,8 @@ function ChatPdfNavigation({
 }
 
 async function extractPdfText(file: File): Promise<ChatPdfDocument> {
-  const { getDocument } = await loadPdfJs();
-
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const pdf = await getDocument({ data: bytes }).promise;
-  const pageTexts: string[] = [];
-
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-    const page = await pdf.getPage(pageNumber);
-    const content = await page.getTextContent();
-    const text = content.items
-      .map((item) => ('str' in item ? item.str : ''))
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    pageTexts.push(text || 'No extractable text found on this page.');
-  }
-
-  return {
-    id: crypto.randomUUID(),
-    name: file.name.replace(/\.pdf$/i, ''),
-    fileName: file.name,
-    pageCount: pdf.numPages,
-    pageTexts,
-    uploadDate: new Date().toISOString(),
-    status: 'ready',
-    size: file.size,
-  };
-}
-
-let pdfJsPromise: Promise<typeof import('pdfjs-dist/legacy/build/pdf.mjs')> | null = null;
-
-async function loadPdfJs() {
-  if (!pdfJsPromise) {
-    pdfJsPromise = import('pdfjs-dist/legacy/build/pdf.mjs').then((pdfjs) => {
-      pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
-      return pdfjs;
-    });
-  }
-  return pdfJsPromise;
+  const response = await pdf.extract(file);
+  return response.document;
 }
 
 function ChatPdfShell({
@@ -359,6 +323,8 @@ function ChatPdfWorkspacePage() {
   const [viewedDocumentId, setViewedDocumentIdState] = useState<string | null>(() => getViewedChatPdfDocumentId());
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [processingFiles, setProcessingFiles] = useState<Array<{ id: string; fileName: string; size: number }>>([]);
+  const [retryFiles, setRetryFiles] = useState<File[]>([]);
   const [generatedTitle, setGeneratedTitle] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -469,17 +435,27 @@ function ChatPdfWorkspacePage() {
 
     setUploading(true);
     setError('');
+    setRetryFiles(filesToProcess);
+    setProcessingFiles(filesToProcess.map((file) => ({
+      id: `${file.name}-${file.lastModified}-${file.size}`,
+      fileName: file.name,
+      size: file.size,
+    })));
     const processed: ChatPdfDocument[] = [];
-    const failures: string[] = [];
+    const failures: Array<{ file: File; reason: string }> = [];
     for (const file of filesToProcess) {
       try {
         const document = await extractPdfText(file);
         processed.push(document);
         addChatPdfDocument(document);
-      } catch {
-        failures.push(file.name);
+      } catch (err) {
+        failures.push({
+          file,
+          reason: err instanceof Error ? err.message : 'The PDF processor could not read this file.',
+        });
       }
     }
+    setProcessingFiles([]);
     const nextDocuments = [...documents, ...processed];
     const nextActiveIds = [...new Set([...activeDocumentIds, ...processed.map((document) => document.id)])];
     const viewedId = processed.at(-1)?.id ?? viewedDocumentId ?? nextDocuments[0]?.id ?? null;
@@ -492,7 +468,15 @@ function ChatPdfWorkspacePage() {
       setViewedChatPdfDocumentId(viewedId);
       setGeneratedTitle(nextDocuments.find((document) => document.id === viewedId)?.name ?? 'PDF discussion');
     }
-    if (failures.length) setError(`Could not process: ${failures.join(', ')}`);
+    if (failures.length) {
+      setRetryFiles(failures.map(({ file }) => file));
+      const reason = failures.length === 1
+        ? `${failures[0].file.name}: ${failures[0].reason}`
+        : failures.map(({ file, reason: fileReason }) => `${file.name}: ${fileReason}`).join(' ');
+      setError(reason);
+    } else {
+      setRetryFiles([]);
+    }
     setUploading(false);
     if (inputRef.current) inputRef.current.value = '';
   };
@@ -636,7 +620,7 @@ function ChatPdfWorkspacePage() {
             void handleUpload(Array.from(event.dataTransfer.files));
           }}
         >
-          {documents.length > 0 && (
+          {(documents.length > 0 || processingFiles.length > 0) && (
             <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3 [scrollbar-width:none]">
               {documents.map((document) => {
                 const selected = activeDocumentIds.includes(document.id);
@@ -652,9 +636,20 @@ function ChatPdfWorkspacePage() {
                   </div>
                 );
               })}
+              {processingFiles.map((file) => (
+                <div key={file.id} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#71345A] bg-[#3A172F] px-2.5 py-1.5 text-xs text-[#FFB5D9]">
+                  <Clock3 className="h-3.5 w-3.5 animate-pulse" />
+                  <span>Processing {file.fileName}…</span>
+                </div>
+              ))}
               <button type="button" onClick={() => inputRef.current?.click()} className="flex shrink-0 items-center gap-1 rounded-xl border border-dashed border-[#71345A] px-2.5 py-1.5 text-xs font-medium text-[#FFB5D9] hover:bg-[#3A172F]">+ Add PDF</button>
               <button type="button" onClick={() => { const ids = documents.map((document) => document.id); setActiveDocumentIdsState(ids); setActiveChatPdfDocumentIds(ids); }} className="ml-auto shrink-0 px-2 text-[11px] text-[#FFB5D9]">Select all</button>
               <button type="button" onClick={() => { setActiveDocumentIdsState([]); setActiveChatPdfDocumentIds([]); }} className="shrink-0 px-2 text-[11px] text-[#FFB5D9]">Deselect all</button>
+            </div>
+          )}
+          {activeDocument?.warning && (
+            <div className="mb-4 rounded-2xl border border-amber-900/60 bg-amber-950/20 px-3 py-2 text-[12px] leading-5 text-amber-200">
+              {activeDocument.warning}
             </div>
           )}
           {activeDocument && (
@@ -758,7 +753,12 @@ function ChatPdfWorkspacePage() {
           {error && (
             <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-[12px] text-red-200">
               <span>{error}</span>
-              <button type="button" onClick={() => setError('')} className="font-semibold text-white underline">Dismiss</button>
+              <div className="flex shrink-0 items-center gap-3">
+                {retryFiles.length > 0 && !uploading && (
+                  <button type="button" onClick={() => void handleUpload(retryFiles)} className="font-semibold text-white underline">Retry</button>
+                )}
+                <button type="button" onClick={() => setError('')} className="font-semibold text-white underline">Dismiss</button>
+              </div>
             </div>
           )}
 
