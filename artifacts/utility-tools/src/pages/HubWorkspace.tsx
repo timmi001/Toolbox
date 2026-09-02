@@ -15,8 +15,8 @@ type HubConfig = {
 };
 
 const HUBS = {
-  ai: { title: 'Chat with PDF', description: 'Upload PDFs and analyze them with summaries, key insights, and focused document guidance.', icon: FileText, color: '#46E3B5', actions: [] as HubAction[] },
-  creator: { title: 'Creator Studio', description: 'Turn rough ideas into polished content, campaigns, and social posts.', icon: Wand2, color: '#FF66B8', actions: [] as HubAction[] },
+  ai: { title: 'Chat with PDF', description: 'Upload PDFs and analyze them with summaries, key insights, and focused document guidance.', icon: FileText, color: '#FF66B8', actions: [] as HubAction[] },
+  creator: { title: 'Creator Studio', description: 'Turn rough ideas into polished content, campaigns, and social posts.', icon: Wand2, color: '#46E3B5', actions: [] as HubAction[] },
   study: { title: 'Study Hub', description: 'Learn, practice, and build a study routine with focused AI guidance.', icon: FileText, color: '#5C8DFF', actions: [] as HubAction[] },
   career: { title: 'Career Path', description: 'Prepare for your next opportunity with focused AI guidance.', icon: FileText, color: '#A779FF', actions: [] as HubAction[] },
   business: { title: 'Personal Finance', description: 'Plan, research, and develop business ideas in one focused workspace.', icon: Wand2, color: '#F7B83B', actions: [] as HubAction[] },
