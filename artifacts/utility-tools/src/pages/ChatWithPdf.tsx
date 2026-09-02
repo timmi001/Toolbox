@@ -188,15 +188,19 @@ function ChatPdfShell({
     <div className="min-h-screen bg-[#000000] text-white">
       <div className="flex min-h-screen flex-col md:flex-row">
         <aside className={`hidden shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[240px]'}`}>
-          <div className={`mb-4 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-2.5 py-2.5 ${sidebarCollapsed ? 'justify-center' : ''}`}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#3A172F] text-[#FFB5D9]">
-              <FileText className="h-4 w-4" />
-            </div>
-            {!sidebarCollapsed && <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.25em] text-[#6b7786]">Workspace</div>
-              <div className="truncate text-sm font-semibold text-white">Chat with PDF</div>
-            </div>}
-          </div>
+          <button
+            type="button"
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            onClick={() => {
+              const nextCollapsed = !sidebarCollapsed;
+              onSidebarCollapsedChange?.(nextCollapsed);
+              if (controlledSidebarCollapsed === undefined) setInternalSidebarCollapsed(nextCollapsed);
+            }}
+            className={`mb-3 flex h-9 w-full items-center justify-center rounded-xl border border-[#71345A] bg-[#1D101A] text-[#FFB5D9] transition hover:border-[#FF66B8] hover:bg-[#3A172F] hover:text-white ${sidebarCollapsed ? 'px-0' : ''}`}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </button>
 
           <ChatPdfNavigation
             collapsed={sidebarCollapsed}
@@ -211,20 +215,6 @@ function ChatPdfShell({
             onNavigate={navigate}
             activeLabel={navActive}
           />
-
-          <button
-            type="button"
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            onClick={() => {
-              const nextCollapsed = !sidebarCollapsed;
-              onSidebarCollapsedChange?.(nextCollapsed);
-              if (controlledSidebarCollapsed === undefined) setInternalSidebarCollapsed(nextCollapsed);
-            }}
-            className={`mt-2 flex h-9 w-full items-center justify-center rounded-xl border border-[#71345A] bg-[#1D101A] text-[#FFB5D9] transition hover:border-[#FF66B8] hover:bg-[#3A172F] hover:text-white ${sidebarCollapsed ? 'px-0' : ''}`}
-          >
-            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          </button>
 
         </aside>
 
@@ -273,16 +263,7 @@ function ChatPdfShell({
                 className="absolute inset-0 bg-black/70"
               />
               <aside className="relative flex h-full w-[min(85vw,240px)] flex-col border-r border-[#1A1A1A] bg-[#090909] p-3 shadow-[12px_0_30px_rgba(0,0,0,0.35)]">
-                <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-2.5 py-2.5">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#3A172F] text-[#FFB5D9]">
-                      <FileText className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[10px] uppercase tracking-[0.25em] text-[#6b7786]">Workspace</div>
-                      <div className="truncate text-sm font-semibold text-white">Chat with PDF</div>
-                    </div>
-                  </div>
+                <div className="mb-3 flex justify-end">
                   <button
                     type="button"
                     aria-label="Close sidebar"
@@ -669,17 +650,7 @@ function ChatPdfWorkspacePage() {
           {activeDocument ? (
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_320px]">
               <div className="space-y-3">
-                {messages.length === 0 ? (
-                  <div className="flex min-h-[260px] items-center justify-center rounded-[26px] border border-[#1A1A1A] bg-[#000000] p-6 text-center">
-                    <div>
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#3A172F] text-[#FF66B8]">
-                      <FileText className="h-6 w-6" />
-                    </div>
-                    <h2 className="text-[22px] font-semibold tracking-tight text-white">Chat with your PDF</h2>
-                    <p className="mt-3 text-sm leading-6 text-[#8f9aad]">Ask questions, summarize content, extract information, or analyze the document.</p>
-                    </div>
-                  </div>
-                ) : (
+                {messages.length > 0 && (
                   <div className="space-y-3">
                     {messages.map((item) => (
                       <div key={item.id} className={`flex ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
