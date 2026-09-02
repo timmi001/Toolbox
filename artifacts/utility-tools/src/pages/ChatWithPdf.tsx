@@ -106,6 +106,68 @@ function formatDate(date: string) {
   return new Date(date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 }
 
+function ChatPdfNavigation({
+  collapsed,
+  mobile = false,
+  onUpload,
+  onReset,
+  onNavigate,
+  activeLabel,
+}: {
+  collapsed?: boolean;
+  mobile?: boolean;
+  onUpload: () => void;
+  onReset: () => void;
+  onNavigate: (route: string) => void;
+  activeLabel?: string;
+}) {
+  const navigate = (route: string, action?: string) => {
+    if (action === 'upload') {
+      onUpload();
+      return;
+    }
+    if (action === 'new-document') {
+      onReset();
+      return;
+    }
+    onNavigate(route);
+  };
+
+  return (
+    <nav className={mobile ? 'space-y-1.5' : 'space-y-1.5'}>
+      {sideNav.map(({ label, icon: Icon, route, action }) => (
+        <button
+          key={label}
+          type="button"
+          onClick={() => navigate(route, action)}
+          title={!mobile && collapsed ? label : undefined}
+          aria-label={label}
+          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${!mobile && collapsed ? 'justify-center px-0' : ''} ${label === activeLabel ? 'bg-[#172554] text-white' : mobile ? 'text-[#eaf2ff] hover:bg-[#171717]' : 'text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white'}`}
+        >
+          <Icon className="h-4 w-4" />
+          {(!collapsed || mobile) && <span>{label}</span>}
+        </button>
+      ))}
+      {mobile && (
+        <div className="mt-2 border-t border-[#1A1A1A] pt-2">
+          <div className="mb-1 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6b7786]">Tools</div>
+          {[
+            ['Ask PDF', MessageCircleQuestion],
+            ['Summarize', FileText],
+            ['Extract Information', Search],
+            ['Analyze', BarChart3],
+          ].map(([label, Icon]) => (
+            <button key={label as string} type="button" onClick={() => onNavigate('/chat-with-pdf')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
+              <Icon className="h-4 w-4" />
+              <span>{label as string}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </nav>
+  );
+}
+
 async function extractPdfText(file: File): Promise<ChatPdfDocument> {
   const { getDocument } = await loadPdfJs();
 
@@ -181,47 +243,19 @@ function ChatPdfShell({
             </div>}
           </div>
 
-          <nav className="space-y-1.5">
-            {sideNav.map(({ label, icon: Icon, route, action }) => {
-              const isActive = navActive === label || (!navActive && label === 'Chat with PDF');
-              return (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => {
-                    if (action === 'upload') {
-                      onUpload();
-                      return;
-                    }
-                    if (action === 'new-document') {
-                      const nextDocId = getActiveChatPdfDocumentId();
-                      if (nextDocId) setActiveChatPdfDocumentId(null);
-                      setActiveChatPdfDocumentIds([]);
-                      setActiveChatPdfConversationId(null);
-                      navigate('/chat-with-pdf');
-                      window.dispatchEvent(new CustomEvent('chat-pdf-reset')); 
-                      return;
-                    }
-                    if (action === 'settings') {
-                      navigate('/chat-with-pdf');
-                      return;
-                    }
-                    if (action === 'feedback') {
-                      openFeedbackForm();
-                      return;
-                    }
-                    navigate(route);
-                  }}
-                  title={sidebarCollapsed ? label : undefined}
-                  aria-label={label}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${sidebarCollapsed ? 'justify-center px-0' : ''} ${isActive ? 'bg-[#172554] text-white' : 'text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white'}`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {!sidebarCollapsed && <span>{label}</span>}
-                </button>
-              );
-            })}
-          </nav>
+          <ChatPdfNavigation
+            collapsed={sidebarCollapsed}
+            onUpload={onUpload}
+            onReset={() => {
+              setActiveChatPdfDocumentId(null);
+              setActiveChatPdfDocumentIds([]);
+              setActiveChatPdfConversationId(null);
+              navigate('/chat-with-pdf');
+              window.dispatchEvent(new CustomEvent('chat-pdf-reset'));
+            }}
+            onNavigate={navigate}
+            activeLabel={navActive}
+          />
 
           <button
             type="button"
@@ -270,57 +304,13 @@ function ChatPdfShell({
 
           {menuOpen && (
             <div className="border-b border-[#1A1A1A] bg-[#060606] p-3 md:hidden">
-              <div className="space-y-1.5">
-                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                  <FileText className="h-4 w-4" />
-                  <span>Chat with PDF</span>
-                </button>
-
-                <button type="button" onClick={() => { setMenuOpen(false); setActiveChatPdfConversationId(null); setActiveChatPdfDocumentId(null); setActiveChatPdfDocumentIds([]); navigate('/chat-with-pdf'); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                  <Plus className="h-4 w-4" />
-                  <span>New Document</span>
-                </button>
-
-                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf/history'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                  <Clock3 className="h-4 w-4" />
-                  <span>History</span>
-                </button>
-
-                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf/documents'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                  <FolderOpen className="h-4 w-4" />
-                  <span>My Documents</span>
-                </button>
-
-                <button type="button" onClick={() => { setMenuOpen(false); onUpload(); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                  <Upload className="h-4 w-4" />
-                  <span>Upload PDF</span>
-                </button>
-
-                <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf/tools'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                  <Sparkles className="h-4 w-4" />
-                  <span>Tools</span>
-                </button>
-
-                <div className="mt-2 border-t border-[#1A1A1A] pt-2">
-                  <div className="mb-1 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6b7786]">Tools</div>
-                  <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                    <MessageCircleQuestion className="h-4 w-4" />
-                    <span>Ask PDF</span>
-                  </button>
-                  <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                    <FileText className="h-4 w-4" />
-                    <span>Summarize</span>
-                  </button>
-                  <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                    <Search className="h-4 w-4" />
-                    <span>Extract Information</span>
-                  </button>
-                  <button type="button" onClick={() => { setMenuOpen(false); navigate('/chat-with-pdf'); }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-                    <BarChart3 className="h-4 w-4" />
-                    <span>Analyze</span>
-                  </button>
-                </div>
-              </div>
+              <ChatPdfNavigation
+                mobile
+                onUpload={() => { setMenuOpen(false); onUpload(); }}
+                onReset={() => { setMenuOpen(false); setActiveChatPdfDocumentId(null); setActiveChatPdfDocumentIds([]); setActiveChatPdfConversationId(null); navigate('/chat-with-pdf'); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }}
+                onNavigate={(route) => { setMenuOpen(false); navigate(route); }}
+                activeLabel={navActive}
+              />
             </div>
           )}
 
