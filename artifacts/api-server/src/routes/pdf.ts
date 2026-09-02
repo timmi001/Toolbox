@@ -101,7 +101,12 @@ function uploadPdfFile(req: Request, res: Response, next: NextFunction) {
         return;
       }
 
-      if (error.code === "LIMIT_UNEXPECTED_FILE" || error.code === "LIMIT_PART_COUNT" || error.code === "LIMIT_FIELD_COUNT") {
+      if (
+        error.code === "LIMIT_UNEXPECTED_FILE"
+        || error.code === "LIMIT_FILE_COUNT"
+        || error.code === "LIMIT_PART_COUNT"
+        || error.code === "LIMIT_FIELD_COUNT"
+      ) {
         logPdfFailure(req, undefined, error, "PDF upload rejected because the multipart form was invalid");
         sendPdfError(
           res,
@@ -174,6 +179,12 @@ router.post("/pdf/extract", uploadPdfFile, async (req, res) => {
     // extraction request so an optional canvas/DOMMatrix shim cannot prevent
     // the API server from starting.
     const { PDFParse } = await import("pdf-parse");
+    PDFParse.setWorker(
+      new URL(
+        "../node_modules/pdf-parse/dist/pdf-parse/web/pdf.worker.mjs",
+        import.meta.url,
+      ).href,
+    );
     parser = new PDFParse({ data: file.buffer });
     const result = await parser.getText({
       itemJoiner: " ",
