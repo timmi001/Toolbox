@@ -166,7 +166,7 @@ async function testGemini(): Promise<void> {
   logSection("Gemini (FALLBACK #1)");
 
   const apiKey = process.env["GEMINI_API_KEY"] || process.env["GOOGLE_API_KEY"];
-  const model = process.env["GEMINI_MODEL_STANDARD"] || "gemini-2.0-flash";
+  const model = process.env["GEMINI_MODEL_STANDARD"] || "gemini-2.5-flash";
 
   console.log(`API Key: ${summarizeKey(apiKey)}`);
   console.log(`Model: ${model}`);
@@ -271,7 +271,7 @@ async function testGroq(): Promise<void> {
   logSection("Groq (FALLBACK #2)");
 
   const apiKey = process.env["GROQ_API_KEY"];
-  const model = process.env["GROQ_MODEL_STANDARD"] || "llama-3.3-70b-versatile";
+  const model = process.env["GROQ_MODEL_STANDARD"] || "openai/gpt-oss-20b";
 
   console.log(`API Key: ${summarizeKey(apiKey)}`);
   console.log(`Model: ${model}`);
@@ -365,7 +365,7 @@ async function testOpenRouter(): Promise<void> {
   logSection("OpenRouter (FALLBACK #3)");
 
   const apiKey = process.env["OPENROUTER_API_KEY"];
-  const model = process.env["OPENROUTER_MODEL_STANDARD"] || "meta-llama/llama-3.1-8b-instruct";
+  const model = process.env["OPENROUTER_MODEL_STANDARD"] || "openai/gpt-oss-20b";
 
   console.log(`API Key: ${summarizeKey(apiKey)}`);
   console.log(`Model: ${model}`);

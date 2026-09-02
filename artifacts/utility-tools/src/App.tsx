@@ -70,7 +70,6 @@ function Router() {
           <Route path="/hub/ai" component={() => <Redirect to="/chat-with-pdf" />} />
           <Route path="/hub/:hub" component={HubWorkspace} />
           <Route path="/chat-with-pdf" component={ChatWithPdfRoutes} />
-          <Route path="/chat-with-pdf/history" component={ChatWithPdfRoutes} />
           <Route path="/chat-with-pdf/documents" component={ChatWithPdfRoutes} />
           <Route path="/chat-with-pdf/tools" component={ChatWithPdfRoutes} />
           <Route path="/chat-with-pdf/saved" component={ChatWithPdfRoutes} />

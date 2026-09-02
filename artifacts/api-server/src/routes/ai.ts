@@ -732,7 +732,7 @@ function getSafeClientMessage(err: unknown): string {
   if (m.includes("unauthorized") || m.includes("forbidden") || m.includes("invalid key") || m.includes("invalid api key")) return "AI provider authentication failed. Please check the configured API key.";
   if (m.includes("api key") || m.includes("apikey") || m.includes("not set")) return "The AI provider is not configured for this environment.";
   if (m.includes("quota") || m.includes("resource_exhausted") || m.includes("rate_limit") || m.includes("rate limit") || m.includes("too many requests") || m.includes("429")) return "AI rate limit exceeded. Please try again later.";
-  if (m.includes("model") && (m.includes("not found") || m.includes("not_found"))) return "The selected AI model is unavailable.";
+  if (m.includes("model") && (m.includes("not found") || m.includes("not_found"))) return `AI model/provider error: ${err.message}`;
   if (m.includes("malformed") || m.includes("invalid") || m.includes("unknown tool")) return "The request payload is invalid.";
   if (m.includes("safety") || m.includes("blocked")) return "The request was blocked by the provider safety policy.";
   if (m.includes("network") || m.includes("connection") || m.includes("fetch failed") || m.includes("socket hang up") || m.includes("econnreset") || m.includes("econnrefused") || m.includes("etimedout")) return "The AI provider could not be reached. Please try again.";

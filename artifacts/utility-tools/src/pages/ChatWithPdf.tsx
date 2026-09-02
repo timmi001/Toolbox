@@ -59,10 +59,10 @@ const MAX_CHAT_PDF_FILE_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILE_SIZ
 const MAX_CHAT_PDF_TOTAL_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_TOTAL_SIZE ?? 100 * 1024 * 1024);
 const CHAT_PDF_QUICK_ACTIONS = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
 
-const sideNav: Array<{ label: string; icon: LucideIcon; route: string; action?: 'upload' | 'new-document' | 'settings' | 'feedback' }> = [
+const sideNav: Array<{ label: string; icon: LucideIcon; route: string; action?: 'history' | 'upload' | 'new-document' | 'settings' | 'feedback' }> = [
   { label: 'Chat with PDF', icon: FileText, route: '/chat-with-pdf' },
   { label: 'New Document', icon: Plus, route: '/chat-with-pdf', action: 'new-document' },
-  { label: 'History', icon: Clock3, route: '/chat-with-pdf/history' },
+  { label: 'History', icon: Clock3, route: '/chat-with-pdf', action: 'history' },
   { label: 'My Documents', icon: FolderOpen, route: '/chat-with-pdf/documents' },
   { label: 'Upload PDF', icon: Upload, route: '/chat-with-pdf', action: 'upload' },
   { label: 'Tools', icon: Sparkles, route: '/chat-with-pdf/tools' },
@@ -112,6 +112,7 @@ function ChatPdfNavigation({
   mobile = false,
   onUpload,
   onReset,
+  onHistory,
   onNavigate,
   activeLabel,
 }: {
@@ -119,6 +120,7 @@ function ChatPdfNavigation({
   mobile?: boolean;
   onUpload: () => void;
   onReset: () => void;
+  onHistory?: () => void;
   onNavigate: (route: string) => void;
   activeLabel?: string;
 }) {
@@ -129,6 +131,10 @@ function ChatPdfNavigation({
     }
     if (action === 'new-document') {
       onReset();
+      return;
+    }
+    if (action === 'history') {
+      onHistory?.();
       return;
     }
     onNavigate(route);
@@ -200,6 +206,7 @@ function ChatPdfShell({
   subtitle,
   children,
   onUpload,
+  onHistory,
   activeDocumentName,
   navActive,
   sidebarCollapsed: controlledSidebarCollapsed,
@@ -209,6 +216,7 @@ function ChatPdfShell({
   subtitle: string;
   children: React.ReactNode;
   onUpload: () => void;
+  onHistory?: () => void;
   activeDocumentName?: string | null;
   navActive?: string;
   sidebarCollapsed?: boolean;
@@ -237,6 +245,7 @@ function ChatPdfShell({
           <ChatPdfNavigation
             collapsed={sidebarCollapsed}
             onUpload={onUpload}
+            onHistory={onHistory ?? (() => {})}
             onReset={() => {
               setActiveChatPdfDocumentId(null);
               setActiveChatPdfDocumentIds([]);
@@ -332,6 +341,7 @@ function ChatPdfShell({
                 <ChatPdfNavigation
                   mobile
                   onUpload={() => { setMenuOpen(false); onUpload(); }}
+                  onHistory={() => { setMenuOpen(false); onHistory?.(); }}
                   onReset={() => { setMenuOpen(false); setActiveChatPdfDocumentId(null); setActiveChatPdfDocumentIds([]); setActiveChatPdfConversationId(null); navigate('/chat-with-pdf'); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }}
                   onNavigate={(route) => { setMenuOpen(false); navigate(route); }}
                   activeLabel={navActive}
@@ -360,9 +370,37 @@ function ChatPdfWorkspacePage() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [generatedTitle, setGeneratedTitle] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<ChatPdfConversation[]>(() => loadChatPdfHistory());
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const activeDocument = documents.find((document) => document.id === viewedDocumentId) ?? documents[0] ?? null;
+
+  const refreshHistory = () => setHistory(loadChatPdfHistory());
+  const openConversation = (conversation: ChatPdfConversation) => {
+    const storedDocuments = loadChatPdfDocuments();
+    const documentIds = conversation.documentIds?.filter((id) => storedDocuments.some((document) => document.id === id)) ?? (conversation.documentId ? [conversation.documentId] : []);
+    const viewedId = conversation.viewedDocumentId ?? conversation.documentId ?? documentIds[0] ?? null;
+    setDocuments(storedDocuments);
+    setActiveDocumentIdsState(conversation.activeDocumentIds?.filter((id) => documentIds.includes(id)) ?? documentIds);
+    setViewedDocumentIdState(viewedId);
+    setMessages(conversation.messages);
+    setConversationId(conversation.id);
+    setActiveChatPdfConversationId(conversation.id);
+    setActiveChatPdfDocumentIds(conversation.activeDocumentIds?.filter((id) => documentIds.includes(id)) ?? documentIds);
+    setActiveChatPdfDocumentId(viewedId);
+    setViewedChatPdfDocumentId(viewedId);
+    setHistoryOpen(false);
+  };
+
+  const createNewChat = () => {
+    setMessages([]);
+    setMessage('');
+    setConversationId(null);
+    setGeneratedTitle('');
+    setActiveChatPdfConversationId(null);
+    setHistoryOpen(false);
+  };
 
   // Auto-scroll to latest message when messages change or loading state changes
   useEffect(() => {
@@ -432,6 +470,7 @@ function ChatPdfWorkspacePage() {
       messages: nextMessages,
     };
     upsertChatPdfConversation(nextConversation);
+    refreshHistory();
   };
 
   const handleUpload = async (files?: File | File[] | null) => {
@@ -625,6 +664,7 @@ function ChatPdfWorkspacePage() {
         navActive="Chat with PDF"
         activeDocumentName={activeDocument?.name ?? null}
         onUpload={() => inputRef.current?.click()}
+        onHistory={() => { refreshHistory(); setHistoryOpen(true); }}
         sidebarCollapsed={sidebarCollapsed}
         onSidebarCollapsedChange={setSidebarCollapsed}
       >
@@ -815,6 +855,39 @@ function ChatPdfWorkspacePage() {
         </div>
       </ChatPdfShell>
 
+      {historyOpen && (
+        <div className="fixed inset-0 z-[60]">
+          <button type="button" aria-label="Close history" onClick={() => setHistoryOpen(false)} className="absolute inset-0 bg-black/70" />
+          <aside className="relative flex h-full w-[min(88vw,360px)] flex-col border-r border-[#242424] bg-[#090909] p-4 shadow-[12px_0_30px_rgba(0,0,0,0.45)]">
+            <div className="flex items-center justify-between gap-3 border-b border-[#1A1A1A] pb-4">
+              <div>
+                <div className="text-sm font-semibold text-white">Chat history</div>
+                <div className="mt-1 text-xs text-[#718194]">Your PDF conversations</div>
+              </div>
+              <button type="button" aria-label="Close history" onClick={() => setHistoryOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-lg text-[#718194] hover:bg-[#171717] hover:text-white"><X className="h-4 w-4" /></button>
+            </div>
+            <button type="button" onClick={createNewChat} className="mt-4 flex items-center gap-2 rounded-xl border border-[#71345A] bg-[#3A172F] px-3 py-2.5 text-left text-sm font-medium text-[#FFD1E5] hover:bg-[#592343]"><Plus className="h-4 w-4" /> New chat</button>
+            <div className="mt-4 flex-1 space-y-2 overflow-y-auto">
+              {history.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-[#242424] p-4 text-center text-xs text-[#718194]">No saved PDF conversations yet.</div>
+              ) : history.map((conversation) => (
+                <div key={conversation.id} className="group rounded-xl border border-[#1A1A1A] bg-[#101010] p-3 hover:border-[#71345A]">
+                  <button type="button" onClick={() => openConversation(conversation)} className="w-full min-w-0 text-left">
+                    <div className="truncate text-sm font-medium text-white">{conversation.title}</div>
+                    <div className="mt-1 truncate text-xs text-[#9aa9ba]">{conversation.documentName ?? 'Untitled PDF'}</div>
+                    <div className="mt-1 text-[11px] text-[#718194]">{formatDate(conversation.updatedAt)}</div>
+                  </button>
+                  <div className="mt-2 flex gap-3 text-[11px]">
+                    <button type="button" onClick={() => { const title = window.prompt('Rename conversation', conversation.title)?.trim(); if (!title) return; upsertChatPdfConversation({ ...conversation, title, updatedAt: new Date().toISOString() }); refreshHistory(); }} className="text-[#FFB5D9] hover:text-white">Rename</button>
+                    <button type="button" onClick={() => { deleteChatPdfConversation(conversation.id); refreshHistory(); }} className="text-red-300 hover:text-red-200">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+      )}
+
       <input
         ref={inputRef}
         type="file"
@@ -824,77 +897,6 @@ function ChatPdfWorkspacePage() {
         onChange={(event) => { void handleUpload(Array.from(event.target.files ?? [])); }}
       />
     </>
-  );
-}
-
-function ChatPdfHistoryPage() {
-  const [, navigate] = useLocation();
-  const [query, setQuery] = useState('');
-  const history = useMemo(() => loadChatPdfHistory(), []);
-  const filtered = useMemo(() => {
-    const trimmed = query.trim().toLowerCase();
-    if (!trimmed) return history;
-    return history.filter((item) => `${item.title} ${item.documentName ?? ''}`.toLowerCase().includes(trimmed));
-  }, [history, query]);
-
-  const openConversation = (conversation: ChatPdfConversation) => {
-    const storedDocuments = loadChatPdfDocuments();
-    const restoredIds = conversation.documentIds?.filter((id) => storedDocuments.some((document) => document.id === id)) ?? (conversation.documentId ? [conversation.documentId] : []);
-    const doc = storedDocuments.find((item) => item.id === (conversation.viewedDocumentId ?? conversation.documentId)) ?? getActiveChatPdfDocument();
-    setActiveChatPdfDocumentIds(conversation.activeDocumentIds?.filter((id) => restoredIds.includes(id)) ?? restoredIds);
-    if (doc) {
-      setActiveChatPdfDocumentId(doc.id);
-      setViewedChatPdfDocumentId(doc.id);
-    }
-    setActiveChatPdfConversationId(conversation.id);
-    navigate('/chat-with-pdf');
-  };
-
-  return (
-    <ChatPdfShell title="History" subtitle="Your recent PDF conversations" navActive="History" activeDocumentName={getActiveChatPdfDocument()?.name ?? null} onUpload={() => navigate('/chat-with-pdf')}>
-      <div className="mx-auto max-w-6xl space-y-4">
-        <div className="rounded-[22px] border border-[#1A1A1A] bg-[#0d1117] p-3">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3 text-sm text-[#dfeaf8]">
-              <History className="h-4 w-4 text-[#7FC7FF]" />
-              <span>{filtered.length} conversations</span>
-            </div>
-            <div className="relative w-full md:max-w-sm">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#718194]" />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search conversation history" className="w-full rounded-xl border border-[#1A1A1A] bg-[#050505] py-2 pl-9 pr-3 text-sm text-white outline-none placeholder:text-[#718194]" />
-            </div>
-          </div>
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="rounded-[26px] border border-dashed border-[#1A1A1A] bg-[#090909] p-8 text-center text-[#8fa2b8]">No saved PDF conversations yet.</div>
-        ) : (
-          <div className="space-y-3">
-            {filtered.map((conversation) => (
-              <div key={conversation.id} className="rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-4">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div className="min-w-0">
-                    <div className="truncate text-base font-semibold text-white">{conversation.title}</div>
-                    <div className="mt-1 text-xs text-[#9aa9ba]">{conversation.documentName ?? 'Untitled PDF'} • {formatDate(conversation.updatedAt)}</div>
-                    <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-[#dfeaf8]">
-                      <span className="rounded-full border border-[#1A1A1A] bg-[#101010] px-2 py-1">{conversation.messages.length} messages</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => openConversation(conversation)} className="rounded-xl border border-[#1A1A1A] bg-[#111111] px-3 py-2 text-xs font-medium text-[#dfeaff]">Open</button>
-                    <button type="button" onClick={() => {
-                      deleteChatPdfConversation(conversation.id);
-                      window.location.reload();
-                    }} className="rounded-xl border border-red-900/80 bg-red-950/30 px-3 py-2 text-xs font-medium text-red-200">Delete</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </ChatPdfShell>
   );
 }
 
@@ -1112,12 +1114,10 @@ function ChatPdfSavedPage() {
 
 export default function ChatWithPdfRoutes() {
   const [workspaceMatch] = useRoute('/chat-with-pdf');
-  const [historyMatch] = useRoute('/chat-with-pdf/history');
   const [documentsMatch] = useRoute('/chat-with-pdf/documents');
   const [toolsMatch] = useRoute('/chat-with-pdf/tools');
   const [savedMatch] = useRoute('/chat-with-pdf/saved');
 
-  if (historyMatch) return <ChatPdfHistoryPage />;
   if (documentsMatch) return <ChatPdfDocumentsPage />;
   if (toolsMatch) return <ChatPdfToolsPage />;
   if (savedMatch) return <ChatPdfSavedPage />;

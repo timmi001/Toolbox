@@ -43,12 +43,12 @@ import { logger } from "./logger";
  * Environment variables:
  *   AGENTROUTER_MODEL_STANDARD    — override AgentRouter standard model (default: "auto")
  *   AGENTROUTER_MODEL_COMPLEX     — override AgentRouter complex model (default: "auto")
- *   GEMINI_MODEL_STANDARD         — override Gemini standard model (default: "gemini-2.0-flash")
- *   GEMINI_MODEL_COMPLEX          — override Gemini complex model (default: "gemini-2.0-flash")
- *   GROQ_MODEL_STANDARD           — override Groq standard model (default: "llama-3.3-70b-versatile")
- *   GROQ_MODEL_COMPLEX            — override Groq complex model (default: "llama-3.3-70b-versatile")
- *   OPENROUTER_MODEL_STANDARD     — override OpenRouter standard model (default: "meta-llama/llama-3.1-8b-instruct")
- *   OPENROUTER_MODEL_COMPLEX      — override OpenRouter complex model (default: "meta-llama/llama-3.1-70b-instruct")
+ *   GEMINI_MODEL_STANDARD         — override Gemini standard model (default: "gemini-2.5-flash")
+ *   GEMINI_MODEL_COMPLEX          — override Gemini complex model (default: "gemini-2.5-flash")
+ *   GROQ_MODEL_STANDARD           — override Groq standard model (default: "openai/gpt-oss-20b")
+ *   GROQ_MODEL_COMPLEX            — override Groq complex model (default: "openai/gpt-oss-120b")
+ *   OPENROUTER_MODEL_STANDARD     — override OpenRouter standard model (default: "openai/gpt-oss-20b")
+ *   OPENROUTER_MODEL_COMPLEX      — override OpenRouter complex model (default: "openai/gpt-oss-120b")
  */
 function getModelId(envVarName: string, defaultValue: string): string {
   const value = process.env[envVarName]?.trim();
@@ -62,22 +62,19 @@ export const PROVIDER_MODELS = {
     complex:  getModelId("AGENTROUTER_MODEL_COMPLEX", "auto"),
   },
   // Gemini — second fallback
-  // Using gemini-2.0-flash (more widely available than gemini-2.0-flash-lite)
   gemini: {
-    standard: getModelId("GEMINI_MODEL_STANDARD", "gemini-2.0-flash"),
-    complex:  getModelId("GEMINI_MODEL_COMPLEX", "gemini-2.0-flash"),
+    standard: getModelId("GEMINI_MODEL_STANDARD", "gemini-2.5-flash"),
+    complex:  getModelId("GEMINI_MODEL_COMPLEX", "gemini-2.5-flash"),
   },
   // Groq — third fallback
-  // llama-3.3-70b-versatile is the most capable model available on Groq
   groq: {
-    standard: getModelId("GROQ_MODEL_STANDARD", "llama-3.3-70b-versatile"),
-    complex:  getModelId("GROQ_MODEL_COMPLEX", "llama-3.3-70b-versatile"),
+    standard: getModelId("GROQ_MODEL_STANDARD", "openai/gpt-oss-20b"),
+    complex:  getModelId("GROQ_MODEL_COMPLEX", "openai/gpt-oss-120b"),
   },
   // OpenRouter — fourth fallback
-  // Using Meta Llama 3.1 models which are reliably available on OpenRouter
   openrouter: {
-    standard: getModelId("OPENROUTER_MODEL_STANDARD", "meta-llama/llama-3.1-8b-instruct"),
-    complex:  getModelId("OPENROUTER_MODEL_COMPLEX", "meta-llama/llama-3.1-70b-instruct"),
+    standard: getModelId("OPENROUTER_MODEL_STANDARD", "openai/gpt-oss-20b"),
+    complex:  getModelId("OPENROUTER_MODEL_COMPLEX", "openai/gpt-oss-120b"),
   },
 } as const;
 
@@ -168,6 +165,18 @@ function extractProviderErrorDetails(err: unknown): ProviderErrorDetails {
   };
 }
 
+function getProviderErrorText(err: unknown): string {
+  if (!err || typeof err !== "object") return String(err);
+  const details = extractProviderErrorDetails(err);
+  const response = details.sdkResponseBody;
+  const responseText = response === undefined
+    ? ""
+    : typeof response === "string" ? response : JSON.stringify(response);
+  return [err instanceof Error ? err.message : String(err), responseText]
+    .filter(Boolean)
+    .join(" | ");
+}
+
 // ---------------------------------------------------------------------------
 // Error classification
 // ---------------------------------------------------------------------------
@@ -184,7 +193,7 @@ function classifyError(err: unknown): ErrorMeta {
     (err as { status?: number })?.status ??
     (err as { statusCode?: number })?.statusCode;
 
-  const raw = err instanceof Error ? err.message : String(err);
+  const raw = getProviderErrorText(err);
   const msg = raw.toLowerCase();
 
   // Timeout — our own sentinel prefix
@@ -218,8 +227,17 @@ function classifyError(err: unknown): ErrorMeta {
     return { code, message: raw, isFallbackable: true, reason: "rate_limit" };
   }
 
-  // 404 — model retired or endpoint gone
-  if (code === 404 || msg.includes("not_found") || msg.includes("not found")) {
+  // Model retired, unavailable, or rejected by a provider. Some SDKs return
+  // these details in the JSON error body instead of the Error message.
+  if (
+    code === 404 ||
+    msg.includes("not_found") ||
+    msg.includes("not found") ||
+    msg.includes("does not exist") ||
+    msg.includes("unknown model") ||
+    msg.includes("model_decommissioned") ||
+    msg.includes("model unavailable")
+  ) {
     return { code, message: raw, isFallbackable: true, reason: "model_not_found" };
   }
 
@@ -256,6 +274,10 @@ function classifyError(err: unknown): ErrorMeta {
     msg.includes("apikey")
   ) {
     return { code, message: raw, isFallbackable: true, reason: "missing_key" };
+  }
+
+  if (msg.includes("empty response")) {
+    return { code, message: raw, isFallbackable: true, reason: "empty_response" };
   }
 
   // Everything else is fatal — safety block, bad auth, malformed input, etc.
