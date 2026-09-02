@@ -57,6 +57,7 @@ import { openFeedbackForm } from '@/components/FeedbackButton';
 const MAX_CHAT_PDF_FILES = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILES ?? 12);
 const MAX_CHAT_PDF_FILE_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILE_SIZE ?? 25 * 1024 * 1024);
 const MAX_CHAT_PDF_TOTAL_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_TOTAL_SIZE ?? 100 * 1024 * 1024);
+const CHAT_PDF_QUICK_ACTIONS = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
 
 const sideNav: Array<{ label: string; icon: LucideIcon; route: string; action?: 'upload' | 'new-document' | 'settings' | 'feedback' }> = [
   { label: 'Chat with PDF', icon: FileText, route: '/chat-with-pdf' },
@@ -142,7 +143,7 @@ function ChatPdfNavigation({
           onClick={() => navigate(route, action)}
           title={!mobile && collapsed ? label : undefined}
           aria-label={label}
-          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${!mobile && collapsed ? 'justify-center px-0' : ''} ${label === activeLabel ? 'bg-[#172554] text-white' : mobile ? 'text-[#eaf2ff] hover:bg-[#171717]' : 'text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white'}`}
+            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${!mobile && collapsed ? 'justify-center px-0' : ''} ${label === activeLabel ? 'bg-[#3A172F] text-white' : mobile ? 'text-[#eaf2ff] hover:bg-[#171717]' : 'text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white'}`}
         >
           <Icon className="h-4 w-4" />
           {(!collapsed || mobile) && <span>{label}</span>}
@@ -217,6 +218,8 @@ function ChatPdfShell({
   onUpload,
   activeDocumentName,
   navActive,
+  sidebarCollapsed: controlledSidebarCollapsed,
+  onSidebarCollapsedChange,
 }: {
   title: string;
   subtitle: string;
@@ -224,18 +227,21 @@ function ChatPdfShell({
   onUpload: () => void;
   activeDocumentName?: string | null;
   navActive?: string;
+  sidebarCollapsed?: boolean;
+  onSidebarCollapsedChange?: (collapsed: boolean) => void;
 }) {
   const [, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [internalSidebarCollapsed, setInternalSidebarCollapsed] = useState(false);
+  const sidebarCollapsed = controlledSidebarCollapsed ?? internalSidebarCollapsed;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="min-h-screen bg-[#000000] text-white">
       <div className="flex min-h-screen flex-col md:flex-row">
-        <aside className={`hidden shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[260px]'}`}>
+        <aside className={`hidden shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[240px]'}`}>
           <div className={`mb-4 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-2.5 py-2.5 ${sidebarCollapsed ? 'justify-center' : ''}`}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0E2D3B] text-[#A5D8FF]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#3A172F] text-[#FFB5D9]">
               <FileText className="h-4 w-4" />
             </div>
             {!sidebarCollapsed && <div className="min-w-0">
@@ -262,8 +268,12 @@ function ChatPdfShell({
             type="button"
             aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            onClick={() => setSidebarCollapsed((value) => !value)}
-            className={`mt-2 flex h-9 w-full items-center justify-center rounded-xl border border-[#1E3A8A] bg-[#111827] text-[#93C5FD] transition hover:border-[#3B82F6] hover:bg-[#172554] hover:text-white ${sidebarCollapsed ? 'px-0' : ''}`}
+            onClick={() => {
+              const nextCollapsed = !sidebarCollapsed;
+              onSidebarCollapsedChange?.(nextCollapsed);
+              if (controlledSidebarCollapsed === undefined) setInternalSidebarCollapsed(nextCollapsed);
+            }}
+            className={`mt-2 flex h-9 w-full items-center justify-center rounded-xl border border-[#71345A] bg-[#1D101A] text-[#FFB5D9] transition hover:border-[#FF66B8] hover:bg-[#3A172F] hover:text-white ${sidebarCollapsed ? 'px-0' : ''}`}
           >
             {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           </button>
@@ -277,7 +287,7 @@ function ChatPdfShell({
                 type="button"
                 aria-label="Back to dashboard"
                 onClick={() => navigate('/')}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#3B82F6] hover:text-[#DBEAFE]"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#FF66B8] hover:text-[#FFE3F0]"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
@@ -324,6 +334,7 @@ function ChatPdfShell({
 
 function ChatPdfWorkspacePage() {
   const [, navigate] = useLocation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; content: string; createdAt: string }>>([]);
   const [loading, setLoading] = useState(false);
@@ -599,9 +610,11 @@ function ChatPdfWorkspacePage() {
         navActive="Chat with PDF"
         activeDocumentName={activeDocument?.name ?? null}
         onUpload={() => inputRef.current?.click()}
+        sidebarCollapsed={sidebarCollapsed}
+        onSidebarCollapsedChange={setSidebarCollapsed}
       >
-        <div
-          className="mx-auto max-w-5xl"
+          <div
+          className="mx-auto max-w-6xl"
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => {
             event.preventDefault();
@@ -609,42 +622,52 @@ function ChatPdfWorkspacePage() {
           }}
         >
           {documents.length > 0 && (
-            <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-2xl border border-[#1A1A1A] bg-[#090909] p-2 [scrollbar-width:none]">
+            <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3 [scrollbar-width:none]">
               {documents.map((document) => {
                 const selected = activeDocumentIds.includes(document.id);
                 const viewed = viewedDocumentId === document.id;
                 return (
-                  <div key={document.id} className={`flex shrink-0 items-center gap-1 rounded-xl border px-2 py-1.5 text-xs ${viewed ? 'border-[#3B82F6] bg-[#172554]' : 'border-[#1A1A1A] bg-[#101010]'}`}>
+                  <div key={document.id} className={`flex shrink-0 items-center gap-1 rounded-xl border px-2 py-1.5 text-xs ${viewed ? 'border-[#FF66B8] bg-[#3A172F]' : 'border-[#1A1A1A] bg-[#101010]'}`}>
                     <button type="button" onClick={() => selectDocument(document.id)} className="flex max-w-[180px] items-center gap-1.5 truncate text-left text-[#dfeaf8]" title={`View ${document.fileName}`}>
-                      <FileText className="h-3.5 w-3.5 shrink-0 text-[#93C5FD]" />
+                      <FileText className="h-3.5 w-3.5 shrink-0 text-[#FFB5D9]" />
                       <span className="truncate">{document.fileName}</span>
                     </button>
-                    <button type="button" onClick={() => toggleDocument(document.id)} aria-label={`${selected ? 'Deselect' : 'Select'} ${document.fileName}`} className={`text-sm ${selected ? 'text-[#60A5FA]' : 'text-[#718194]'}`}>{selected ? '✓' : '○'}</button>
+                    <button type="button" onClick={() => toggleDocument(document.id)} aria-label={`${selected ? 'Deselect' : 'Select'} ${document.fileName}`} className={`text-sm ${selected ? 'text-[#FF8CC3]' : 'text-[#718194]'}`}>{selected ? '✓' : '○'}</button>
                     <button type="button" onClick={() => removeDocument(document.id)} aria-label={`Remove ${document.fileName}`} className="text-[#718194] hover:text-red-300">×</button>
                   </div>
                 );
               })}
-              <button type="button" onClick={() => inputRef.current?.click()} className="flex shrink-0 items-center gap-1 rounded-xl border border-dashed border-[#1E3A8A] px-2.5 py-1.5 text-xs font-medium text-[#93C5FD] hover:bg-[#172554]">+ Add PDF</button>
-              <button type="button" onClick={() => { const ids = documents.map((document) => document.id); setActiveDocumentIdsState(ids); setActiveChatPdfDocumentIds(ids); }} className="ml-auto shrink-0 px-2 text-[11px] text-[#93C5FD]">Select all</button>
-              <button type="button" onClick={() => { setActiveDocumentIdsState([]); setActiveChatPdfDocumentIds([]); }} className="shrink-0 px-2 text-[11px] text-[#93C5FD]">Deselect all</button>
+              <button type="button" onClick={() => inputRef.current?.click()} className="flex shrink-0 items-center gap-1 rounded-xl border border-dashed border-[#71345A] px-2.5 py-1.5 text-xs font-medium text-[#FFB5D9] hover:bg-[#3A172F]">+ Add PDF</button>
+              <button type="button" onClick={() => { const ids = documents.map((document) => document.id); setActiveDocumentIdsState(ids); setActiveChatPdfDocumentIds(ids); }} className="ml-auto shrink-0 px-2 text-[11px] text-[#FFB5D9]">Select all</button>
+              <button type="button" onClick={() => { setActiveDocumentIdsState([]); setActiveChatPdfDocumentIds([]); }} className="shrink-0 px-2 text-[11px] text-[#FFB5D9]">Deselect all</button>
+            </div>
+          )}
+          {activeDocument && (
+            <div className="mb-4 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {CHAT_PDF_QUICK_ACTIONS.map((action) => (
+                <button
+                  key={action}
+                  type="button"
+                  onClick={() => setMessage(`${action}: `)}
+                  className="shrink-0 rounded-full border border-[#71345A] bg-[#121212] px-3 py-1.5 text-[11px] text-[#FFB5D9] transition hover:bg-[#3A172F]"
+                >
+                  {action}
+                </button>
+              ))}
             </div>
           )}
           {activeDocument ? (
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_320px]">
               <div className="space-y-3">
-                {/* DIAGNOSTIC: Verify responsive component rendering */}
-                <div className="fixed top-0 left-0 right-0 z-50 bg-[#1a3a52] text-[#5BE4B6] text-xs px-3 py-2 flex justify-between items-center">
-                  <span>ChatWithPDF v2.1 — Responsive Component</span>
-                  <span className="text-[#8fa2b8]">Viewport: {typeof window !== 'undefined' ? `${window.innerWidth}×${window.innerHeight}` : 'loading'}</span>
-                </div>
-                
                 {messages.length === 0 ? (
-                  <div className="rounded-[26px] border border-[#1A1A1A] bg-[#0a0f15] p-6 text-center">
-                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#1A1A1A] bg-[#101821] text-[#7FC7FF]">
+                  <div className="flex min-h-[260px] items-center justify-center rounded-[26px] border border-[#1A1A1A] bg-[#000000] p-6 text-center">
+                    <div>
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#3A172F] text-[#FF66B8]">
                       <FileText className="h-6 w-6" />
                     </div>
-                    <h2 className="text-2xl font-bold text-white">Ask a question about this PDF</h2>
-                    <p className="mt-2 text-sm leading-6 text-[#8fa2b8]">Summaries, key facts, and grounded answers will appear here as soon as you ask.</p>
+                    <h2 className="text-[22px] font-semibold tracking-tight text-white">Chat with your PDF</h2>
+                    <p className="mt-3 text-sm leading-6 text-[#8f9aad]">Ask questions, summarize content, extract information, or analyze the document.</p>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -667,11 +690,11 @@ function ChatPdfWorkspacePage() {
                         <div className="max-w-[88%] rounded-[20px] bg-[#101010] px-3.5 py-2.5">
                           <div className="flex items-center gap-2">
                             <div className="flex gap-1">
-                              <span className="inline-block h-2 w-2 rounded-full bg-[#60A5FA] animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                              <span className="inline-block h-2 w-2 rounded-full bg-[#60A5FA] animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                              <span className="inline-block h-2 w-2 rounded-full bg-[#60A5FA] animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full bg-[#FF66B8] animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full bg-[#FF66B8] animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full bg-[#FF66B8] animate-bounce" style={{ animationDelay: '300ms' }}></span>
                             </div>
-                            <span className="text-[12px] text-[#93C5FD]">Thinking…</span>
+                            <span className="text-[12px] text-[#FFB5D9]">Thinking…</span>
                           </div>
                         </div>
                       </div>
@@ -691,7 +714,7 @@ function ChatPdfWorkspacePage() {
                   </div>
                   <div className="rounded-xl border border-[#1A1A1A] bg-[#0d1117] p-3">
                     <div className="text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">AI context</div>
-                    <div className="mt-1 font-medium text-[#93C5FD]">{activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'} selected</div>
+                    <div className="mt-1 font-medium text-[#FFB5D9]">{activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'} selected</div>
                   </div>
                   <div className="rounded-xl border border-[#1A1A1A] bg-[#0d1117] p-3">
                     <div className="text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">Pages</div>
@@ -705,14 +728,14 @@ function ChatPdfWorkspacePage() {
               </aside>
             </div>
           ) : (
-            <div className="flex min-h-[380px] items-center justify-center rounded-[26px] border border-dashed border-[#1A1A1A] bg-[#090909] p-6 text-center">
+            <div className="flex min-h-[calc(100dvh-10rem)] items-center justify-center p-6 text-center">
               <div className="max-w-md">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#1A1A1A] bg-[#0d151d] text-[#7FC7FF]">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#3A172F] text-[#FF66B8]">
                   <Upload className="h-6 w-6" />
                 </div>
-                <h2 className="text-2xl font-bold text-white">No PDF active</h2>
-                <p className="mt-2 text-sm leading-6 text-[#8fa2b8]">Choose a PDF to start a grounded chat, then use the sidebar to summarize, extract information, and analyze the document.</p>
-                <button type="button" onClick={() => inputRef.current?.click()} className="mt-5 rounded-full border border-[#2d3f3a] bg-[#111c18] px-4 py-2 text-[12px] font-semibold text-[#bff8d6]">Upload PDF</button>
+                <h2 className="text-[22px] font-semibold tracking-tight text-white">Chat with your PDFs</h2>
+                <p className="mt-3 text-sm leading-6 text-[#8f9aad]">Upload a PDF and ask questions, summarize content, extract information, or analyze the document.</p>
+                <button type="button" onClick={() => inputRef.current?.click()} className="mt-5 rounded-full border border-[#FF66B8]/60 bg-[#FF66B8]/15 px-4 py-2 text-[12px] font-semibold text-[#FFB5D9] transition hover:bg-[#FF66B8]/25">+ Upload PDF</button>
               </div>
             </div>
           )}
@@ -728,10 +751,10 @@ function ChatPdfWorkspacePage() {
             <div className="mt-4 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-3 py-2 text-sm text-[#cfe5ff]">Processing PDF…</div>
           )}
 
-          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-6">
-            <div className="pointer-events-auto relative mx-auto max-w-5xl rounded-[26px] border border-[#1a1a1a] bg-[#0b0f12] p-2 shadow-[0_-10px_20px_rgba(0,0,0,0.25)]">
+          <div className={`pointer-events-none fixed bottom-0 right-0 z-40 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-6 ${sidebarCollapsed ? 'left-0 md:left-[76px]' : 'left-0 md:left-[240px]'}`}>
+            <div className="pointer-events-auto relative mx-auto max-w-5xl rounded-[26px] border border-[#1a1a1a] bg-[#0b0f12] p-2 shadow-[0_-10px_24px_rgba(0,0,0,0.25)]">
               <div className="flex items-end gap-2">
-                <button type="button" onClick={() => inputRef.current?.click()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1E3A8A] bg-[#172554] text-[#BFDBFE] transition hover:border-[#3B82F6] hover:bg-[#1E40AF]" aria-label="Upload PDF">
+                <button type="button" onClick={() => inputRef.current?.click()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#71345A] bg-[#3A172F] text-[#FFD1E5] transition hover:border-[#FF66B8] hover:bg-[#592343]" aria-label="Upload PDF">
                   <Upload className="h-4 w-4" />
                 </button>
 
@@ -751,7 +774,7 @@ function ChatPdfWorkspacePage() {
                 />
 
                 {activeDocumentIds.length > 0 && (
-                  <div className="absolute bottom-14 left-14 text-[10px] text-[#93C5FD]">Using {activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'}</div>
+                  <div className="absolute bottom-14 left-14 text-[10px] text-[#FFB5D9]">Using {activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'}</div>
                 )}
 
                 <button 
@@ -759,7 +782,7 @@ function ChatPdfWorkspacePage() {
                   onClick={() => { if (!loading) { const next = message.trim(); if (next) void sendPrompt(next); } }} 
                   disabled={loading || !activeDocument || !message.trim()}
                   aria-label={loading ? 'Generating response' : 'Send message'} 
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-[0_8px_18px_rgba(37,99,235,0.35)] transition hover:bg-[#3B82F6] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FF66B8] text-[#1B0712] shadow-[0_8px_18px_rgba(255,102,184,0.35)] transition hover:bg-[#FF8CC3] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <div className="flex gap-0.5">
