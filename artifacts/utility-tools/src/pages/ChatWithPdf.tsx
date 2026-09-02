@@ -149,22 +149,6 @@ function ChatPdfNavigation({
           {(!collapsed || mobile) && <span>{label}</span>}
         </button>
       ))}
-      {mobile && (
-        <div className="mt-2 border-t border-[#1A1A1A] pt-2">
-          <div className="mb-1 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6b7786]">Tools</div>
-          {[
-            ['Ask PDF', MessageCircleQuestion],
-            ['Summarize', FileText],
-            ['Extract Information', Search],
-            ['Analyze', BarChart3],
-          ].map(([label, Icon]) => (
-            <button key={label as string} type="button" onClick={() => onNavigate('/chat-with-pdf')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#eaf2ff] hover:bg-[#171717]">
-              <Icon className="h-4 w-4" />
-              <span>{label as string}</span>
-            </button>
-          ))}
-        </div>
-      )}
     </nav>
   );
 }
@@ -295,13 +279,16 @@ function ChatPdfShell({
                 type="button"
                 aria-label="Open menu"
                 onClick={() => setMenuOpen((value) => !value)}
+                aria-expanded={menuOpen}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef] md:hidden"
               >
-                <div className="flex flex-col gap-1.5">
-                  <span className="block h-0.5 w-4 rounded-full bg-current" />
-                  <span className="block h-0.5 w-4 rounded-full bg-current" />
-                  <span className="block h-0.5 w-4 rounded-full bg-current" />
-                </div>
+                {menuOpen ? <X className="h-4 w-4" /> : (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="block h-0.5 w-4 rounded-full bg-current" />
+                    <span className="block h-0.5 w-4 rounded-full bg-current" />
+                    <span className="block h-0.5 w-4 rounded-full bg-current" />
+                  </div>
+                )}
               </button>
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-[#6b7786]">{subtitle}</div>
@@ -314,14 +301,42 @@ function ChatPdfShell({
           </header>
 
           {menuOpen && (
-            <div className="border-b border-[#1A1A1A] bg-[#060606] p-3 md:hidden">
-              <ChatPdfNavigation
-                mobile
-                onUpload={() => { setMenuOpen(false); onUpload(); }}
-                onReset={() => { setMenuOpen(false); setActiveChatPdfDocumentId(null); setActiveChatPdfDocumentIds([]); setActiveChatPdfConversationId(null); navigate('/chat-with-pdf'); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }}
-                onNavigate={(route) => { setMenuOpen(false); navigate(route); }}
-                activeLabel={navActive}
+            <div className="fixed inset-0 z-50 md:hidden">
+              <button
+                type="button"
+                aria-label="Close sidebar"
+                onClick={() => setMenuOpen(false)}
+                className="absolute inset-0 bg-black/70"
               />
+              <aside className="relative flex h-full w-[min(85vw,240px)] flex-col border-r border-[#1A1A1A] bg-[#090909] p-3 shadow-[12px_0_30px_rgba(0,0,0,0.35)]">
+                <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-2.5 py-2.5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#3A172F] text-[#FFB5D9]">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[10px] uppercase tracking-[0.25em] text-[#6b7786]">Workspace</div>
+                      <div className="truncate text-sm font-semibold text-white">Chat with PDF</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Close sidebar"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#718194] transition hover:bg-[#171717] hover:text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <ChatPdfNavigation
+                  mobile
+                  onUpload={() => { setMenuOpen(false); onUpload(); }}
+                  onReset={() => { setMenuOpen(false); setActiveChatPdfDocumentId(null); setActiveChatPdfDocumentIds([]); setActiveChatPdfConversationId(null); navigate('/chat-with-pdf'); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }}
+                  onNavigate={(route) => { setMenuOpen(false); navigate(route); }}
+                  activeLabel={navActive}
+                />
+              </aside>
             </div>
           )}
 
