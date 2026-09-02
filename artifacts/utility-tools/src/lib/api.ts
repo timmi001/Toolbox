@@ -40,7 +40,7 @@ interface RequestOptionsWithTimeout extends RequestOptions {
 async function request<T>(path: string, options: RequestOptionsWithTimeout = {}): Promise<T> {
   const { body, headers, timeoutMs, ...rest } = options;
 
-  const isObject = body !== undefined && typeof body === 'object';
+  const isObject = body !== undefined && typeof body === 'object' && !(body instanceof FormData);
 
   // Abort long-hanging requests instead of leaving the UI stuck loading forever.
   const controller = new AbortController();
@@ -89,10 +89,15 @@ async function request<T>(path: string, options: RequestOptionsWithTimeout = {})
   }
 
   if (!response.ok) {
+    const errorValue = (data as { error?: unknown })?.error;
     const message =
-      (data as { error?: string })?.error ??
-      (data as { message?: string })?.message ??
-      `Request failed with status ${response.status}`;
+      typeof errorValue === 'string'
+        ? errorValue
+        : typeof errorValue === 'object' && errorValue !== null && typeof (errorValue as { message?: unknown }).message === 'string'
+          ? (errorValue as { message: string }).message
+          : typeof (data as { message?: unknown })?.message === 'string'
+            ? (data as { message: string }).message
+            : `Request failed with status ${response.status}`;
     if (isDev) console.debug(`[api] ✗ ${path} (${response.status})`, message);
     throw new Error(message);
   }
@@ -119,6 +124,38 @@ export const ai = {
       body: payload,
       timeoutMs: 120_000,
     }),
+};
+
+// ─── PDF endpoints ──────────────────────────────────────────────────────────
+
+export interface PdfExtractDocument {
+  id: string;
+  name: string;
+  fileName: string;
+  pageCount: number;
+  pageTexts: string[];
+  uploadDate: string;
+  status: 'ready';
+  size: number;
+  textAvailable: boolean;
+  warning?: string;
+}
+
+export interface PdfExtractResponse {
+  success: true;
+  document: PdfExtractDocument;
+}
+
+export const pdf = {
+  extract: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return request<PdfExtractResponse>('/pdf/extract', {
+      method: 'POST',
+      body: formData,
+      timeoutMs: 120_000,
+    });
+  },
 };
 
 /**

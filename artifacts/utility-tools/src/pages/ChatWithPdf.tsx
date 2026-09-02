@@ -10,6 +10,7 @@ import {
   Bookmark,
   Check,
   Clock3,
+  Copy,
   FileText,
   FolderOpen,
   History,
@@ -18,7 +19,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
+  Pencil,
   Search,
+  Share2,
   Settings2,
   Sparkles,
   Trash2,
@@ -27,6 +30,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { generateHubResponse } from '@/lib/hub-ai';
+import { pdf } from '@/lib/api';
 import {
   addChatPdfDocument,
   addChatPdfSavedItem,
@@ -160,45 +164,8 @@ function ChatPdfNavigation({
 }
 
 async function extractPdfText(file: File): Promise<ChatPdfDocument> {
-  const { getDocument } = await loadPdfJs();
-
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const pdf = await getDocument({ data: bytes }).promise;
-  const pageTexts: string[] = [];
-
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-    const page = await pdf.getPage(pageNumber);
-    const content = await page.getTextContent();
-    const text = content.items
-      .map((item) => ('str' in item ? item.str : ''))
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    pageTexts.push(text || 'No extractable text found on this page.');
-  }
-
-  return {
-    id: crypto.randomUUID(),
-    name: file.name.replace(/\.pdf$/i, ''),
-    fileName: file.name,
-    pageCount: pdf.numPages,
-    pageTexts,
-    uploadDate: new Date().toISOString(),
-    status: 'ready',
-    size: file.size,
-  };
-}
-
-let pdfJsPromise: Promise<typeof import('pdfjs-dist/legacy/build/pdf.mjs')> | null = null;
-
-async function loadPdfJs() {
-  if (!pdfJsPromise) {
-    pdfJsPromise = import('pdfjs-dist/legacy/build/pdf.mjs').then((pdfjs) => {
-      pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
-      return pdfjs;
-    });
-  }
-  return pdfJsPromise;
+  const response = await pdf.extract(file);
+  return response.document;
 }
 
 function ChatPdfShell({
@@ -232,15 +199,19 @@ function ChatPdfShell({
     <div className="min-h-screen bg-[#000000] text-white">
       <div className="flex min-h-screen flex-col md:flex-row">
         <aside className={`hidden shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[240px]'}`}>
-          <div className={`mb-4 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-2.5 py-2.5 ${sidebarCollapsed ? 'justify-center' : ''}`}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#3A172F] text-[#FFB5D9]">
-              <FileText className="h-4 w-4" />
-            </div>
-            {!sidebarCollapsed && <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.25em] text-[#6b7786]">Workspace</div>
-              <div className="truncate text-sm font-semibold text-white">Chat with PDF</div>
-            </div>}
-          </div>
+          <button
+            type="button"
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            onClick={() => {
+              const nextCollapsed = !sidebarCollapsed;
+              onSidebarCollapsedChange?.(nextCollapsed);
+              if (controlledSidebarCollapsed === undefined) setInternalSidebarCollapsed(nextCollapsed);
+            }}
+            className={`mb-3 flex h-9 w-full items-center justify-center rounded-xl border border-[#71345A] bg-[#1D101A] text-[#FFB5D9] transition hover:border-[#FF66B8] hover:bg-[#3A172F] hover:text-white ${sidebarCollapsed ? 'px-0' : ''}`}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </button>
 
           <ChatPdfNavigation
             collapsed={sidebarCollapsed}
@@ -256,20 +227,6 @@ function ChatPdfShell({
             onNavigate={navigate}
             activeLabel={navActive}
           />
-
-          <button
-            type="button"
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            onClick={() => {
-              const nextCollapsed = !sidebarCollapsed;
-              onSidebarCollapsedChange?.(nextCollapsed);
-              if (controlledSidebarCollapsed === undefined) setInternalSidebarCollapsed(nextCollapsed);
-            }}
-            className={`mt-2 flex h-9 w-full items-center justify-center rounded-xl border border-[#71345A] bg-[#1D101A] text-[#FFB5D9] transition hover:border-[#FF66B8] hover:bg-[#3A172F] hover:text-white ${sidebarCollapsed ? 'px-0' : ''}`}
-          >
-            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          </button>
 
         </aside>
 
@@ -318,16 +275,7 @@ function ChatPdfShell({
                 className="absolute inset-0 bg-black/70"
               />
               <aside className="relative flex h-full w-[min(85vw,240px)] flex-col border-r border-[#1A1A1A] bg-[#090909] p-3 shadow-[12px_0_30px_rgba(0,0,0,0.35)]">
-                <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-2.5 py-2.5">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#3A172F] text-[#FFB5D9]">
-                      <FileText className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[10px] uppercase tracking-[0.25em] text-[#6b7786]">Workspace</div>
-                      <div className="truncate text-sm font-semibold text-white">Chat with PDF</div>
-                    </div>
-                  </div>
+                <div className="mb-3 flex justify-end">
                   <button
                     type="button"
                     aria-label="Close sidebar"
@@ -369,12 +317,25 @@ function ChatPdfWorkspacePage() {
   const [viewedDocumentId, setViewedDocumentIdState] = useState<string | null>(() => getViewedChatPdfDocumentId());
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [processingFiles, setProcessingFiles] = useState<Array<{ id: string; fileName: string; size: number }>>([]);
+  const [retryFiles, setRetryFiles] = useState<File[]>([]);
   const [generatedTitle, setGeneratedTitle] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState<ChatPdfConversation[]>(() => loadChatPdfHistory());
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingMessageText, setEditingMessageText] = useState('');
+  const [messageActionFeedback, setMessageActionFeedback] = useState<{ id: string; label: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const activeDocument = documents.find((document) => document.id === viewedDocumentId) ?? documents[0] ?? null;
+  const selectedDocuments = documents.filter((document) => activeDocumentIds.includes(document.id) && document.status === 'ready');
+  const activeDocument = selectedDocuments.find((document) => document.id === viewedDocumentId) ?? selectedDocuments[0] ?? null;
+
+  const getPdfRequestContext = (selected: ChatPdfDocument[]) => ({
+    pdfDocumentId: selected.map((document) => document.id).join(','),
+    pdfDocumentName: selected.map((document) => document.fileName).join(', '),
+    pdfDocumentStatus: selected.map((document) => document.status).join(','),
+    pdfContext: `Extracted text attached in prompt for ${selected.length} selected PDF document(s).`,
+  });
 
   const refreshHistory = () => setHistory(loadChatPdfHistory());
   const openConversation = (conversation: ChatPdfConversation) => {
@@ -473,6 +434,68 @@ function ChatPdfWorkspacePage() {
     refreshHistory();
   };
 
+  const copyMessage = async (messageId: string, content: string, label = 'Copied') => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setMessageActionFeedback({ id: messageId, label });
+    } catch {
+      setError('Could not copy this message. Please try again.');
+    }
+  };
+
+  const shareMessage = async (messageId: string, content: string) => {
+    const title = activeDocument ? `${activeDocument.name} — PDF response` : 'PDF chat response';
+    try {
+      if (typeof navigator.share === 'function') {
+        await navigator.share({
+          title,
+          text: content,
+          url: window.location.href,
+        });
+        setMessageActionFeedback({ id: messageId, label: 'Shared' });
+        return;
+      }
+
+      await copyMessage(
+        messageId,
+        `${content}\n\nShared from PDF chat: ${window.location.href}`,
+        'Share text copied',
+      );
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      setError('Could not share this response. Please try again.');
+    }
+  };
+
+  const beginEditMessage = (messageId: string, content: string) => {
+    setEditingMessageId(messageId);
+    setEditingMessageText(content);
+    setMessageActionFeedback(null);
+  };
+
+  const cancelEditMessage = () => {
+    setEditingMessageId(null);
+    setEditingMessageText('');
+  };
+
+  const saveEditedMessage = (messageId: string) => {
+    const content = editingMessageText.trim();
+    if (!content) {
+      setError('A message cannot be empty.');
+      return;
+    }
+
+    const nextMessages = messages.map((item) => (
+      item.id === messageId ? { ...item, content } : item
+    ));
+    setMessages(nextMessages);
+    persistConversation(nextMessages);
+    setEditingMessageId(null);
+    setEditingMessageText('');
+    setMessageActionFeedback({ id: messageId, label: 'Saved' });
+    setError('');
+  };
+
   const handleUpload = async (files?: File | File[] | null) => {
     const selectedFiles = files
       ? Array.isArray(files) ? files : [files]
@@ -508,17 +531,27 @@ function ChatPdfWorkspacePage() {
 
     setUploading(true);
     setError('');
+    setRetryFiles(filesToProcess);
+    setProcessingFiles(filesToProcess.map((file) => ({
+      id: `${file.name}-${file.lastModified}-${file.size}`,
+      fileName: file.name,
+      size: file.size,
+    })));
     const processed: ChatPdfDocument[] = [];
-    const failures: string[] = [];
+    const failures: Array<{ file: File; reason: string }> = [];
     for (const file of filesToProcess) {
       try {
         const document = await extractPdfText(file);
         processed.push(document);
         addChatPdfDocument(document);
-      } catch {
-        failures.push(file.name);
+      } catch (err) {
+        failures.push({
+          file,
+          reason: err instanceof Error ? err.message : 'The PDF processor could not read this file.',
+        });
       }
     }
+    setProcessingFiles([]);
     const nextDocuments = [...documents, ...processed];
     const nextActiveIds = [...new Set([...activeDocumentIds, ...processed.map((document) => document.id)])];
     const viewedId = processed.at(-1)?.id ?? viewedDocumentId ?? nextDocuments[0]?.id ?? null;
@@ -531,7 +564,15 @@ function ChatPdfWorkspacePage() {
       setViewedChatPdfDocumentId(viewedId);
       setGeneratedTitle(nextDocuments.find((document) => document.id === viewedId)?.name ?? 'PDF discussion');
     }
-    if (failures.length) setError(`Could not process: ${failures.join(', ')}`);
+    if (failures.length) {
+      setRetryFiles(failures.map(({ file }) => file));
+      const reason = failures.length === 1
+        ? `${failures[0].file.name}: ${failures[0].reason}`
+        : failures.map(({ file, reason: fileReason }) => `${file.name}: ${fileReason}`).join(' ');
+      setError(reason);
+    } else {
+      setRetryFiles([]);
+    }
     setUploading(false);
     if (inputRef.current) inputRef.current.value = '';
   };
@@ -539,7 +580,10 @@ function ChatPdfWorkspacePage() {
   const sendPrompt = async (customPrompt?: string) => {
     const value = (customPrompt ?? message).trim();
     if (!value) return;
-    const selectedDocuments = documents.filter((document) => activeDocumentIds.includes(document.id));
+    if (uploading) {
+      setError('Processing PDF…');
+      return;
+    }
     if (!selectedDocuments.length) {
       setError('Please upload or select a PDF before asking a question.');
       return;
@@ -554,7 +598,9 @@ function ChatPdfWorkspacePage() {
 
     try {
       const grounded = buildGroundedPrompt(value, selectedDocuments);
-      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: 'Chat with PDF' });
+      const pdfInput = getPdfRequestContext(selectedDocuments);
+      console.debug('[chat-pdf] generation request', { selectedDocuments: selectedDocuments.map(({ id, fileName, status }) => ({ id, fileName, status })), payloadKeys: ['toolId', 'inputs.prompt', 'inputs.mode', ...Object.keys(pdfInput)] });
+      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: 'Chat with PDF', ...pdfInput });
       const assistantMessage: { id: string; role: 'assistant'; content: string; createdAt: string } = {
         id: crypto.randomUUID(),
         role: 'assistant',
@@ -591,7 +637,10 @@ function ChatPdfWorkspacePage() {
   };
 
   const runContextAction = async (type: 'summary' | 'extract' | 'analysis', customPrompt?: string) => {
-    const selectedDocuments = documents.filter((document) => activeDocumentIds.includes(document.id));
+    if (uploading) {
+      setError('Processing PDF…');
+      return;
+    }
     if (!selectedDocuments.length) {
       setError('Select or upload a PDF before running this action.');
       return;
@@ -606,7 +655,9 @@ function ChatPdfWorkspacePage() {
     setError('');
     try {
       const grounded = buildGroundedPrompt(promptText, selectedDocuments);
-      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: type === 'summary' ? 'Summarize' : type === 'extract' ? 'Extract Information' : 'Analyze' });
+      const pdfInput = getPdfRequestContext(selectedDocuments);
+      console.debug('[chat-pdf] context action request', { selectedDocuments: selectedDocuments.map(({ id, fileName, status }) => ({ id, fileName, status })), payloadKeys: ['toolId', 'inputs.prompt', 'inputs.mode', ...Object.keys(pdfInput)] });
+      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: type === 'summary' ? 'Summarize' : type === 'extract' ? 'Extract Information' : 'Analyze', ...pdfInput });
       const userActionMessage: { id: string; role: 'user'; content: string; createdAt: string } = {
         id: crypto.randomUUID(),
         role: 'user',
@@ -631,7 +682,11 @@ function ChatPdfWorkspacePage() {
   };
 
   const selectDocument = (documentId: string) => {
+    const document = documents.find((item) => item.id === documentId);
+    if (!document || document.status !== 'ready') return;
     setViewedDocumentIdState(documentId);
+    setActiveDocumentIdsState([documentId]);
+    setActiveChatPdfDocumentIds([documentId]);
     setViewedChatPdfDocumentId(documentId);
     setActiveChatPdfDocumentId(documentId);
   };
@@ -676,7 +731,7 @@ function ChatPdfWorkspacePage() {
             void handleUpload(Array.from(event.dataTransfer.files));
           }}
         >
-          {documents.length > 0 && (
+          {(documents.length > 0 || processingFiles.length > 0) && (
             <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3 [scrollbar-width:none]">
               {documents.map((document) => {
                 const selected = activeDocumentIds.includes(document.id);
@@ -692,9 +747,20 @@ function ChatPdfWorkspacePage() {
                   </div>
                 );
               })}
+              {processingFiles.map((file) => (
+                <div key={file.id} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#71345A] bg-[#3A172F] px-2.5 py-1.5 text-xs text-[#FFB5D9]">
+                  <Clock3 className="h-3.5 w-3.5 animate-pulse" />
+                  <span>Processing {file.fileName}…</span>
+                </div>
+              ))}
               <button type="button" onClick={() => inputRef.current?.click()} className="flex shrink-0 items-center gap-1 rounded-xl border border-dashed border-[#71345A] px-2.5 py-1.5 text-xs font-medium text-[#FFB5D9] hover:bg-[#3A172F]">+ Add PDF</button>
               <button type="button" onClick={() => { const ids = documents.map((document) => document.id); setActiveDocumentIdsState(ids); setActiveChatPdfDocumentIds(ids); }} className="ml-auto shrink-0 px-2 text-[11px] text-[#FFB5D9]">Select all</button>
               <button type="button" onClick={() => { setActiveDocumentIdsState([]); setActiveChatPdfDocumentIds([]); }} className="shrink-0 px-2 text-[11px] text-[#FFB5D9]">Deselect all</button>
+            </div>
+          )}
+          {activeDocument?.warning && (
+            <div className="mb-4 rounded-2xl border border-amber-900/60 bg-amber-950/20 px-3 py-2 text-[12px] leading-5 text-amber-200">
+              {activeDocument.warning}
             </div>
           )}
           {activeDocument && (
@@ -714,27 +780,100 @@ function ChatPdfWorkspacePage() {
           {activeDocument ? (
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_320px]">
               <div className="space-y-3">
-                {messages.length === 0 ? (
-                  <div className="flex min-h-[260px] items-center justify-center rounded-[26px] border border-[#1A1A1A] bg-[#000000] p-6 text-center">
-                    <div>
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#3A172F] text-[#FF66B8]">
-                      <FileText className="h-6 w-6" />
-                    </div>
-                    <h2 className="text-[22px] font-semibold tracking-tight text-white">Chat with your PDF</h2>
-                    <p className="mt-3 text-sm leading-6 text-[#8f9aad]">Ask questions, summarize content, extract information, or analyze the document.</p>
-                    </div>
-                  </div>
-                ) : (
+                {messages.length > 0 && (
                   <div className="space-y-3">
                     {messages.map((item) => (
                       <div key={item.id} className={`flex ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[88%] rounded-[20px] px-3.5 py-2.5 text-[14px] leading-6 ${item.role === 'user' ? 'bg-[#0b1320] text-[#ebf5ff]' : 'bg-[#101010] text-[#dfeaf8]'}`}>
-                          {item.role === 'assistant' ? (
-                            <div className="prose prose-invert max-w-none prose-p:my-2 prose-pre:rounded-xl prose-pre:border prose-pre:border-[#262626] prose-pre:bg-[#050505] prose-pre:p-3">
-                              <ReactMarkdown>{item.content}</ReactMarkdown>
+                          {editingMessageId === item.id ? (
+                            <div className="min-w-[min(72vw,420px)]">
+                              <textarea
+                                autoFocus
+                                value={editingMessageText}
+                                onChange={(event) => setEditingMessageText(event.target.value)}
+                                onKeyDown={(event) => {
+                                  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                                    event.preventDefault();
+                                    saveEditedMessage(item.id);
+                                  }
+                                  if (event.key === 'Escape') cancelEditMessage();
+                                }}
+                                rows={3}
+                                className="w-full resize-y rounded-xl border border-[#71345A] bg-[#050505] px-3 py-2 text-[14px] leading-6 text-white outline-none focus:border-[#FF66B8]"
+                                aria-label="Edit message"
+                              />
+                              <div className="mt-2 flex items-center justify-end gap-2 text-[11px]">
+                                <button type="button" onClick={cancelEditMessage} className="rounded-lg px-2 py-1 text-[#9aa7b7] hover:bg-white/5 hover:text-white">Cancel</button>
+                                <button type="button" onClick={() => saveEditedMessage(item.id)} className="flex items-center gap-1 rounded-lg bg-[#FF66B8]/15 px-2 py-1 font-semibold text-[#FFB5D9] hover:bg-[#FF66B8]/25">
+                                  <Check className="h-3.5 w-3.5" />
+                                  Save
+                                </button>
+                              </div>
                             </div>
                           ) : (
-                            <div className="whitespace-pre-wrap">{item.content}</div>
+                            <>
+                              {item.role === 'assistant' ? (
+                                <div className="prose prose-invert max-w-none prose-p:my-2 prose-pre:rounded-xl prose-pre:border prose-pre:border-[#262626] prose-pre:bg-[#050505] prose-pre:p-3">
+                                  <ReactMarkdown>{item.content}</ReactMarkdown>
+                                </div>
+                              ) : (
+                                <div className="whitespace-pre-wrap">{item.content}</div>
+                              )}
+                              <div className={`mt-2 flex flex-wrap items-center gap-1 text-[11px] ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                {item.role === 'user' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => beginEditMessage(item.id, item.content)}
+                                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                    aria-label="Edit message"
+                                    title="Edit message"
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                    Edit
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => void copyMessage(item.id, item.content)}
+                                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                  aria-label={messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy message'}
+                                  title="Copy message"
+                                >
+                                  {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? <Check className="h-3.5 w-3.5 text-[#FFB5D9]" /> : <Copy className="h-3.5 w-3.5" />}
+                                  {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy'}
+                                </button>
+                                {item.role === 'assistant' && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => void shareMessage(item.id, item.content)}
+                                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                      aria-label="Share response"
+                                      title="Share response"
+                                    >
+                                      <Share2 className="h-3.5 w-3.5" />
+                                      Share
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        saveCurrentResponse('result', `Response: ${activeDocument?.name ?? 'PDF chat'}`, item.content);
+                                        setMessageActionFeedback({ id: item.id, label: 'Saved' });
+                                      }}
+                                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                      aria-label="Save response"
+                                      title="Save response"
+                                    >
+                                      <Bookmark className="h-3.5 w-3.5" />
+                                      Save
+                                    </button>
+                                  </>
+                                )}
+                                {messageActionFeedback?.id === item.id && messageActionFeedback.label !== 'Copied' && (
+                                  <span className="px-1 text-[#FFB5D9]" role="status">{messageActionFeedback.label}</span>
+                                )}
+                              </div>
+                            </>
                           )}
                         </div>
                       </div>
@@ -798,7 +937,12 @@ function ChatPdfWorkspacePage() {
           {error && (
             <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-[12px] text-red-200">
               <span>{error}</span>
-              <button type="button" onClick={() => setError('')} className="font-semibold text-white underline">Dismiss</button>
+              <div className="flex shrink-0 items-center gap-3">
+                {retryFiles.length > 0 && !uploading && (
+                  <button type="button" onClick={() => void handleUpload(retryFiles)} className="font-semibold text-white underline">Retry</button>
+                )}
+                <button type="button" onClick={() => setError('')} className="font-semibold text-white underline">Dismiss</button>
+              </div>
             </div>
           )}
 
@@ -1027,7 +1171,14 @@ function ChatPdfToolsPage() {
     }[toolName] ?? `Use ${toolName} on the active PDF document.`;
 
     try {
-      const reply = await generateHubResponse('ai-assistant', { prompt: buildGroundedPrompt(promptText, [activeDocument]), mode: toolName });
+      const reply = await generateHubResponse('ai-assistant', {
+        prompt: buildGroundedPrompt(promptText, [activeDocument]),
+        mode: toolName,
+        pdfDocumentId: activeDocument.id,
+        pdfDocumentName: activeDocument.fileName,
+        pdfDocumentStatus: activeDocument.status,
+        pdfContext: 'Extracted text attached in prompt for the selected PDF document.',
+      });
       const item: ChatPdfSavedItem = {
         id: crypto.randomUUID(),
         type: 'result',

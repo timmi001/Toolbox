@@ -27,6 +27,8 @@ export type ChatPdfDocument = {
   uploadDate: string;
   status: 'processing' | 'ready' | 'error';
   size: number;
+  textAvailable?: boolean;
+  warning?: string;
 };
 
 export type ChatPdfSavedItem = {
