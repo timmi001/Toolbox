@@ -547,6 +547,105 @@ const UNIFIED_HUBS = {
   },
 } satisfies Record<string, UnifiedHubConfig>;
 
+type CareerSidebarItem = {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+};
+
+const CAREER_SIDEBAR_GROUPS: Array<{ label?: string; items: CareerSidebarItem[] }> = [
+  { items: [{ id: 'chat', label: 'New Chat', icon: Plus }] },
+  { label: 'Main', items: [
+    { id: 'dashboard', label: 'Career Dashboard', icon: BriefcaseBusiness },
+    { id: 'assessment', label: 'Career Assessment', icon: Target },
+    { id: 'roadmap', label: 'Career Roadmap', icon: Route },
+    { id: 'roles', label: 'Role Explorer', icon: Search },
+  ] },
+  { label: 'Job Search', items: [
+    { id: 'jobs', label: 'Find Jobs', icon: Search },
+    { id: 'saved-jobs', label: 'Saved Jobs', icon: Bookmark },
+    { id: 'applications', label: 'Applications', icon: FileText },
+    { id: 'alerts', label: 'Job Alerts', icon: Sparkles },
+  ] },
+  { label: 'Career Tools', items: [
+    { id: 'resume', label: 'Resume', icon: FileText },
+    { id: 'cover-letter', label: 'Cover Letter', icon: MessageCircleQuestion },
+    { id: 'interview', label: 'Interview Prep', icon: MessageCircleQuestion },
+    { id: 'skills', label: 'Skills Gap', icon: ListChecks },
+  ] },
+  { label: 'Progress', items: [
+    { id: 'goals', label: 'My Goals', icon: Target },
+    { id: 'progress', label: 'Progress Tracker', icon: BarChart3 },
+  ] },
+  { label: 'Bottom', items: [
+    { id: 'history', label: 'Chat History', icon: Clock3 },
+    { id: 'settings', label: 'Settings', icon: Settings2 },
+  ] },
+];
+
+function CareerPathSidebar({
+  open,
+  active,
+  onClose,
+  onSelect,
+}: {
+  open: boolean;
+  active: string;
+  onClose: () => void;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <>
+      <div
+        className={`fixed inset-0 z-30 bg-black/60 transition-opacity md:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[min(84vw,272px)] flex-col border-r border-[#1A1A1A] bg-[#050505] px-3 py-4 transition-transform duration-200 md:relative md:z-0 md:w-[236px] md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="flex items-center justify-between border-b border-[#1A1A1A] px-2 pb-4">
+          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#4A2B72] bg-[#120B1B] text-[#C19AFF] transition hover:border-[#A779FF] hover:text-white" aria-label="Back to dashboard" title="Back to dashboard">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <button type="button" onClick={onClose} className="md:hidden" aria-label="Close Career Path navigation">
+            <X className="h-4 w-4 text-[#9BA6B5]" />
+          </button>
+        </div>
+        <nav className="mt-4 min-h-0 flex-1 overflow-y-auto pr-1">
+          {CAREER_SIDEBAR_GROUPS.map((group, index) => (
+            <div key={group.label ?? `start-${index}`} className={index === 0 ? '' : 'mt-5'}>
+              {group.label && <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#8E6EB8]">{group.label}</div>}
+              <div className="space-y-1">
+                {group.items.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => { onSelect(id); onClose(); }}
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs font-medium transition ${active === id ? 'bg-[#2A1744] text-[#F2E9FF]' : 'text-[#A6B0BF] hover:bg-[#17101F] hover:text-white'}`}
+                  >
+                    <Icon className={`h-4 w-4 shrink-0 ${active === id ? 'text-[#C19AFF]' : 'text-[#8A789B]'}`} />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
+  );
+}
+
+function CareerDestinationPlaceholder({ item }: { item: CareerSidebarItem }) {
+  const Icon = item.icon;
+  return (
+    <section className="flex min-h-full flex-col items-center justify-center px-6 py-16 text-center text-white">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#315A9E] bg-[#112C5D] text-[#8EB2FF]"><Icon className="h-6 w-6" /></div>
+      <h1 className="mt-5 text-2xl font-bold">{item.label}</h1>
+      <p className="mt-2 max-w-sm text-sm leading-6 text-[#8995A5]">This Career Path workspace is ready for your next step.</p>
+    </section>
+  );
+}
+
 type UnifiedHubKey = keyof typeof UNIFIED_HUBS;
 
 type PdfDocument = {
@@ -596,6 +695,8 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [careerSidebarOpen, setCareerSidebarOpen] = useState(false);
+  const [careerView, setCareerView] = useState('chat');
   const [attachmentName, setAttachmentName] = useState('');
   const [pdfDocument, setPdfDocument] = useState<PdfDocument | null>(null);
 
@@ -798,6 +899,30 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
       ];
 
   const quickActions = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
+  const careerSidebarItem = CAREER_SIDEBAR_GROUPS.flatMap((group) => group.items).find((item) => item.id === careerView) ?? CAREER_SIDEBAR_GROUPS[0].items[0];
+
+  if (hub === 'career' && careerView !== 'chat') {
+    return (
+      <ChatViewport className="bg-[#000000] text-white">
+        <div className="flex min-h-0 h-full w-full bg-[#000000]">
+          <CareerPathSidebar
+            open={careerSidebarOpen}
+            active={careerView}
+            onClose={() => setCareerSidebarOpen(false)}
+            onSelect={(id) => {
+              setCareerView(id);
+              setMessages([]);
+              setPrompt('');
+              setError('');
+            }}
+          />
+          <main className="min-w-0 flex-1 overflow-y-auto">
+            <CareerDestinationPlaceholder item={careerSidebarItem} />
+          </main>
+        </div>
+      </ChatViewport>
+    );
+  }
 
   return (
     <ChatViewport className="bg-[#000000] text-white">
@@ -807,7 +932,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
             <button
               type="button"
               aria-label="Open menu"
-              onClick={() => setMenuOpen((open) => !open)}
+              onClick={() => hub === 'career' ? setCareerSidebarOpen(true) : setMenuOpen((open) => !open)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef]"
             >
               <div className="flex flex-col gap-1.5">
@@ -879,6 +1004,19 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
         </header>
 
         <div className="flex min-h-0 flex-1 overflow-hidden">
+          {hub === 'career' && (
+            <CareerPathSidebar
+              open={careerSidebarOpen}
+              active={careerView}
+              onClose={() => setCareerSidebarOpen(false)}
+              onSelect={(id) => {
+                setCareerView(id);
+                setMessages([]);
+                setPrompt('');
+                setError('');
+              }}
+            />
+          )}
           {isAiHub && (
             <aside className="hidden w-[240px] shrink-0 border-r border-[#1A1A1A] bg-[#090909] px-3 py-4 md:flex md:flex-col">
               <div className="mb-3 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-3 py-2.5">
@@ -889,7 +1027,6 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                   <FileText className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-[0.24em] text-[#6b7786]">Workspace</div>
                   <div className="truncate text-sm font-semibold text-white">Chat with PDF</div>
                 </div>
               </div>
@@ -996,10 +1133,14 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                     >
                       <config.icon className="h-6 w-6" />
                     </div>
-                    <h2 className="text-[22px] font-semibold tracking-tight text-white">Chat with your PDFs</h2>
-                    <p className="mt-3 text-sm leading-6 text-[#8f9aad]">
-                      {isAiHub ? 'Upload a PDF and ask questions, summarize content, extract information, or analyze the document.' : `How can I help with ${config.title.replace(' Hub', '')}?`}
-                    </p>
+                    {isAiHub && (
+                      <>
+                        <h2 className="text-[22px] font-semibold tracking-tight text-white">Chat with your PDFs</h2>
+                        <p className="mt-3 text-sm leading-6 text-[#8f9aad]">
+                          Upload a PDF and ask questions, summarize content, extract information, or analyze the document.
+                        </p>
+                      </>
+                    )}
                     {isAiHub && (
                       <div className="mt-5 flex justify-center">
                         <button 
@@ -1072,7 +1213,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
               </div>
             )}
 
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 bg-gradient-to-t from-[#000000] via-[#000000]/95 to-transparent px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-4 md:px-4">
+            <div className={`pointer-events-none fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-[#000000] via-[#000000]/95 to-transparent px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-4 md:px-4 ${hub === 'career' ? 'md:left-[236px]' : ''}`}>
               <div className="pointer-events-auto mx-auto max-w-5xl">
                 <div className="mb-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {config.modes.map(([label]) => (

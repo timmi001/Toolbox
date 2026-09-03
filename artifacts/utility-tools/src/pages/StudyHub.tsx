@@ -162,9 +162,6 @@ function TutorXChat({
               <h1 className="mt-7 text-3xl font-bold tracking-tight sm:text-5xl">
                 What would you like to learn?
               </h1>
-              <p className="mt-3 text-sm text-[#8B8798] sm:text-base">
-                How can I help with Tutor X?
-              </p>
               <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-[#686576]">
                 Ask a question, share your notes, or choose a study mode to get started.
               </p>

@@ -16,8 +16,6 @@ import {
   History,
   MessageCircleQuestion,
   Mic,
-  PanelLeftClose,
-  PanelLeftOpen,
   Plus,
   Pencil,
   Search,
@@ -203,18 +201,12 @@ function ChatPdfShell({
         <aside className={`hidden shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[240px]'}`}>
           <button
             type="button"
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            onClick={() => {
-              const nextCollapsed = !sidebarCollapsed;
-              onSidebarCollapsedChange?.(nextCollapsed);
-              if (controlledSidebarCollapsed === undefined) setInternalSidebarCollapsed(nextCollapsed);
-            }}
-            className={`mb-3 flex h-9 w-full items-center justify-center rounded-xl border border-[#71345A] bg-[#1D101A] text-[#FFB5D9] transition hover:border-[#FF66B8] hover:bg-[#3A172F] hover:text-white ${sidebarCollapsed ? 'px-0' : ''}`}
+            aria-label="Back to dashboard"
+            onClick={() => navigate('/')}
+            className="mb-3 flex h-9 w-full items-center justify-center rounded-xl border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#FF66B8] hover:text-[#FFE3F0]"
           >
-            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            <ArrowLeft className="h-4 w-4" />
           </button>
-
           <ChatPdfNavigation
             collapsed={sidebarCollapsed}
             onUpload={onUpload}
@@ -237,14 +229,6 @@ function ChatPdfShell({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                aria-label="Back to dashboard"
-                onClick={() => navigate('/')}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#FF66B8] hover:text-[#FFE3F0]"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
                 aria-label="Open menu"
                 onClick={() => setMenuOpen((value) => !value)}
                 aria-expanded={menuOpen}
@@ -259,7 +243,7 @@ function ChatPdfShell({
                 )}
               </button>
               <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-[#6b7786]">{subtitle}</div>
+                {subtitle && <div className="text-[10px] uppercase tracking-[0.2em] text-[#6b7786]">{subtitle}</div>}
                 <div className="truncate text-sm font-semibold text-white">{title}</div>
               </div>
             </div>
@@ -276,7 +260,15 @@ function ChatPdfShell({
                 className="absolute inset-0 bg-black/70"
               />
               <aside className="relative flex h-full w-[min(85vw,240px)] flex-col border-r border-[#1A1A1A] bg-[#090909] p-3 shadow-[12px_0_30px_rgba(0,0,0,0.35)]">
-                <div className="mb-3 flex justify-end">
+                <div className="mb-3 flex items-center justify-between">
+                  <button
+                    type="button"
+                    aria-label="Back to dashboard"
+                    onClick={() => { setMenuOpen(false); navigate('/'); }}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#FF66B8] hover:text-[#FFE3F0]"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
                   <button
                     type="button"
                     aria-label="Close sidebar"
@@ -716,7 +708,7 @@ function ChatPdfWorkspacePage() {
     <>
       <ChatPdfShell
         title="Chat with PDF"
-        subtitle="Upload and chat with your document."
+        subtitle=""
         navActive="Chat with PDF"
         activeDocumentName={activeDocument?.name ?? null}
         onUpload={() => inputRef.current?.click()}
