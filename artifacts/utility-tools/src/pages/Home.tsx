@@ -124,7 +124,7 @@ export default function Home() {
                     <h3>{title}</h3>
                     {index === 0 ? (
                       <div className="home-object flex items-center justify-center" aria-hidden="true">
-                        <FileText className="h-16 w-16 text-[#5BE4B6]" strokeWidth={1.5} />
+                        <FileText className="h-16 w-16 text-[#EF4444]" strokeWidth={1.5} />
                       </div>
                     ) : (
                       <HubObject variant={(['orb', 'spark', 'ribbon', 'flower', 'cluster'] as HubObjectVariant[])[index]} />
