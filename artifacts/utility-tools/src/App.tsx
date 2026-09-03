@@ -17,6 +17,26 @@ import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
 import AiTools from "@/pages/AiTools";
 import ChatWithPdfRoutes from "@/pages/ChatWithPdf";
+import PdfToolsIndex from "@/pages/PdfToolsIndex";
+import PdfToolUnavailable from "@/pages/PdfToolUnavailable";
+import MergePdf from "@/pages/tools/pdf/merge-pdf";
+import SplitPdf from "@/pages/tools/pdf/split-pdf";
+import PdfPageExtractor from "@/pages/tools/pdf/pdf-page-extractor";
+import DeletePdfPages from "@/pages/tools/pdf/delete-pdf-pages";
+import RearrangePdfPages from "@/pages/tools/pdf/rearrange-pdf-pages";
+import RotatePdf from "@/pages/tools/pdf/rotate-pdf";
+import CompressPdf from "@/pages/tools/pdf/compress-pdf";
+import PdfToJpg from "@/pages/tools/pdf/pdf-to-jpg";
+import JpgToPdf from "@/pages/tools/pdf/jpg-to-pdf";
+import WatermarkPdf from "@/pages/tools/pdf/watermark-pdf";
+import AddPageNumbers from "@/pages/tools/pdf/add-page-numbers";
+import ProtectPdf from "@/pages/tools/pdf/protect-pdf";
+import UnlockPdf from "@/pages/tools/pdf/unlock-pdf";
+import { getToolBySlug, type Tool } from "@/lib/tools-data";
+
+function getPdfTool(slug: string, name: string, description: string): Tool {
+  return getToolBySlug(slug) ?? { slug, name, description, category: "pdf", keywords: [], icon: "FileText" };
+}
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -73,6 +93,33 @@ function Router() {
           <Route path="/chat-with-pdf/documents" component={ChatWithPdfRoutes} />
           <Route path="/chat-with-pdf/tools" component={ChatWithPdfRoutes} />
           <Route path="/chat-with-pdf/saved" component={ChatWithPdfRoutes} />
+          <Route path="/pdf-tools" component={PdfToolsIndex} />
+          <Route path="/pdf/merge" component={MergePdf} />
+          <Route path="/pdf/split" component={SplitPdf} />
+          <Route path="/pdf/extract-pages" component={PdfPageExtractor} />
+          <Route path="/pdf/delete-pages" component={DeletePdfPages} />
+          <Route path="/pdf/reorder-pages" component={RearrangePdfPages} />
+          <Route path="/pdf/rotate" component={RotatePdf} />
+          <Route path="/pdf/compress" component={CompressPdf} />
+          <Route path="/pdf/pdf-to-jpg" component={PdfToJpg} />
+          <Route path="/pdf/jpg-to-pdf" component={JpgToPdf} />
+          <Route path="/pdf/watermark" component={WatermarkPdf} />
+          <Route path="/pdf/add-page-numbers" component={AddPageNumbers} />
+          <Route path="/pdf/protect" component={ProtectPdf} />
+          <Route path="/pdf/unlock" component={UnlockPdf} />
+          <Route path="/pdf/repair" component={() => <PdfToolUnavailable tool={getPdfTool("pdf-repair", "Repair PDF", "Repair a PDF file.")} />} />
+          <Route path="/pdf/flatten" component={() => <PdfToolUnavailable tool={getPdfTool("pdf-flatten", "Flatten PDF", "Flatten PDF form fields.")} />} />
+          <Route path="/pdf/pdf-to-word" component={() => <PdfToolUnavailable tool={getPdfTool("pdf-to-word", "PDF to Word", "Convert a PDF to Word.")} />} />
+          <Route path="/pdf/pdf-to-excel" component={() => <PdfToolUnavailable tool={getPdfTool("pdf-to-excel", "PDF to Excel", "Convert a PDF to Excel.")} />} />
+          <Route path="/pdf/pdf-to-powerpoint" component={() => <PdfToolUnavailable tool={getPdfTool("pdf-to-powerpoint", "PDF to PowerPoint", "Convert a PDF to PowerPoint.")} />} />
+          <Route path="/pdf/word-to-pdf" component={() => <PdfToolUnavailable tool={getPdfTool("word-to-pdf", "Word to PDF", "Convert Word documents to PDF.")} />} />
+          <Route path="/pdf/excel-to-pdf" component={() => <PdfToolUnavailable tool={getPdfTool("excel-to-pdf", "Excel to PDF", "Convert Excel documents to PDF.")} />} />
+          <Route path="/pdf/powerpoint-to-pdf" component={() => <PdfToolUnavailable tool={getPdfTool("powerpoint-to-pdf", "PowerPoint to PDF", "Convert PowerPoint documents to PDF.")} />} />
+          <Route path="/pdf/edit" component={() => <PdfToolUnavailable tool={getPdfTool("edit-pdf", "Edit PDF", "Edit a PDF.")} />} />
+          <Route path="/pdf/add-text" component={() => <PdfToolUnavailable tool={getPdfTool("add-text", "Add Text", "Add text to a PDF.")} />} />
+          <Route path="/pdf/add-image" component={() => <PdfToolUnavailable tool={getPdfTool("add-image", "Add Image", "Add an image to a PDF.")} />} />
+          <Route path="/pdf/sign" component={() => <PdfToolUnavailable tool={getPdfTool("sign-pdf", "Sign PDF", "Sign a PDF.")} />} />
+          <Route path="/pdf/redact" component={() => <PdfToolUnavailable tool={getPdfTool("redact-pdf", "Redact PDF", "Redact a PDF.")} />} />
           <Route path="/blog" component={BlogIndex} />
           <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/privacy" component={PrivacyPolicy} />

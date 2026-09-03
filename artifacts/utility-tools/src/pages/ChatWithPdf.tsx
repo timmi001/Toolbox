@@ -57,6 +57,7 @@ import {
   upsertChatPdfConversation,
 } from '@/utils/chatPdfStorage';
 import { openFeedbackForm } from '@/components/FeedbackButton';
+import { PdfToolsMenu } from '@/components/PdfToolsMenu';
 
 const MAX_CHAT_PDF_FILES = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILES ?? 12);
 const MAX_CHAT_PDF_FILE_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILE_SIZE ?? 25 * 1024 * 1024);
@@ -262,8 +263,7 @@ function ChatPdfShell({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-            </div>
+            <PdfToolsMenu />
           </header>
 
           {menuOpen && (
