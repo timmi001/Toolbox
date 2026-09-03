@@ -72,7 +72,7 @@ type StudySection =
   | "upgrade";
 
 const NAV_MAIN: Array<[StudySection, string, typeof BookOpen]> = [
-  ["tutor", "AI Tutor", GraduationCap],
+  ["tutor", "Tutor X", GraduationCap],
   ["subjects", "Subjects", BookOpen],
   ["materials", "Study Materials", FolderOpen],
   ["notes", "Notes", StickyNote],
@@ -143,21 +143,6 @@ function PreviousStudyChat({
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-[#000000]">
       <section className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col px-4 py-5 sm:px-8">
-        <div className="mb-5 flex shrink-0 items-center justify-between gap-3 border-b border-[#1A1A1A] pb-4">
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">
-              Personal tutor
-            </div>
-            <h2 className="mt-1 text-2xl font-bold text-white">
-              What are you studying today?
-            </h2>
-          </div>
-          <span className="hidden items-center gap-2 text-xs text-[#718194] sm:flex">
-            <span className="h-2 w-2 rounded-full bg-[#2F6DF6]" />
-            Tutor ready
-          </span>
-        </div>
-
         <div className="min-h-0 flex-1 overflow-y-auto pr-1">
           {messages.length === 0 ? (
             <div className="flex min-h-full items-center justify-center py-8 text-center">
@@ -278,22 +263,22 @@ function PreviousStudyChat({
 }
 
 export default function StudyHub() {
-  const [section, setSection] = useState<StudySection>("tutor");
+  const [section, setSection] = useState<StudySection>("subjects");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [subject, setSubject] = useState(
-    () => localStorage.getItem("toolbuxx_study_subject") ?? "General",
+    () => {
+      const stored = localStorage.getItem("toolbuxx_study_subject");
+      return stored && stored !== "General" ? stored : "Biology";
+    },
   );
   const [subjects, setSubjects] = useState<string[]>(() =>
-    read(STORAGE.subjects, [
-      "General",
-      "Biology",
-      "Mathematics",
-      "Computer Science",
-    ]),
+    read(STORAGE.subjects, ["Biology", "Mathematics", "Computer Science"]).filter(
+      (item) => item !== "General",
+    ),
   );
   const [materials, setMaterials] = useState<StudyMaterial[]>(() =>
     read(STORAGE.materials, []),
@@ -422,7 +407,7 @@ export default function StudyHub() {
     setPrompt("");
     setError("");
     setStatus("idle");
-    setSection("tutor");
+    setSection("subjects");
     setDrawerOpen(false);
   };
   const openSession = (session: StudySession) => {
@@ -435,7 +420,7 @@ export default function StudyHub() {
         materials.find((item) => item.name === session.materialName)?.id ??
           null,
       );
-    setSection("tutor");
+    setSection("subjects");
     setHistoryOpen(false);
     setDrawerOpen(false);
   };
@@ -516,10 +501,9 @@ export default function StudyHub() {
     write(STORAGE.subjects, next);
   };
   const removeSubject = () => {
-    if (subject === "General") return;
     const next = subjects.filter((item) => item !== subject);
     setSubjects(next);
-    setSubject("General");
+    setSubject(next[0] ?? "Biology");
     write(STORAGE.subjects, next);
   };
   const saveAnswer = () => {
@@ -549,7 +533,7 @@ export default function StudyHub() {
     <button
       key={key}
       type="button"
-      onClick={() => selectSection(key)}
+      onClick={() => selectSection(key === "tutor" ? "subjects" : key)}
       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${section === key ? "bg-[#112C5D] text-white" : "text-[#b4c0ce] hover:bg-[#111a20] hover:text-white"}`}
     >
       <Icon className={`h-4 w-4 ${section === key ? "text-[#7FA8FF]" : ""}`} />
@@ -558,23 +542,6 @@ export default function StudyHub() {
   );
 
   const renderSection = () => {
-    if (section === "tutor")
-      return (
-        <PreviousStudyChat
-          messages={messages}
-          prompt={prompt}
-          mode={mode}
-          subject={subject}
-          activeMaterial={activeMaterial}
-          status={status}
-          error={error}
-          onPromptChange={setPrompt}
-          onSubmit={() => void submit()}
-          onModeChange={setMode}
-          onClearError={() => setError("")}
-        />
-      );
-
     if (section === "subjects")
       return (
         <section className="mx-auto w-full max-w-3xl p-5 sm:p-8">
@@ -594,7 +561,7 @@ export default function StudyHub() {
                   onClick={() => {
                     setSubject(item);
                     localStorage.setItem("toolbuxx_study_subject", item);
-                    setSection("tutor");
+                    setSection("subjects");
                   }}
                 >
                   {item}
@@ -647,7 +614,9 @@ export default function StudyHub() {
           onSelect={(id) => {
             setActiveMaterialId(id);
             localStorage.setItem("toolbuxx_study_material", id);
-            setSection("tutor");
+            setSection("subjects");
+            setSection("subjects");
+            setSection("subjects");
           }}
           onUpload={uploadMaterial}
           onDelete={(id) => {
@@ -802,7 +771,7 @@ export default function StudyHub() {
           <button
             type="button"
             onClick={() => {
-              setSection("tutor");
+              setSection("subjects");
               setMode(section === "quizzes" ? "Quiz Me" : "Practice");
               setPrompt(
                 `${section === "quizzes" ? "Generate a quiz" : "Give me practice questions"} for ${subject}: `,
