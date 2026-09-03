@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import {
   ArrowLeft,
+  ArrowUp,
   BookOpen,
   CalendarDays,
   Check,
@@ -10,6 +11,8 @@ import {
   GraduationCap,
   HelpCircle,
   Menu,
+  Mic,
+  Paperclip,
   PanelLeftClose,
   PanelLeftOpen,
   Pencil,
@@ -35,6 +38,11 @@ type StudyMaterial = {
   type: string;
   text: string;
   status: "ready" | "processing";
+};
+type TutorMessage = {
+  id: string;
+  role: "student" | "tutor";
+  text: string;
 };
 type StudyNote = { id: string; title: string; body: string; updatedAt: string };
 
@@ -87,8 +95,142 @@ function write<T>(key: string, value: T) {
     /* best effort */
   }
 }
+
+function TutorXChat({
+  subject,
+  activeMaterial,
+  messages,
+  prompt,
+  mode,
+  status,
+  error,
+  onPromptChange,
+  onModeChange,
+  onSubmit,
+  onAttach,
+  onVoice,
+  onClearError,
+}: {
+  subject: string;
+  activeMaterial: StudyMaterial | null;
+  messages: TutorMessage[];
+  prompt: string;
+  mode: string;
+  status: "idle" | "submitting" | "generating" | "completed" | "error";
+  error: string;
+  onPromptChange: (value: string) => void;
+  onModeChange: (value: string) => void;
+  onSubmit: () => void;
+  onAttach: () => void;
+  onVoice: () => void;
+  onClearError: () => void;
+}) {
+  const busy = status === "submitting" || status === "generating";
+  const quickActions = ["Explain", "Summarize", "Quiz Me", "Study Plan"];
+
+  return (
+    <section className="flex min-h-0 flex-1 flex-col bg-[#08090D] text-white">
+      <header className="flex h-16 shrink-0 items-center border-b border-[#24232D] px-4 sm:px-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#7654D9]/40 bg-[#241846] text-[#B59BFF]">
+            <GraduationCap className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-sm font-bold tracking-tight">Tutor X</p>
+            <p className="text-[11px] text-[#7F7B8E]">Your personal study tutor</p>
+          </div>
+        </div>
+      </header>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-8 sm:px-8">
+        <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center">
+          {messages.length === 0 ? (
+            <div className="text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#7654D9]/40 bg-[#211640] text-[#B59BFF] shadow-[0_0_36px_rgba(118,84,217,0.16)]">
+                <GraduationCap className="h-7 w-7" />
+              </div>
+              <h1 className="mt-7 text-3xl font-bold tracking-tight sm:text-5xl">
+                What would you like to learn?
+              </h1>
+              <p className="mt-3 text-sm text-[#8B8798] sm:text-base">
+                How can I help with Tutor X?
+              </p>
+              <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-[#686576]">
+                Ask a question, share your notes, or choose a study mode to get started.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-5 pb-8">
+              {messages.map((message) => (
+                <div key={message.id} className={`flex ${message.role === "student" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === "student" ? "bg-[#704ED1] text-white" : "border border-[#2A2934] bg-[#12121A] text-[#D7D3E1]"}`}>
+                    {message.text}
+                  </div>
+                </div>
+              ))}
+              {busy && <div className="text-xs text-[#B59BFF]">Tutor X is thinking...</div>}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <footer className="shrink-0 border-t border-[#24232D] bg-[#08090D] px-4 pb-5 pt-4 sm:px-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+            {quickActions.map((action, index) => (
+              <button
+                key={action}
+                type="button"
+                onClick={() => {
+                  onModeChange(action);
+                  onPromptChange(`${action}: `);
+                }}
+                className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition ${mode === action || (index === 0 && !mode) ? "border-[#704ED1] bg-[#704ED1] text-white" : "border-[#302D3A] bg-[#15141B] text-[#AAA5B7] hover:border-[#7654D9] hover:text-white"}`}
+              >
+                {action}
+              </button>
+            ))}
+          </div>
+          {error && (
+            <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-200">
+              <span>{error}</span>
+              <button type="button" onClick={onClearError} className="font-semibold text-white underline">Dismiss</button>
+            </div>
+          )}
+          {activeMaterial && <div className="mb-2 truncate text-xs text-[#B59BFF]">Using {activeMaterial.name}</div>}
+          <div className="flex items-center gap-2 rounded-full border border-[#35313F] bg-[#17161D] px-2 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.28)] focus-within:border-[#7654D9]">
+            <button type="button" onClick={onAttach} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#9D98AA] transition hover:bg-[#29243B] hover:text-white" aria-label="Attach study material">
+              <Paperclip className="h-4 w-4" />
+            </button>
+            <textarea
+              value={prompt}
+              onChange={(event) => onPromptChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  onSubmit();
+                }
+              }}
+              rows={1}
+              placeholder="Ask Tutor X"
+              className="max-h-28 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-[#716D7B]"
+            />
+            <button type="button" onClick={onVoice} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#9D98AA] transition hover:bg-[#29243B] hover:text-white" aria-label="Voice input">
+              <Mic className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={onSubmit} disabled={!prompt.trim() || busy} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#704ED1] text-white transition hover:bg-[#8465E0] disabled:cursor-not-allowed disabled:opacity-40" aria-label="Send message">
+              <ArrowUp className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="mt-2 text-center text-[10px] text-[#5F5B68]">Tutor X can make mistakes. Check important study answers.</p>
+        </div>
+      </footer>
+    </section>
+  );
+}
+
 export default function StudyHub() {
-  const [section, setSection] = useState<StudySection>("subjects");
+  const [section, setSection] = useState<StudySection>("tutor");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [subject, setSubject] = useState(
@@ -117,6 +259,9 @@ export default function StudyHub() {
   const [noteDraft, setNoteDraft] = useState("");
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [flashcards, setFlashcards] = useState<string[]>([]);
+  const [messages, setMessages] = useState<TutorMessage[]>([]);
+  const [prompt, setPrompt] = useState("");
+  const [mode, setMode] = useState("Explain");
   const [inputRef] = useState(() => ({
     current: null as HTMLInputElement | null,
   }));
@@ -124,6 +269,38 @@ export default function StudyHub() {
   const selectSection = (next: StudySection) => {
     setSection(next);
     setDrawerOpen(false);
+  };
+
+  const submitTutorPrompt = async () => {
+    const value = prompt.trim();
+    if (!value || status === "submitting" || status === "generating") return;
+    setStatus("submitting");
+    setError("");
+    setMessages((current) => [
+      ...current,
+      { id: crypto.randomUUID(), role: "student", text: value },
+    ]);
+    setPrompt("");
+    try {
+      setStatus("generating");
+      const context = activeMaterial
+        ? `Use this study material as context: ${activeMaterial.name}\n${activeMaterial.text.slice(0, 16000)}`
+        : "No study material is selected.";
+      const answer = await generateHubResponse("study", {
+        prompt: `${context}\n\nStudent request: ${value}`,
+        mode,
+        subject,
+        level: "Intermediate",
+      });
+      setMessages((current) => [
+        ...current,
+        { id: crypto.randomUUID(), role: "tutor", text: answer },
+      ]);
+      setStatus("completed");
+    } catch (err) {
+      setStatus("error");
+      setError(err instanceof Error ? err.message : "Unable to reach Tutor X.");
+    }
   };
 
   const uploadMaterial = async (file: File | undefined) => {
@@ -200,7 +377,7 @@ export default function StudyHub() {
     <button
       key={key}
       type="button"
-      onClick={() => selectSection(key === "tutor" ? "subjects" : key)}
+      onClick={() => selectSection(key)}
       className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${section === key ? "bg-[#112C5D] text-white" : "text-[#b4c0ce] hover:bg-[#111a20] hover:text-white"}`}
     >
       <Icon className={`h-4 w-4 ${section === key ? "text-[#7FA8FF]" : ""}`} />
@@ -209,6 +386,24 @@ export default function StudyHub() {
   );
 
   const renderSection = () => {
+    if (section === "tutor")
+      return (
+        <TutorXChat
+          subject={subject}
+          activeMaterial={activeMaterial}
+          messages={messages}
+          prompt={prompt}
+          mode={mode}
+          status={status}
+          error={error}
+          onPromptChange={setPrompt}
+          onModeChange={setMode}
+          onSubmit={() => void submitTutorPrompt()}
+          onAttach={() => inputRef.current?.click()}
+          onVoice={() => setError("Voice input is not available in this browser.")}
+          onClearError={() => setError("")}
+        />
+      );
     if (section === "subjects")
       return (
         <section className="mx-auto w-full max-w-3xl p-5 sm:p-8">
@@ -504,6 +699,18 @@ export default function StudyHub() {
 
   return (
     <div className="bg-[#090D12] text-white">
+      <input
+        ref={(element) => {
+          inputRef.current = element;
+        }}
+        type="file"
+        accept=".pdf,.txt,.md,.csv"
+        className="hidden"
+        onChange={(event) => {
+          void uploadMaterial(event.target.files?.[0]);
+          event.target.value = "";
+        }}
+      />
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <aside
           className={`fixed inset-y-0 left-0 z-50 flex w-[min(86vw,280px)] flex-col border-r border-[#1B2936] bg-[#090D12] p-3 transition-transform md:relative md:z-0 md:w-[250px] md:translate-x-0 ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
