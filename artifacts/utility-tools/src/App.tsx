@@ -17,6 +17,7 @@ import AboutUs from "@/pages/AboutUs";
 import Contact from "@/pages/Contact";
 import AiTools from "@/pages/AiTools";
 import ChatWithPdfRoutes from "@/pages/ChatWithPdf";
+import StudyHub from "@/pages/StudyHub";
 import PdfToolsIndex from "@/pages/PdfToolsIndex";
 import PdfToolUnavailable from "@/pages/PdfToolUnavailable";
 import MergePdf from "@/pages/tools/pdf/merge-pdf";
@@ -88,6 +89,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/ai-tools" component={AiTools} />
           <Route path="/hub/ai" component={() => <Redirect to="/chat-with-pdf" />} />
+          <Route path="/hub/study" component={StudyHub} />
           <Route path="/hub/:hub" component={HubWorkspace} />
           <Route path="/chat-with-pdf" component={ChatWithPdfRoutes} />
           <Route path="/chat-with-pdf/documents" component={ChatWithPdfRoutes} />
