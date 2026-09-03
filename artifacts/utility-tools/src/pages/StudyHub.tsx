@@ -1,11 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
   CalendarDays,
   Check,
-  ChevronLeft,
-  Clock3,
   FileText,
   Flame,
   FolderOpen,
@@ -16,7 +14,6 @@ import {
   PanelLeftOpen,
   Pencil,
   Plus,
-  Search,
   Settings2,
   Sparkles,
   StickyNote,
@@ -29,24 +26,9 @@ import {
   Zap,
 } from "lucide-react";
 import { Link } from "wouter";
-import { generateHubResponse } from "@/lib/hub-ai";
 import { pdf } from "@/lib/api";
-import { ChatViewport } from "@/components/ChatViewport";
+import { generateHubResponse } from "@/lib/hub-ai";
 
-type StudyMessage = {
-  id: string;
-  role: "student" | "tutor";
-  text: string;
-  createdAt: string;
-};
-type StudySession = {
-  id: string;
-  title: string;
-  subject: string;
-  updatedAt: string;
-  materialName?: string;
-  messages: StudyMessage[];
-};
 type StudyMaterial = {
   id: string;
   name: string;
@@ -86,11 +68,9 @@ const NAV_PROGRESS: Array<[StudySection, string, typeof BookOpen]> = [
   ["streak", "Study Streak", Flame],
 ];
 const STORAGE = {
-  sessions: "toolbuxx-study-sessions",
   subjects: "toolbuxx-study-subjects",
   materials: "toolbuxx-study-materials",
   notes: "toolbuxx-study-notes",
-  saved: "toolbuxx-study-saved",
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -107,168 +87,10 @@ function write<T>(key: string, value: T) {
     /* best effort */
   }
 }
-function dateLabel(value: string) {
-  return new Date(value).toLocaleString([], {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
-
-function PreviousStudyChat({
-  messages,
-  prompt,
-  mode,
-  subject,
-  activeMaterial,
-  status,
-  error,
-  onPromptChange,
-  onSubmit,
-  onModeChange,
-  onClearError,
-}: {
-  messages: StudyMessage[];
-  prompt: string;
-  mode: string;
-  subject: string;
-  activeMaterial: StudyMaterial | null;
-  status: "idle" | "submitting" | "generating" | "completed" | "error";
-  error: string;
-  onPromptChange: (value: string) => void;
-  onSubmit: () => void;
-  onModeChange: (value: string) => void;
-  onClearError: () => void;
-}) {
-  const isBusy = status === "submitting" || status === "generating";
-  return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[#000000]">
-      <section className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col px-4 py-5 sm:px-8">
-        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-          {messages.length === 0 ? (
-            <div className="flex min-h-full items-center justify-center py-8 text-center">
-              <div className="max-w-md">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#244A8F] bg-[#112C5D] text-[#7FA8FF]">
-                  <GraduationCap className="h-7 w-7" />
-                </div>
-                <p className="mt-5 text-sm leading-6 text-[#8492A3]">
-                  Ask anything about a topic, upload your notes, or choose a
-                  study mode. I&apos;ll explain concepts clearly and help you
-                  test yourself.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4 pb-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.role === "student" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === "student" ? "bg-[#112C5D] text-[#E7F0FF]" : "border border-[#1E2D3B] bg-[#0E151D] text-[#CBD6E0]"}`}
-                  >
-                    {message.text}
-                  </div>
-                </div>
-              ))}
-              {isBusy && (
-                <div className="flex items-center gap-2 text-xs text-[#A8C7FF]">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#2F6DF6]" />
-                  Tutor is thinking…
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <footer className="sticky bottom-0 z-10 mt-5 shrink-0 border-t border-[#1A1A1A] bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-4">
-          <div className="flex gap-2 overflow-x-auto border-b border-[#1A1A1A] pb-3 [scrollbar-width:none]">
-            {[
-              "Explain",
-              "Summarize",
-              "Quiz Me",
-              "Flashcards",
-              "Solve",
-              "Study Plan",
-            ].map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => {
-                  onModeChange(item);
-                  onPromptChange(`${item}: `);
-                }}
-                className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-semibold ${mode === item ? "border-[#2F6DF6]/70 bg-[#112C5D] text-[#A8C7FF]" : "border-transparent bg-[#0A0A0A] text-[#8492A3] hover:text-white"}`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-          {activeMaterial && (
-            <div className="mt-3 flex items-center gap-2 text-xs text-[#A8C7FF]">
-              <FileText className="h-3.5 w-3.5" />
-              <span className="truncate">Using {activeMaterial.name}</span>
-            </div>
-          )}
-          {error && (
-            <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-200">
-              <span>{error}</span>
-              <button
-                type="button"
-                onClick={onClearError}
-                className="font-semibold text-white underline"
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
-          <div className="mt-3 rounded-[26px] border border-[#1A1A1A] bg-[#0b0f12] p-2 shadow-[0_-10px_24px_rgba(0,0,0,0.25)] focus-within:border-[#2F6DF6]/70">
-            <textarea
-              value={prompt}
-              onChange={(event) => onPromptChange(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
-                  onSubmit();
-                }
-              }}
-              rows={1}
-              disabled={isBusy}
-              placeholder={
-                activeMaterial
-                  ? `Ask about ${activeMaterial.name}`
-                  : "Ask anything about your studies…"
-              }
-              className="max-h-28 min-h-[40px] w-full resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] outline-none placeholder:text-[#6c7784] disabled:opacity-60"
-            />
-            <div className="flex items-center justify-between gap-2 border-t border-[#1A1A1A] pt-2">
-              <span className="truncate text-[11px] text-[#718194]">
-                {activeMaterial ? activeMaterial.name : subject}
-              </span>
-              <button
-                type="button"
-                onClick={onSubmit}
-                disabled={!prompt.trim() || isBusy}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#2F6DF6] text-white shadow-[0_8px_18px_rgba(47,109,246,0.35)] transition hover:bg-[#5C8DFF] disabled:opacity-40"
-                aria-label={isBusy ? "Generating response" : "Send message"}
-              >
-                {isBusy ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : <ArrowLeft className="h-4 w-4 rotate-180" />}
-              </button>
-            </div>
-          </div>
-        </footer>
-      </section>
-    </div>
-  );
-}
-
 export default function StudyHub() {
   const [section, setSection] = useState<StudySection>("subjects");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [savedOpen, setSavedOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const [subject, setSubject] = useState(
     () => {
       const stored = localStorage.getItem("toolbuxx_study_subject");
@@ -286,158 +108,22 @@ export default function StudyHub() {
   const [activeMaterialId, setActiveMaterialId] = useState<string | null>(() =>
     localStorage.getItem("toolbuxx_study_material"),
   );
-  const [sessions, setSessions] = useState<StudySession[]>(() =>
-    read(STORAGE.sessions, []),
-  );
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<StudyMessage[]>([]);
-  const [prompt, setPrompt] = useState("");
-  const [mode, setMode] = useState("Explain");
-  const [status, setStatus] = useState<
-    "idle" | "submitting" | "generating" | "completed" | "error"
-  >("idle");
+  const activeMaterial = materials.find((item) => item.id === activeMaterialId) ?? null;
   const [error, setError] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "generating" | "completed" | "error">("idle");
   const [notes, setNotes] = useState<StudyNote[]>(() =>
     read(STORAGE.notes, []),
   );
   const [noteDraft, setNoteDraft] = useState("");
-  const [saved, setSaved] = useState<string[]>(() => read(STORAGE.saved, []));
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [flashcards, setFlashcards] = useState<string[]>([]);
-  const [streak, setStreak] = useState(() =>
-    Number(localStorage.getItem("toolbuxx_study_streak") ?? 0),
-  );
   const [inputRef] = useState(() => ({
     current: null as HTMLInputElement | null,
   }));
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const activeMaterial =
-    materials.find((item) => item.id === activeMaterialId) ?? null;
 
   const selectSection = (next: StudySection) => {
     setSection(next);
     setDrawerOpen(false);
-    setHistoryOpen(false);
-    setSavedOpen(false);
-  };
-  const persistSession = (nextMessages: StudyMessage[]) => {
-    if (!nextMessages.length) return;
-    const id = sessionId ?? crypto.randomUUID();
-    const next: StudySession = {
-      id,
-      title:
-        nextMessages
-          .find((item) => item.role === "student")
-          ?.text.slice(0, 48) || "Study session",
-      subject,
-      updatedAt: new Date().toISOString(),
-      materialName: activeMaterial?.name,
-      messages: nextMessages,
-    };
-    const nextSessions = [next, ...sessions.filter((item) => item.id !== id)];
-    setSessionId(id);
-    setSessions(nextSessions);
-    write(STORAGE.sessions, nextSessions);
-  };
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "end",
-    });
-  }, [messages, status]);
-
-  const submit = async (requestedPrompt = prompt) => {
-    const value = requestedPrompt.trim();
-    if (!value || status === "submitting" || status === "generating") return;
-    if (activeMaterial?.status === "processing") {
-      setError("Processing material…");
-      return;
-    }
-    const userMessage: StudyMessage = {
-      id: crypto.randomUUID(),
-      role: "student",
-      text: value,
-      createdAt: new Date().toISOString(),
-    };
-    const nextMessages = [...messages, userMessage];
-    setMessages(nextMessages);
-    setPrompt("");
-    setError("");
-    setStatus("submitting");
-    try {
-      setStatus("generating");
-      const context = activeMaterial
-        ? `Use the selected study material as context. Material: ${activeMaterial.name}\n${activeMaterial.text.slice(0, 16000)}`
-        : "No study material is selected.";
-      const answer = await generateHubResponse("study", {
-        prompt: `${context}\n\nStudent request: ${value}`,
-        mode,
-        subject,
-        level: "Intermediate",
-      });
-      const completed = [
-        ...nextMessages,
-        {
-          id: crypto.randomUUID(),
-          role: "tutor" as const,
-          text: answer,
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      setMessages(completed);
-      persistSession(completed);
-      setStatus("completed");
-      setStreak((current) => {
-        const next = current + 1;
-        localStorage.setItem("toolbuxx_study_streak", String(next));
-        return next;
-      });
-    } catch (err) {
-      setStatus("error");
-      setError(
-        err instanceof Error ? err.message : "Unable to reach the AI tutor.",
-      );
-    }
-  };
-
-  const newSession = () => {
-    setSessionId(null);
-    setMessages([]);
-    setPrompt("");
-    setError("");
-    setStatus("idle");
-    setSection("subjects");
-    setDrawerOpen(false);
-  };
-  const openSession = (session: StudySession) => {
-    setSessionId(session.id);
-    setMessages(session.messages);
-    setSubject(session.subject);
-    localStorage.setItem("toolbuxx_study_subject", session.subject);
-    if (session.materialName)
-      setActiveMaterialId(
-        materials.find((item) => item.name === session.materialName)?.id ??
-          null,
-      );
-    setSection("subjects");
-    setHistoryOpen(false);
-    setDrawerOpen(false);
-  };
-  const deleteSession = (id: string) => {
-    const next = sessions.filter((item) => item.id !== id);
-    setSessions(next);
-    write(STORAGE.sessions, next);
-    if (sessionId === id) newSession();
-  };
-  const renameSession = (session: StudySession) => {
-    const title = window.prompt("Rename study session", session.title)?.trim();
-    if (!title) return;
-    const next = sessions.map((item) =>
-      item.id === session.id ? { ...item, title } : item,
-    );
-    setSessions(next);
-    write(STORAGE.sessions, next);
   };
 
   const uploadMaterial = async (file: File | undefined) => {
@@ -506,25 +192,6 @@ export default function StudyHub() {
     setSubject(next[0] ?? "Biology");
     write(STORAGE.subjects, next);
   };
-  const saveAnswer = () => {
-    const answer = messages
-      .filter((item) => item.role === "tutor")
-      .at(-1)?.text;
-    if (!answer || saved.includes(answer)) return;
-    const next = [answer, ...saved];
-    setSaved(next);
-    write(STORAGE.saved, next);
-  };
-  const filteredSessions = useMemo(
-    () =>
-      sessions.filter((item) =>
-        `${item.title} ${item.subject} ${item.materialName ?? ""}`
-          .toLowerCase()
-          .includes(query.toLowerCase()),
-      ),
-    [sessions, query],
-  );
-
   const navButton = (
     key: StudySection,
     label: string,
@@ -771,11 +438,7 @@ export default function StudyHub() {
           <button
             type="button"
             onClick={() => {
-              setSection("subjects");
-              setMode(section === "quizzes" ? "Quiz Me" : "Practice");
-              setPrompt(
-                `${section === "quizzes" ? "Generate a quiz" : "Give me practice questions"} for ${subject}: `,
-              );
+              setError("The Tutor X chat has been removed from Study Hub.");
             }}
             className="mt-6 rounded-xl bg-[#5BE4B6] px-4 py-2 text-sm font-semibold text-[#061410]"
           >
@@ -804,19 +467,14 @@ export default function StudyHub() {
             subtitle="Your study activity stays available in this workspace."
           />
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <Stat label="Sessions" value={String(sessions.length)} />
-            <Stat
-              label="Questions answered"
-              value={String(
-                messages.filter((item) => item.role === "student").length,
-              )}
-            />
-            <Stat label="Current streak" value={`${streak} days`} />
+            <Stat label="Study materials" value={String(materials.length)} />
+            <Stat label="Notes created" value={String(notes.length)} />
+            <Stat label="Subjects" value={String(subjects.length)} />
           </div>
           {section === "planner" && (
             <button
               type="button"
-              onClick={() => setPrompt("Plan my next study session for ")}
+              onClick={() => setSection("subjects")}
               className="mt-6 rounded-xl border border-[#5BE4B6]/50 px-4 py-2 text-sm text-[#A9F2D8]"
             >
               Plan next session with AI
@@ -845,7 +503,7 @@ export default function StudyHub() {
   };
 
   return (
-    <ChatViewport className="bg-[#090D12] text-white">
+    <div className="bg-[#090D12] text-white">
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <aside
           className={`fixed inset-y-0 left-0 z-50 flex w-[min(86vw,280px)] flex-col border-r border-[#1B2936] bg-[#090D12] p-3 transition-transform md:relative md:z-0 md:w-[250px] md:translate-x-0 ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
@@ -871,13 +529,6 @@ export default function StudyHub() {
             <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">
               Main
             </div>
-            <button
-              type="button"
-              onClick={newSession}
-              className="mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-[#b4c0ce] hover:bg-[#111a20]"
-            >
-              <Plus className="h-4 w-4" /> New Study Session
-            </button>
             {NAV_MAIN.map(([key, label, Icon]) => navButton(key, label, Icon))}
             <div className="my-4 border-t border-[#1B2936]" />
             <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">
@@ -887,20 +538,6 @@ export default function StudyHub() {
               navButton(key, label, Icon),
             )}
             <div className="my-4 border-t border-[#1B2936]" />
-            <button
-              type="button"
-              onClick={() => setHistoryOpen(true)}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-[#b4c0ce] hover:bg-[#111a20]"
-            >
-              <Clock3 className="h-4 w-4" /> History
-            </button>
-            <button
-              type="button"
-              onClick={() => setSavedOpen(true)}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-[#b4c0ce] hover:bg-[#111a20]"
-            >
-              <Sparkles className="h-4 w-4" /> Saved
-            </button>
           </div>
           <div className="space-y-1 border-t border-[#1B2936] pt-3">
             {navButton("settings", "Settings", Settings2)}
@@ -934,118 +571,13 @@ export default function StudyHub() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setHistoryOpen(true)}
-                className="rounded-lg p-2 text-[#91A0B0] hover:bg-[#111a20]"
-                aria-label="Open history"
-              >
-                <Clock3 className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setSavedOpen(true)}
-                className="rounded-lg p-2 text-[#91A0B0] hover:bg-[#111a20]"
-                aria-label="Open saved"
-              >
-                <Sparkles className="h-4 w-4" />
-              </button>
-            </div>
           </header>
           <div className="min-h-0 flex-1 overflow-hidden">
             {renderSection()}
           </div>
         </main>
       </div>
-      {(historyOpen || savedOpen) && (
-        <OverlayPanel
-          title={historyOpen ? "Study history" : "Saved answers"}
-          onClose={() => {
-            setHistoryOpen(false);
-            setSavedOpen(false);
-          }}
-        >
-          {historyOpen ? (
-            <>
-              <button
-                type="button"
-                onClick={newSession}
-                className="mb-3 flex items-center gap-2 rounded-xl border border-[#5BE4B6]/50 px-3 py-2 text-sm text-[#A9F2D8]"
-              >
-                <Plus className="h-4 w-4" /> New session
-              </button>
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search sessions"
-                className="mb-3 w-full rounded-xl border border-[#1A1A1A] bg-[#0E151D] px-3 py-2 text-sm outline-none"
-              />
-              <div className="space-y-2">
-                {filteredSessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className="rounded-xl border border-[#1A1A1A] bg-[#0E151D] p-3"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => openSession(session)}
-                      className="w-full text-left"
-                    >
-                      <div className="truncate text-sm font-semibold">
-                        {session.title}
-                      </div>
-                      <div className="mt-1 text-xs text-[#718194]">
-                        {session.subject}
-                        {session.materialName
-                          ? ` · ${session.materialName}`
-                          : ""}
-                      </div>
-                      <div className="mt-1 text-[11px] text-[#718194]">
-                        {dateLabel(session.updatedAt)}
-                      </div>
-                    </button>
-                    <div className="mt-2 flex gap-3 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => renameSession(session)}
-                        className="text-[#A9F2D8]"
-                      >
-                        Rename
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteSession(session.id)}
-                        className="text-red-300"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="space-y-3">
-              {saved.length ? (
-                saved.map((item, index) => (
-                  <article
-                    key={`${item}-${index}`}
-                    className="rounded-xl border border-[#1A1A1A] bg-[#0E151D] p-3 text-sm leading-6"
-                  >
-                    {item}
-                  </article>
-                ))
-              ) : (
-                <p className="text-sm text-[#718194]">
-                  No saved answers yet. Save an answer from the tutor view.
-                </p>
-              )}
-            </div>
-          )}
-        </OverlayPanel>
-      )}
-    </ChatViewport>
+    </div>
   );
 }
 
