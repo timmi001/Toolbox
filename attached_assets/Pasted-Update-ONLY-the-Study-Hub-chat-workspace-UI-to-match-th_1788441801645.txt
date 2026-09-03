@@ -1,0 +1,303 @@
+Update ONLY the **Study Hub chat/workspace UI** to match the existing chat UI style used elsewhere in Toolbuxx.
+
+### IMPORTANT — DO NOT TOUCH THE SIDEBAR
+
+The existing Study Hub sidebar is already correct.
+
+**Do NOT:**
+
+* redesign the sidebar
+* resize the sidebar
+* move sidebar items
+* rename sidebar items
+* change sidebar navigation
+* change sidebar spacing
+* change sidebar layout
+* create a new sidebar
+* create a mobile replacement sidebar
+
+Leave the entire sidebar implementation exactly as it currently is.
+
+Your changes should begin **only inside the main Study Hub content/chat area**.
+
+---
+
+## 1. MATCH THE EXISTING TOOLBUXX CHAT UI
+
+Inspect the existing Toolbuxx chat interfaces/components and identify the chat UI that already looks and behaves correctly.
+
+Use that existing implementation as the visual and interaction reference.
+
+The Study Hub chat should have the same overall:
+
+* message layout
+* message spacing
+* typography
+* conversation width
+* composer/input design
+* attachment behavior
+* send button behavior
+* loading state
+* spinner/typing indicator
+* message animations
+* auto-scroll behavior
+* responsive behavior
+* empty state structure
+* generation state
+* error state
+
+Do NOT invent a completely new chat design.
+
+Reuse existing shared chat components/styles where possible.
+
+---
+
+# 2. STUDY HUB CHAT AREA
+
+The main workspace should feel like a modern AI chat application.
+
+When the Study Hub opens with no conversation:
+
+* Show a clean centered welcome/empty state.
+* Keep the composer positioned naturally at the bottom.
+* Do not create unnecessary page scrolling.
+* Do not make the interface look like a traditional dashboard.
+
+Once the student sends a message:
+
+`User message`
+→ `automatic scroll`
+→ `AI loading indicator`
+→ `AI response`
+→ `continued conversation`
+
+The interaction should feel smooth and immediate.
+
+---
+
+# 3. CHAT SCROLLING
+
+Fix the conversation scrolling behavior.
+
+The overall Study Hub should behave like an application rather than a long webpage.
+
+Use:
+
+`viewport`
+→ `Study Hub`
+→ `existing sidebar`
+→ `chat workspace`
+→ `scrollable conversation`
+→ `bottom composer`
+
+The main page should not have unnecessary scrolling.
+
+The conversation area should handle the scrolling.
+
+When the user sends a message:
+
+* Immediately render the user's message.
+* Automatically move the conversation to the correct position.
+* Make the submitted message visible.
+* Show the assistant generation state.
+* Follow the response as it grows/streams.
+
+If the user manually scrolls upward, don't aggressively force them back to the bottom.
+
+---
+
+# 4. GENERATION STATE
+
+The Study Hub must have a real working generation state.
+
+When the student sends a prompt:
+
+1. User message appears immediately.
+2. Send button changes to the appropriate generating state.
+3. Assistant loading indicator appears immediately.
+4. Show a polished spinner or typing animation.
+5. Keep it visible while the AI request is actually processing.
+6. Replace the loading indicator with the real AI response.
+7. Restore the normal composer state when generation finishes.
+
+Do NOT use fake delays or timers to simulate generation.
+
+Use the actual API request state.
+
+Support:
+
+`idle`
+`submitting`
+`generating`
+`streaming`
+`completed`
+`error`
+
+where applicable to the existing architecture.
+
+---
+
+# 5. BLUE ACCENT COLOR
+
+Change the **Study Hub chat/workspace accent color and action/button color to blue**.
+
+This should apply to the chat workspace only.
+
+Use the project's existing blue design tokens if they exist.
+
+Apply blue consistently to relevant:
+
+* Send button
+* Primary action buttons
+* Active chat actions
+* Focus states
+* Links where appropriate
+* Loading/progress accents
+* Interactive controls
+* Selected states inside the chat workspace
+
+Do NOT randomly introduce multiple shades of blue.
+
+Use one consistent primary blue with appropriate lighter/darker states.
+
+### IMPORTANT
+
+Do NOT change the sidebar's existing accent/color system.
+
+The sidebar must remain visually unchanged.
+
+The blue theme applies to the **main Study Hub chat/workspace**, not the sidebar.
+
+---
+
+# 6. COMPOSER
+
+Make the Study Hub composer match the existing Toolbuxx chat composer.
+
+It should:
+
+* remain anchored at the bottom of the chat workspace
+* have the same overall shape and spacing as the existing chat UI
+* support multiline text
+* support Enter to send
+* support Shift+Enter for a new line
+* have a clear blue Send button
+* show the correct generating state
+* prevent duplicate submissions
+* remain usable when the mobile keyboard opens
+
+Do not create an unnecessarily oversized composer.
+
+---
+
+# 7. RESPONSIVE DESIGN
+
+The Study Hub chat must work correctly on:
+
+* Desktop
+* Tablet
+* Mobile
+
+Do NOT create a separate mobile chat interface.
+
+Use the same chat components with responsive styling.
+
+Test:
+
+* 375 × 812
+* 390 × 844
+* 412 × 915
+* 768 × 1024
+* 1440 × 900
+* 1920 × 1080
+
+On mobile:
+
+* Chat content should fill the available screen.
+* No horizontal scrolling.
+* No oversized desktop containers.
+* Composer must remain accessible.
+* Keyboard must not hide the composer.
+* Conversation should scroll correctly.
+* User messages and AI responses must remain visible.
+* Spinner must appear correctly.
+
+---
+
+# 8. DO NOT MODIFY OTHER HUBS
+
+Only modify the Study Hub chat/workspace.
+
+Do NOT change:
+
+* Chat with PDF
+* Creator Hub
+* Business Hub
+* Career Hub
+* other hubs
+* global navigation
+* existing sidebar
+* unrelated components
+
+If a shared component is currently used by multiple hubs, do NOT modify it globally unless you confirm that doing so will not change the appearance of the other hubs.
+
+If necessary, create a Study Hub-specific styling layer while still reusing the existing chat architecture.
+
+---
+
+# 9. ROOT-CAUSE CHECK
+
+Before coding, inspect the existing implementation.
+
+Find:
+
+* current Study Hub chat component
+* existing Toolbuxx chat component that has the desired UI
+* shared message components
+* composer component
+* generation/loading state
+* scrolling implementation
+* responsive CSS
+* existing blue design tokens
+
+Reuse existing components rather than rebuilding functionality unnecessarily.
+
+---
+
+# 10. FINAL RESULT
+
+The finished Study Hub should visually feel like it belongs to the SAME Toolbuxx chat system as the other hubs.
+
+The desired hierarchy is:
+
+**Existing Sidebar (UNCHANGED)**
+
+↓
+
+**Study Hub Main Workspace**
+
+↓
+
+**Clean Chat Conversation**
+
+↓
+
+**User Message**
+
+↓
+
+**AI Spinner / Generation**
+
+↓
+
+**AI Response**
+
+↓
+
+**Fixed Bottom Composer with Blue Send Button**
+
+The most important rule:
+
+**DO NOT TOUCH THE SIDEBAR.**
+
+Only update the Study Hub's main chat/workspace area and make it match the existing Toolbuxx chat UI, with blue accents and buttons.

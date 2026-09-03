@@ -784,7 +784,7 @@ function ChatPdfWorkspacePage() {
                 {messages.length > 0 && (
                   <div className="space-y-3">
                     {messages.map((item) => (
-                      <div key={item.id} className={`flex ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div key={item.id} className={`flex flex-col gap-1 ${item.role === 'user' ? 'items-end' : 'items-start'}`}>
                         <div className={`max-w-[88%] rounded-[20px] px-3.5 py-2.5 text-[14px] leading-6 ${item.role === 'user' ? 'bg-[#0b1320] text-[#ebf5ff]' : 'bg-[#101010] text-[#dfeaf8]'}`}>
                           {editingMessageId === item.id ? (
                             <div className="min-w-[min(72vw,420px)]">
@@ -820,63 +820,65 @@ function ChatPdfWorkspacePage() {
                               ) : (
                                 <div className="whitespace-pre-wrap">{item.content}</div>
                               )}
-                              <div className={`mt-2 flex flex-wrap items-center gap-1 text-[11px] ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                {item.role === 'user' && (
-                                  <button
-                                    type="button"
-                                    onClick={() => beginEditMessage(item.id, item.content)}
-                                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
-                                    aria-label="Edit message"
-                                    title="Edit message"
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                    Edit
-                                  </button>
-                                )}
-                                <button
-                                  type="button"
-                                  onClick={() => void copyMessage(item.id, item.content)}
-                                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
-                                  aria-label={messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy message'}
-                                  title="Copy message"
-                                >
-                                  {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? <Check className="h-3.5 w-3.5 text-[#FFB5D9]" /> : <Copy className="h-3.5 w-3.5" />}
-                                  {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy'}
-                                </button>
-                                {item.role === 'assistant' && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={() => void shareMessage(item.id, item.content)}
-                                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
-                                      aria-label="Share response"
-                                      title="Share response"
-                                    >
-                                      <Share2 className="h-3.5 w-3.5" />
-                                      Share
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        saveCurrentResponse('result', `Response: ${activeDocument?.name ?? 'PDF chat'}`, item.content);
-                                        setMessageActionFeedback({ id: item.id, label: 'Saved' });
-                                      }}
-                                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
-                                      aria-label="Save response"
-                                      title="Save response"
-                                    >
-                                      <Bookmark className="h-3.5 w-3.5" />
-                                      Save
-                                    </button>
-                                  </>
-                                )}
-                                {messageActionFeedback?.id === item.id && messageActionFeedback.label !== 'Copied' && (
-                                  <span className="px-1 text-[#FFB5D9]" role="status">{messageActionFeedback.label}</span>
-                                )}
-                              </div>
                             </>
                           )}
                         </div>
+                        {editingMessageId !== item.id && (
+                          <div className={`flex w-full max-w-[88%] flex-wrap items-center gap-1 text-[11px] ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            {item.role === 'user' && (
+                              <button
+                                type="button"
+                                onClick={() => beginEditMessage(item.id, item.content)}
+                                className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                aria-label="Edit message"
+                                title="Edit message"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => void copyMessage(item.id, item.content)}
+                              className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                              aria-label={messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy message'}
+                              title="Copy message"
+                            >
+                              {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? <Check className="h-3.5 w-3.5 text-[#FFB5D9]" /> : <Copy className="h-3.5 w-3.5" />}
+                              {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy'}
+                            </button>
+                            {item.role === 'assistant' && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => void shareMessage(item.id, item.content)}
+                                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                  aria-label="Share response"
+                                  title="Share response"
+                                >
+                                  <Share2 className="h-3.5 w-3.5" />
+                                  Share
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    saveCurrentResponse('result', `Response: ${activeDocument?.name ?? 'PDF chat'}`, item.content);
+                                    setMessageActionFeedback({ id: item.id, label: 'Saved' });
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#8f9aad] transition hover:bg-white/5 hover:text-white"
+                                  aria-label="Save response"
+                                  title="Save response"
+                                >
+                                  <Bookmark className="h-3.5 w-3.5" />
+                                  Save
+                                </button>
+                              </>
+                            )}
+                            {messageActionFeedback?.id === item.id && messageActionFeedback.label !== 'Copied' && (
+                              <span className="px-1 text-[#FFB5D9]" role="status">{messageActionFeedback.label}</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                     
