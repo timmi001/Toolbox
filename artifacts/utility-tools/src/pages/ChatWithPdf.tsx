@@ -58,6 +58,7 @@ import {
 } from '@/utils/chatPdfStorage';
 import { openFeedbackForm } from '@/components/FeedbackButton';
 import { PdfToolsMenu } from '@/components/PdfToolsMenu';
+import { ChatViewport } from '@/components/ChatViewport';
 
 const MAX_CHAT_PDF_FILES = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILES ?? 12);
 const MAX_CHAT_PDF_FILE_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILE_SIZE ?? 25 * 1024 * 1024);
@@ -197,8 +198,8 @@ function ChatPdfShell({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="min-h-screen bg-[#000000] text-white">
-      <div className="flex min-h-screen flex-col md:flex-row">
+    <ChatViewport className="bg-[#000000] text-white">
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <aside className={`hidden shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[240px]'}`}>
           <button
             type="button"
@@ -301,7 +302,7 @@ function ChatPdfShell({
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-32 pt-4 md:px-5" data-chat-scroll-container>{children}</div>
         </main>
       </div>
-    </div>
+    </ChatViewport>
   );
 }
 

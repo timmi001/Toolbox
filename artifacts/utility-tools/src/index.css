@@ -132,6 +132,14 @@ body {
     padding-bottom: 4.5rem;
   }
 
+  .app-main:has(.chat-viewport) {
+    padding-bottom: 0;
+  }
+
+  .chat-viewport main {
+    padding-bottom: 0;
+  }
+
   [class*="min-h-[calc(100vh-76px)]"] {
     min-height: calc(100svh - 60px);
   }

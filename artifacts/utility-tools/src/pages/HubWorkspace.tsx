@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, Briefcas
 import { Link, useLocation, useRoute } from 'wouter';
 import { generateHubResponse } from '@/lib/hub-ai';
 import { openFeedbackForm } from '@/components/FeedbackButton';
+import { ChatViewport } from '@/components/ChatViewport';
 
 type HubAction = readonly [string, string];
 type HubConfig = {
@@ -799,8 +800,8 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const quickActions = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
 
   return (
-    <div className="min-h-[100dvh] w-full overflow-hidden bg-[#000000] text-white">
-      <div className="flex h-[100dvh] w-full flex-col bg-[#000000]">
+    <ChatViewport className="bg-[#000000] text-white">
+      <div className="flex min-h-0 flex-1 w-full flex-col bg-[#000000]">
         <header className="relative flex items-center justify-between border-b border-[#1A1A1A] bg-[#000000] px-4 pb-2.5 pt-1 md:hidden">
           <div className="flex items-center gap-3">
             <button
@@ -940,8 +941,8 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
             </aside>
           )}
 
-          <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[#000000]">
-            <div className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-[calc(11.25rem+env(safe-area-inset-bottom))] pt-3 md:px-4 md:pb-6">
+          <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#000000]">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-[#000000] px-3 pb-[calc(11.25rem+env(safe-area-inset-bottom))] pt-3 md:px-4 md:pb-6">
               {isAiHub && pdfDocument && (
                 <div className="mb-4 rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3">
                   <div className="flex items-center justify-between gap-3">
@@ -953,7 +954,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
                         <div className="truncate text-sm font-semibold text-white">{pdfDocument.name}.pdf</div>
                         <div className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">{pdfDocument.pageCount} pages · Processed</div>
                       </div>
-                    </div>
+                      </div>
                     <button 
                       type="button" 
                       onClick={() => pdfInputRef.current?.click()} 
@@ -1240,7 +1241,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
           }}
         />
       )}
-    </div>
+    </ChatViewport>
   );
 }
 

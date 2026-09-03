@@ -122,7 +122,13 @@ export default function Home() {
                 <Link key={title} href={href} className="home-card-link">
                   <article className={`home-hub-card home-hub-card-${index} group`}>
                     <h3>{title}</h3>
-                    <HubObject variant={(['orb', 'spark', 'ribbon', 'flower', 'cluster'] as HubObjectVariant[])[index]} />
+                    {index === 0 ? (
+                      <div className="home-object flex items-center justify-center" aria-hidden="true">
+                        <FileText className="h-16 w-16 text-[#5BE4B6]" strokeWidth={1.5} />
+                      </div>
+                    ) : (
+                      <HubObject variant={(['orb', 'spark', 'ribbon', 'flower', 'cluster'] as HubObjectVariant[])[index]} />
+                    )}
                     <p>{description}</p>
                     <span className="home-card-cta">Open Hub<ArrowRight className="transition-transform group-hover:translate-x-1" /></span>
                   </article>
