@@ -628,24 +628,7 @@ export default function StudyHub() {
   );
 
   const renderSection = () => {
-    if (section === "tutor")
-      return (
-        <PreviousStudyChat
-          messages={messages}
-          prompt={prompt}
-          mode={mode}
-          subject={subject}
-          activeMaterial={activeMaterial}
-          status={status}
-          error={error}
-          onPromptChange={setPrompt}
-          onSubmit={() => void submit()}
-          onModeChange={setMode}
-          onClearError={() => setError("")}
-           onUploadMaterial={(file) => void uploadMaterial(file)}
-           onSaveAnswer={saveAnswer}
-        />
-      );
+    if (section === "tutor") return null;
 
     if (section === "subjects")
       return (
