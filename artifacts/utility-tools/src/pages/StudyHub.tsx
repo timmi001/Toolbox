@@ -153,7 +153,7 @@ function PreviousStudyChat({
             </h2>
           </div>
           <span className="hidden items-center gap-2 text-xs text-[#718194] sm:flex">
-            <span className="h-2 w-2 rounded-full bg-[#5BE4B6]" />
+            <span className="h-2 w-2 rounded-full bg-[#2F6DF6]" />
             Tutor ready
           </span>
         </div>
@@ -162,7 +162,7 @@ function PreviousStudyChat({
           {messages.length === 0 ? (
             <div className="flex min-h-full items-center justify-center py-8 text-center">
               <div className="max-w-md">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#245143] bg-[#103027] text-[#5BE4B6]">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#244A8F] bg-[#112C5D] text-[#7FA8FF]">
                   <GraduationCap className="h-7 w-7" />
                 </div>
                 <p className="mt-5 text-sm leading-6 text-[#8492A3]">
@@ -180,15 +180,15 @@ function PreviousStudyChat({
                   className={`flex ${message.role === "student" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === "student" ? "bg-[#16483D] text-[#E7FFF7]" : "border border-[#1A1A1A] bg-[#0A0A0A] text-[#C5D0DB]"}`}
+                    className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === "student" ? "bg-[#112C5D] text-[#E7F0FF]" : "border border-[#1E2D3B] bg-[#0E151D] text-[#CBD6E0]"}`}
                   >
                     {message.text}
                   </div>
                 </div>
               ))}
               {isBusy && (
-                <div className="flex items-center gap-2 text-xs text-[#A9F2D8]">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#5BE4B6]" />
+                <div className="flex items-center gap-2 text-xs text-[#A8C7FF]">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#2F6DF6]" />
                   Tutor is thinking…
                 </div>
               )}
@@ -196,7 +196,7 @@ function PreviousStudyChat({
           )}
         </div>
 
-        <div className="mt-5 shrink-0 border-t border-[#1A1A1A] pt-4">
+        <footer className="sticky bottom-0 z-10 mt-5 shrink-0 border-t border-[#1A1A1A] bg-[#000000] pb-[max(env(safe-area-inset-bottom),0.25rem)] pt-4">
           <div className="flex gap-2 overflow-x-auto border-b border-[#1A1A1A] pb-3 [scrollbar-width:none]">
             {[
               "Explain",
@@ -213,14 +213,14 @@ function PreviousStudyChat({
                   onModeChange(item);
                   onPromptChange(`${item}: `);
                 }}
-                className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-semibold ${mode === item ? "border-[#3DDBC0]/60 bg-[#16483D] text-[#A9F2D8]" : "border-transparent bg-[#0A0A0A] text-[#8492A3] hover:text-white"}`}
+                className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-semibold ${mode === item ? "border-[#2F6DF6]/70 bg-[#112C5D] text-[#A8C7FF]" : "border-transparent bg-[#0A0A0A] text-[#8492A3] hover:text-white"}`}
               >
                 {item}
               </button>
             ))}
           </div>
           {activeMaterial && (
-            <div className="mt-3 flex items-center gap-2 text-xs text-[#A9F2D8]">
+            <div className="mt-3 flex items-center gap-2 text-xs text-[#A8C7FF]">
               <FileText className="h-3.5 w-3.5" />
               <span className="truncate">Using {activeMaterial.name}</span>
             </div>
@@ -237,7 +237,7 @@ function PreviousStudyChat({
               </button>
             </div>
           )}
-          <div className="mt-3 rounded-2xl border border-[#29413F] bg-[#000000] p-3 focus-within:border-[#3DDBC0]/70">
+          <div className="mt-3 rounded-[26px] border border-[#1A1A1A] bg-[#0b0f12] p-2 shadow-[0_-10px_24px_rgba(0,0,0,0.25)] focus-within:border-[#2F6DF6]/70">
             <textarea
               value={prompt}
               onChange={(event) => onPromptChange(event.target.value)}
@@ -247,14 +247,14 @@ function PreviousStudyChat({
                   onSubmit();
                 }
               }}
-              rows={2}
+              rows={1}
               disabled={isBusy}
               placeholder={
                 activeMaterial
                   ? `Ask about ${activeMaterial.name}`
                   : "Ask anything about your studies…"
               }
-              className="w-full resize-none bg-transparent px-2 py-2 text-sm leading-6 text-white outline-none placeholder:text-[#68798A] disabled:opacity-60"
+              className="max-h-28 min-h-[40px] w-full resize-none bg-transparent px-1 py-2 text-[14px] leading-5 text-[#edf4ff] outline-none placeholder:text-[#6c7784] disabled:opacity-60"
             />
             <div className="flex items-center justify-between gap-2 border-t border-[#1A1A1A] pt-2">
               <span className="truncate text-[11px] text-[#718194]">
@@ -264,14 +264,14 @@ function PreviousStudyChat({
                 type="button"
                 onClick={onSubmit}
                 disabled={!prompt.trim() || isBusy}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#5BE4B6] text-[#061410] disabled:opacity-40"
-                aria-label="Send message"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#2F6DF6] text-white shadow-[0_8px_18px_rgba(47,109,246,0.35)] transition hover:bg-[#5C8DFF] disabled:opacity-40"
+                aria-label={isBusy ? "Generating response" : "Send message"}
               >
-                <ArrowLeft className="h-4 w-4 rotate-180" />
+                {isBusy ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : <ArrowLeft className="h-4 w-4 rotate-180" />}
               </button>
             </div>
           </div>
-        </div>
+        </footer>
       </section>
     </div>
   );
@@ -550,9 +550,9 @@ export default function StudyHub() {
       key={key}
       type="button"
       onClick={() => selectSection(key)}
-      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${section === key ? "bg-[#123B35] text-white" : "text-[#b4c0ce] hover:bg-[#111a20] hover:text-white"}`}
+      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${section === key ? "bg-[#112C5D] text-white" : "text-[#b4c0ce] hover:bg-[#111a20] hover:text-white"}`}
     >
-      <Icon className={`h-4 w-4 ${section === key ? "text-[#5BE4B6]" : ""}`} />
+      <Icon className={`h-4 w-4 ${section === key ? "text-[#7FA8FF]" : ""}`} />
       <span>{label}</span>
     </button>
   );
@@ -889,7 +889,6 @@ export default function StudyHub() {
             >
               <ArrowLeft className="h-4 w-4" />
             </Link>
-            <div className="font-bold tracking-wide">TOOLBUXX</div>
             <button
               type="button"
               onClick={() => setDrawerOpen(false)}
