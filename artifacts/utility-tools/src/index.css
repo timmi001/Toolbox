@@ -541,3 +541,41 @@ body {
     inset: -1px;
   }
 }
+
+/* Study tutor surface: an open reading room rather than a dashboard card. */
+.study-tutor-surface {
+  background:
+    radial-gradient(circle at 50% -20%, rgba(49, 105, 94, 0.13), transparent 42%),
+    #0a1016;
+}
+
+.study-tutor-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(125, 153, 163, 0.28) transparent;
+}
+
+.study-tutor-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+
+.study-tutor-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.study-tutor-scroll::-webkit-scrollbar-thumb {
+  border: 0;
+  background: rgba(125, 153, 163, 0.28);
+}
+
+.study-message-enter {
+  animation: study-message-enter 360ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes study-message-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.study-composer-shadow {
+  box-shadow: 0 -22px 44px rgba(7, 12, 17, 0.76);
+}
