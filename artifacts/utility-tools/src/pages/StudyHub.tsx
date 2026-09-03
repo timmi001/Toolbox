@@ -2,13 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowUp,
+  Bot,
   Bookmark,
   BookOpen,
   CalendarDays,
   Check,
   ChevronDown,
-  ChevronLeft,
   Clock3,
+  Copy,
   FileText,
   Flame,
   FolderOpen,
@@ -17,11 +18,9 @@ import {
   Image,
   Menu,
   Mic,
-  PanelLeftClose,
-  PanelLeftOpen,
+  Paperclip,
   Pencil,
   Plus,
-  Search,
   Settings2,
   Sparkles,
   StickyNote,
@@ -119,18 +118,21 @@ function dateLabel(value: string) {
   });
 }
 
-function PreviousStudyChat({
+function TutorChat({
   messages,
   prompt,
   mode,
   subject,
+  subjects,
   activeMaterial,
   status,
   error,
   onPromptChange,
   onSubmit,
   onModeChange,
+  onSubjectChange,
   onClearError,
+  onClearMaterial,
   onUploadMaterial,
   onSaveAnswer,
 }: {
@@ -138,109 +140,368 @@ function PreviousStudyChat({
   prompt: string;
   mode: string;
   subject: string;
+  subjects: string[];
   activeMaterial: StudyMaterial | null;
   status: "idle" | "submitting" | "generating" | "completed" | "error";
   error: string;
   onPromptChange: (value: string) => void;
   onSubmit: () => void;
   onModeChange: (value: string) => void;
+  onSubjectChange: (value: string) => void;
   onClearError: () => void;
+  onClearMaterial: () => void;
   onUploadMaterial: (file: File | undefined) => void;
   onSaveAnswer: () => void;
 }) {
   const isBusy = status === "submitting" || status === "generating";
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [modelOpen, setModelOpen] = useState(false);
+  const [subjectOpen, setSubjectOpen] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const modeOptions = [
+    ["Explain", "Build a clear mental model"],
+    ["Summarize", "Find the essential ideas"],
+    ["Quiz Me", "Practice active recall"],
+    ["Flashcards", "Turn notes into prompts"],
+    ["Solve", "Work through the method"],
+    ["Study Plan", "Map the next steps"],
+  ] as const;
+  const quickStarts = [
+    ["Explain a difficult concept", "Explain this concept simply, then give me one example: "],
+    ["Help me prepare for a test", "Help me prepare for a test on "],
+    ["Make a study plan", "Make a focused study plan for "],
+  ] as const;
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "0px";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 180)}px`;
+  }, [prompt]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [messages, status]);
+
+  const selectMode = (nextMode: string, nextPrompt?: string) => {
+    onModeChange(nextMode);
+    if (nextPrompt !== undefined) onPromptChange(nextPrompt);
+    window.setTimeout(() => textareaRef.current?.focus(), 0);
+  };
+
+  const copyAnswer = (message: StudyMessage) => {
+    if (!navigator.clipboard) return;
+    void navigator.clipboard.writeText(message.text);
+    setCopiedId(message.id);
+    window.setTimeout(() => setCopiedId(null), 1800);
+  };
 
   return (
-    <div className="min-h-[calc(100vh-76px)] bg-[#000000] text-white">
-      <div className="mx-auto max-w-[1420px] px-3 py-4 sm:px-6 lg:px-8 lg:py-6">
-        <section className="rounded-[26px] border border-[#1A1A1A] bg-[#000000] p-4 shadow-none sm:p-6">
-          <div className="mb-5">
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#637387]">
-              AI study tutor
-            </div>
-            <h2 className="mt-1 text-2xl font-bold text-white">
-              What are you studying today?
-            </h2>
+    <section className="study-tutor-surface flex min-h-0 flex-1 flex-col overflow-hidden text-[#edf5f2]">
+      <div className="flex shrink-0 items-center justify-between border-b border-[#1b2c33] px-4 py-3 sm:px-8">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-[#3d7669]/50 bg-[#16332f] text-[#8ee7c8]">
+            <Bot className="h-4 w-4" />
           </div>
-
-          {messages.length === 0 ? (
-            <div className="mb-5 rounded-2xl border border-dashed border-[#1A1A1A] bg-[#000000] p-4 text-sm leading-6 text-[#8492A3]">
-              Ask anything about a topic, upload your notes, or choose a study
-              mode. I&apos;ll explain concepts clearly and help you test yourself.
-            </div>
-          ) : (
-            <div className="mb-5 max-h-[380px] space-y-4 overflow-y-auto rounded-2xl border border-[#1A1A1A] bg-[#000000] p-4">
-              {messages.map((message, index) => (
-                <div
-                  key={`${message.role}-${message.id}-${index}`}
-                  className={`flex ${message.role === "student" ? "justify-end" : "justify-start"}`}
+          <div className="min-w-0">
+            <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#718c91]">
+              Study conversation
+            </p>
+            <p className="truncate text-sm font-semibold text-[#dcebe6]">
+              Focused tutor
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="relative">
+            <button
+              type="button"
+              data-testid="button-tutor-model"
+              onClick={() => {
+                setModelOpen((open) => !open);
+                setSubjectOpen(false);
+              }}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-[11px] text-[#9cb3b2] transition hover:bg-[#15272b] hover:text-[#e7f5ef]"
+              aria-expanded={modelOpen}
+            >
+              <span className="sm:hidden">Tutor</span>
+              <span className="hidden sm:inline">ToolboXX Tutor</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+            {modelOpen && (
+              <div className="absolute right-0 top-11 z-20 w-56 rounded-xl border border-[#294249] bg-[#101c22] p-2 shadow-[0_18px_40px_rgba(0,0,0,.38)]">
+                <p className="px-2 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[#718c91]">
+                  Tutor profile
+                </p>
+                <button
+                  type="button"
+                  data-testid="button-select-tutor-model"
+                  onClick={() => setModelOpen(false)}
+                  className="w-full rounded-lg bg-[#17342f] px-2 py-2 text-left text-xs text-[#c8f4e4]"
                 >
-                  <div
-                    className={`max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === "student" ? "bg-[#16483D] text-[#E7FFF7]" : "border border-[#1A1A1A] bg-[#0A0A0A] text-[#C5D0DB]"}`}
+                  <span className="block font-semibold">ToolboXX Tutor</span>
+                  <span className="mt-0.5 block text-[11px] text-[#8ca9a5]">
+                    Clear explanations with guided practice
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="relative">
+            <button
+              type="button"
+              data-testid="button-tutor-subject"
+              onClick={() => {
+                setSubjectOpen((open) => !open);
+                setModelOpen(false);
+              }}
+              className="flex max-w-[132px] items-center gap-1.5 rounded-lg border border-[#294249] bg-[#101c22] px-2.5 py-2 text-[11px] text-[#c1d5d0] transition hover:border-[#4b877b] hover:text-white"
+              aria-expanded={subjectOpen}
+            >
+              <span className="truncate">{subject}</span>
+              <ChevronDown className="h-3 w-3 shrink-0 text-[#71908d]" />
+            </button>
+            {subjectOpen && (
+              <div className="absolute right-0 top-11 z-20 max-h-64 w-48 overflow-y-auto rounded-xl border border-[#294249] bg-[#101c22] p-1.5 shadow-[0_18px_40px_rgba(0,0,0,.38)]">
+                {subjects.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    data-testid={`button-select-subject-${item.toLowerCase().replace(/\s+/g, "-")}`}
+                    onClick={() => {
+                      onSubjectChange(item);
+                      setSubjectOpen(false);
+                    }}
+                    className={`w-full rounded-lg px-2.5 py-2 text-left text-xs transition ${item === subject ? "bg-[#17342f] text-[#c8f4e4]" : "text-[#9cb3b2] hover:bg-[#172930] hover:text-white"}`}
                   >
-                    {message.text}
-                  </div>
-                </div>
+                    {item}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div ref={scrollRef} className="study-tutor-scroll min-h-0 flex-1 overflow-y-auto">
+        {messages.length === 0 ? (
+          <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center px-5 py-12 sm:px-10 sm:py-20">
+            <div className="max-w-xl">
+              <div className="mb-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#74bbaa]">
+                <span className="h-px w-8 bg-[#3c766a]" />
+                A quieter way to learn
+              </div>
+              <h2 className="max-w-lg font-serif text-4xl leading-[1.05] text-[#eff8f3] sm:text-6xl">
+                What would you like to understand?
+              </h2>
+              <p className="mt-6 max-w-md text-sm leading-7 text-[#8fa6a7] sm:text-base">
+                Bring a question, a difficult passage, or a set of notes. Your
+                tutor will help you build the answer instead of only handing it
+                over.
+              </p>
+            </div>
+            <div className="mt-12 grid max-w-2xl gap-2 sm:grid-cols-3">
+              {quickStarts.map(([label, value], index) => (
+                <button
+                  key={label}
+                  type="button"
+                  data-testid={`button-quick-start-${index}`}
+                  onClick={() => selectMode(index === 1 ? "Quiz Me" : index === 2 ? "Study Plan" : "Explain", value)}
+                  className="group min-h-[76px] rounded-xl border border-[#263b40] bg-[#0d181e]/70 px-3.5 py-3 text-left text-xs text-[#b6cdca] transition hover:-translate-y-0.5 hover:border-[#4a8378] hover:bg-[#132923] hover:text-[#e4f8ef]"
+                >
+                  <span className="mb-3 block h-px w-5 bg-[#5c9d8d] transition-all group-hover:w-9" />
+                  {label}
+                </button>
               ))}
+            </div>
+            <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.16em] text-[#5e777d]">
+              Selected subject · {subject}
+            </p>
+          </div>
+        ) : (
+          <div className="mx-auto w-full max-w-3xl px-4 py-7 sm:px-10 sm:py-10">
+            <div className="mb-8 flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[#60797d]">
+              <span className="h-px flex-1 bg-[#1c3036]" />
+              <span>{subject} · {messages.length} messages</span>
+              <span className="h-px flex-1 bg-[#1c3036]" />
+            </div>
+            <div className="space-y-8">
+              {messages.map((message, index) =>
+                message.role === "student" ? (
+                  <div
+                    key={`${message.role}-${message.id}-${index}`}
+                    data-testid={`message-student-${message.id}`}
+                    className="study-message-enter flex justify-end"
+                  >
+                    <div className="max-w-[88%] rounded-[18px] rounded-br-md bg-[#19483f] px-4 py-3.5 text-sm leading-7 text-[#e4f8ef] shadow-[0_8px_24px_rgba(0,0,0,.16)] sm:max-w-[76%] sm:px-5">
+                      <MessageText text={message.text} />
+                    </div>
+                  </div>
+                ) : (
+                  <article
+                    key={`${message.role}-${message.id}-${index}`}
+                    data-testid={`message-tutor-${message.id}`}
+                    className="study-message-enter flex gap-3 sm:gap-4"
+                  >
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#3b766a]/60 bg-[#14302c] text-[#8ee7c8]">
+                      <GraduationCap className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-xs font-semibold text-[#cde5dc]">Tutor</span>
+                        <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[#607a7b]">
+                          {dateLabel(message.createdAt)}
+                        </span>
+                      </div>
+                      <div className="max-w-2xl text-[15px] leading-8 text-[#c6d7d4]">
+                        <MessageText text={message.text} />
+                      </div>
+                      <div className="mt-4 flex items-center gap-1 border-t border-[#1b3035] pt-2">
+                        <button
+                          type="button"
+                          data-testid={`button-copy-answer-${message.id}`}
+                          onClick={() => copyAnswer(message)}
+                          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[10px] text-[#789292] transition hover:bg-[#14262b] hover:text-[#b9d8ce]"
+                        >
+                          {copiedId === message.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                          {copiedId === message.id ? "Copied" : "Copy"}
+                        </button>
+                        <button
+                          type="button"
+                          data-testid={`button-save-answer-${message.id}`}
+                          onClick={onSaveAnswer}
+                          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[10px] text-[#789292] transition hover:bg-[#14262b] hover:text-[#b9d8ce]"
+                        >
+                          <Bookmark className="h-3 w-3" /> Save answer
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ),
+              )}
               {isBusy && (
-                <div className="flex items-center gap-2 text-xs text-[#A9F2D8]">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#5BE4B6]" />
-                  ToolboXX AI is thinking…
+                <div data-testid="status-tutor-typing" className="flex items-center gap-3">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#3b766a]/60 bg-[#14302c] text-[#8ee7c8]">
+                    <GraduationCap className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-[#8fb6aa]">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#65d4b2]" />
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#65d4b2] [animation-delay:140ms]" />
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#65d4b2] [animation-delay:280ms]" />
+                    <span className="ml-1">Tutor is thinking</span>
+                  </div>
                 </div>
               )}
             </div>
-          )}
+            <div ref={messagesEndRef} className="h-2" />
+          </div>
+        )}
+      </div>
 
-          <div className="flex gap-2 overflow-x-auto border-b border-[#1A1A1A] pb-3 [scrollbar-width:none]">
-            {[
-              "Explain",
-              "Summarize",
-              "Quiz Me",
-              "Flashcards",
-              "Solve",
-              "Study Plan",
-            ].map((item) => (
+      <div className="study-composer-shadow sticky bottom-0 z-10 shrink-0 bg-[#0a1016]/95 px-3 pb-3 pt-2 backdrop-blur-md sm:px-8 sm:pb-5">
+        <div className="mx-auto w-full max-w-3xl">
+          {error && (
+            <div data-testid="status-tutor-error" className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-[#7b4547] bg-[#331d25] px-3 py-2 text-xs text-[#f2c8c9]">
+              <span>{error}</span>
+              <button
+                type="button"
+                data-testid="button-dismiss-tutor-error"
+                onClick={onClearError}
+                aria-label="Dismiss error"
+                className="rounded p-1 text-[#e8a8ac] hover:bg-[#51282e] hover:text-white"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+          {activeMaterial && (
+            <div data-testid="attachment-preview" className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-[#355a55] bg-[#122722] px-3 py-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#20463e] text-[#8ee7c8]">
+                  <FileText className="h-3.5 w-3.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-[#d3eee3]">{activeMaterial.name}</p>
+                  <p className="text-[10px] text-[#83aa9e]">
+                    {activeMaterial.status === "processing" ? "Processing material" : "Attached as study context"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                data-testid="button-remove-attachment"
+                onClick={onClearMaterial}
+                aria-label="Remove attached material"
+                className="rounded-md p-1 text-[#8cacaa] hover:bg-[#1d3b36] hover:text-white"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+          {messages.length > 0 && (
+            <div className="mb-2 flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]">
+              {[
+                ["Simplify", "Simplify the last explanation: "],
+                ["Test me", "Test me on this topic: "],
+                ["Give an example", "Give me one concrete example of this: "],
+              ].map(([label, value]) => (
+                <button
+                  key={label}
+                  type="button"
+                  data-testid={`button-follow-up-${label.toLowerCase().replace(/\s+/g, "-")}`}
+                  onClick={() => selectMode(label === "Test me" ? "Quiz Me" : "Explain", value)}
+                  className="shrink-0 rounded-full border border-[#274046] bg-[#101d22] px-3 py-1.5 text-[10px] text-[#9eb9b3] transition hover:border-[#4d887b] hover:bg-[#153029] hover:text-[#d3eee3]"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="mb-2 flex gap-1 overflow-x-auto pb-1 [scrollbar-width:none]">
+            {modeOptions.map(([item, description]) => (
               <button
                 key={item}
                 type="button"
-                onClick={() => {
-                  onModeChange(item);
-                  onPromptChange(`${item}: `);
-                }}
-                className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-semibold ${mode === item ? "border-[#3DDBC0]/60 bg-[#16483D] text-[#A9F2D8]" : "border-transparent bg-[#0A0A0A] text-[#8492A3] hover:text-white"}`}
+                data-testid={`button-mode-${item.toLowerCase().replace(/\s+/g, "-")}`}
+                onClick={() => selectMode(item, `${item}: `)}
+                title={description}
+                className={`shrink-0 rounded-md px-2 py-1 text-[10px] transition ${mode === item ? "bg-[#17342f] text-[#b8eedb]" : "text-[#6f888b] hover:bg-[#14272b] hover:text-[#bdd6d0]"}`}
               >
                 {item}
               </button>
             ))}
           </div>
-
-          <div className="mt-4 rounded-2xl border border-[#29413F] bg-[#000000] p-3 focus-within:border-[#3DDBC0]/70">
+          <div className="rounded-[17px] border border-[#35545a] bg-[#101a20] transition focus-within:border-[#589b8b] focus-within:shadow-[0_0_0_3px_rgba(78,150,132,.10)]">
             <textarea
+              ref={textareaRef}
               value={prompt}
               onChange={(event) => onPromptChange(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
+                if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
                   event.preventDefault();
                   onSubmit();
                 }
               }}
-              rows={4}
+              rows={1}
               disabled={isBusy}
-              placeholder={
-                activeMaterial
-                  ? `Ask about ${activeMaterial.name}`
-                  : "Ask a question, upload your notes, or tell me what you want to learn…"
-              }
-              className="w-full resize-none bg-transparent px-2 py-2 text-sm leading-7 text-white outline-none placeholder:text-[#718194] disabled:opacity-60"
+              data-testid="input-tutor-prompt"
+              placeholder={activeMaterial ? `Ask about ${activeMaterial.name}` : "Ask anything about your studies..."}
+              className="max-h-[180px] min-h-[52px] w-full resize-none overflow-y-auto bg-transparent px-4 pb-1 pt-3.5 text-sm leading-7 text-[#e8f2ef] outline-none placeholder:text-[#71898d] disabled:opacity-60"
             />
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#1A1A1A] pt-3">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between gap-2 border-t border-[#24383d] px-2.5 py-2">
+              <div className="flex min-w-0 items-center gap-0.5">
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".txt,.md,.csv,.pdf,text/plain,application/pdf"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,image/*,text/plain,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
                   className="hidden"
+                  data-testid="input-tutor-material"
                   onChange={(event) => {
                     const file = event.target.files?.[0];
                     if (file) onUploadMaterial(file);
@@ -249,101 +510,82 @@ function PreviousStudyChat({
                 />
                 <button
                   type="button"
+                  data-testid="button-attach-material"
                   onClick={() => fileInputRef.current?.click()}
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs ${activeMaterial ? "text-[#5BE4B6]" : "text-[#91A0B0]"} hover:bg-[#16242E] hover:text-white`}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] text-[#8ea9a5] transition hover:bg-[#172b30] hover:text-[#d8eee6]"
                 >
-                  <Upload className="h-3.5 w-3.5" />
-                  {activeMaterial ? "Notes loaded" : "Notes / PDF"}
+                  <Paperclip className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Attach notes</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => onPromptChange(`${prompt}${prompt ? "\n" : ""}Attached image: `)}
-                  className="rounded-lg p-1.5 text-[#8190A0] hover:bg-[#16242E] hover:text-white"
-                  aria-label="Upload image"
+                  data-testid="button-describe-image"
+                  onClick={() => onPromptChange(`${prompt}${prompt ? "\n" : ""}Describe the image I should understand: `)}
+                  className="rounded-lg p-1.5 text-[#71898d] transition hover:bg-[#172b30] hover:text-[#d8eee6]"
+                  aria-label="Describe an image"
                 >
-                  <Image className="h-4 w-4" />
+                  <Image className="h-3.5 w-3.5" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => onClearError()}
-                  className="rounded-lg p-1.5 text-[#8190A0] hover:bg-[#16242E] hover:text-white"
-                  aria-label="Voice input"
+                  data-testid="button-voice-input"
+                  onClick={() => setModelOpen(false)}
+                  className="rounded-lg p-1.5 text-[#71898d] transition hover:bg-[#172b30] hover:text-[#d8eee6]"
+                  aria-label="Voice input unavailable"
+                  title="Voice input is not available"
                 >
-                  <Mic className="h-4 w-4" />
+                  <Mic className="h-3.5 w-3.5" />
                 </button>
+                <span className="hidden pl-2 font-mono text-[9px] text-[#587177] sm:inline">Shift + Enter for a new line</span>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="hidden items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:bg-[#16242E] hover:text-white sm:inline-flex"
-                >
-                  {subject} <ChevronDown className="h-3 w-3" />
-                </button>
-                <button
-                  type="button"
-                  className="hidden items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] text-[#9EACBB] hover:bg-[#16242E] hover:text-white sm:inline-flex"
-                >
-                  Intermediate <ChevronDown className="h-3 w-3" />
-                </button>
-                <button
-                  type="button"
-                  onClick={onSubmit}
-                  disabled={!prompt.trim() || isBusy}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#10B981] text-[#04120D] transition hover:bg-[#34D399] disabled:opacity-40"
-                  aria-label={isBusy ? "Generating response" : "Ask tutor"}
-                >
-                  {isBusy ? (
-                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#04120D]/40 border-t-[#04120D]" />
-                  ) : (
-                    <ArrowUp className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
+              <button
+                type="button"
+                data-testid="button-submit-tutor"
+                onClick={onSubmit}
+                disabled={!prompt.trim() || isBusy}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#71d7b5] text-[#082019] transition hover:bg-[#9ae9cd] disabled:cursor-not-allowed disabled:opacity-35"
+                aria-label={isBusy ? "Tutor is generating" : "Send question"}
+              >
+                {isBusy ? (
+                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#082019]/30 border-t-[#082019]" />
+                ) : (
+                  <ArrowUp className="h-4 w-4" />
+                )}
+              </button>
             </div>
           </div>
-
-          {error && (
-            <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-red-950/30 px-4 py-3 text-sm text-red-200">
-              <span>{error}</span>
-              <button
-                type="button"
-                onClick={onClearError}
-                aria-label="Dismiss error"
-                className="text-red-200 hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-
-          {messages.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => onPromptChange("Simplify the explanation: ")}
-                className="rounded-lg border border-[#1A1A1A] bg-[#0A0A0A] px-3 py-2 text-xs text-[#A9F2D8]"
-              >
-                Simplify explanation
-              </button>
-              <button
-                type="button"
-                onClick={() => onPromptChange("Test me on this topic: ")}
-                className="rounded-lg border border-[#1A1A1A] bg-[#0A0A0A] px-3 py-2 text-xs text-[#A9F2D8]"
-              >
-                Test me
-              </button>
-              <button
-                type="button"
-                onClick={onSaveAnswer}
-                className="inline-flex items-center gap-1 rounded-lg border border-[#1A1A1A] bg-[#0A0A0A] px-3 py-2 text-xs text-[#A9F2D8]"
-              >
-                <Bookmark className="h-3.5 w-3.5" /> Save answer
-              </button>
-            </div>
-          )}
-        </section>
+          <p className="pt-2 text-center text-[10px] text-[#5d757b]">
+            Tutor responses are a starting point. Check important details against your course material.
+          </p>
+        </div>
       </div>
-    </div>
+    </section>
+  );
+}
+
+function MessageText({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+  return (
+    <>
+      {parts.map((part, index) =>
+        /^https?:\/\//.test(part) ? (
+          <a
+            key={`${part}-${index}`}
+            href={part}
+            target="_blank"
+            rel="noreferrer"
+            data-testid={`link-message-${index}`}
+            className="break-all text-[#8ee7c8] underline decoration-[#4a8879] underline-offset-2 hover:text-[#c6f5e4]"
+          >
+            {part}
+          </a>
+        ) : (
+          <span key={`${index}-${part.slice(0, 8)}`} className="whitespace-pre-wrap">
+            {part}
+          </span>
+        ),
+      )}
+    </>
   );
 }
 
@@ -392,10 +634,6 @@ export default function StudyHub() {
   const [streak, setStreak] = useState(() =>
     Number(localStorage.getItem("toolbuxx_study_streak") ?? 0),
   );
-  const [inputRef] = useState(() => ({
-    current: null as HTMLInputElement | null,
-  }));
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const activeMaterial =
     materials.find((item) => item.id === activeMaterialId) ?? null;
 
@@ -424,13 +662,6 @@ export default function StudyHub() {
     setSessions(nextSessions);
     write(STORAGE.sessions, nextSessions);
   };
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "end",
-    });
-  }, [messages, status]);
 
   const submit = async (requestedPrompt = prompt) => {
     const value = requestedPrompt.trim();
@@ -601,6 +832,14 @@ export default function StudyHub() {
     setSaved(next);
     write(STORAGE.saved, next);
   };
+  const changeSubject = (nextSubject: string) => {
+    setSubject(nextSubject);
+    localStorage.setItem("toolbuxx_study_subject", nextSubject);
+  };
+  const clearActiveMaterial = () => {
+    setActiveMaterialId(null);
+    localStorage.removeItem("toolbuxx_study_material");
+  };
   const filteredSessions = useMemo(
     () =>
       sessions.filter((item) =>
@@ -628,7 +867,27 @@ export default function StudyHub() {
   );
 
   const renderSection = () => {
-    if (section === "tutor") return null;
+    if (section === "tutor")
+      return (
+        <TutorChat
+          messages={messages}
+          prompt={prompt}
+          mode={mode}
+          subject={subject}
+          subjects={subjects}
+          activeMaterial={activeMaterial}
+          status={status}
+          error={error}
+          onPromptChange={setPrompt}
+          onSubmit={() => void submit()}
+          onModeChange={setMode}
+          onSubjectChange={changeSubject}
+          onClearError={() => setError("")}
+          onClearMaterial={clearActiveMaterial}
+          onUploadMaterial={uploadMaterial}
+          onSaveAnswer={saveAnswer}
+        />
+      );
 
     if (section === "subjects")
       return (

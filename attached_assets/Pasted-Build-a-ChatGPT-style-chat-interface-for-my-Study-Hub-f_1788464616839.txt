@@ -1,0 +1,156 @@
+Build a **ChatGPT-style chat interface for my Study Hub**, focusing ONLY on the main chat UI. **Do not build, add, or modify any sidebar, navigation sidebar, dashboard cards, or hub navigation.**
+
+### Overall Design
+
+Create a clean, modern, minimal AI chat interface closely inspired by the current ChatGPT conversation experience.
+
+The chat should occupy the **entire available content area** and feel like a native AI assistant rather than a traditional website.
+
+### Chat Layout
+
+**1. Top Header**
+
+* Minimal fixed header.
+* Left side: Study AI / model name with a small dropdown chevron.
+* Right side: subtle conversation/action controls if needed.
+* Keep the header extremely clean.
+* No sidebar.
+
+**2. Empty Chat State**
+When there is no conversation:
+
+* Center a friendly heading such as:
+  **"What are you studying today?"**
+* Add a short supporting description:
+  **"Ask questions, explain difficult topics, summarize materials, or prepare for your exams."**
+* Keep the empty state vertically centered and spacious.
+* Do NOT use large cards.
+
+**3. User Messages**
+
+* User messages should appear naturally aligned within the conversation.
+* Clean typography.
+* No oversized colored message bubbles.
+* Maintain generous spacing between messages.
+* Support multiline messages.
+* Preserve formatting, links, lists, equations, and uploaded-file references.
+
+**4. AI Messages**
+
+* AI responses should use a clean ChatGPT-style layout.
+* Excellent typography and line spacing for long educational answers.
+* Support:
+
+  * Markdown
+  * Headings
+  * Bold/italic text
+  * Numbered lists
+  * Bullet lists
+  * Tables
+  * Code blocks
+  * Mathematical notation
+  * Citations/references
+* AI responses should never be trapped inside a small card.
+* Responses should expand naturally across the available content width.
+
+**5. File Uploads**
+Allow users to attach study materials such as:
+
+* PDF
+* DOC/DOCX
+* PPT/PPTX
+* Images
+* TXT
+
+Show uploaded files as compact attachment previews above the user's message.
+
+### Composer
+
+Create a **ChatGPT-style bottom message composer** that remains accessible while scrolling.
+
+The composer should:
+
+* Be centered.
+* Have a rounded rectangular container.
+* Have a multiline text input.
+* Automatically expand vertically as the user types.
+* Include an attachment/upload button.
+* Include a send button.
+* Include any relevant Study Hub tools inside the composer without making it visually crowded.
+
+Placeholder:
+**"Ask anything about your studies..."**
+
+The composer should remain visually attached to the bottom of the chat experience with a subtle gradient/fade above it.
+
+### Conversation Behavior
+
+Implement realistic chat behavior:
+
+* User sends a message → immediately display the user message.
+* AI response appears below it.
+* Show a subtle animated typing/loading indicator while generating.
+* Automatically scroll to the newest message.
+* Allow the user to manually scroll through the conversation.
+* Do NOT make the entire page unnecessarily scrollable when there is no conversation.
+* Keep the composer fixed/sticky at the bottom.
+* When the keyboard opens on mobile, keep the composer visible above the keyboard.
+
+### Responsive Design
+
+The interface must work perfectly on:
+
+* Desktop
+* Laptop
+* Tablet
+* Mobile
+
+On mobile:
+
+* Chat should fill **100% of the available screen width and height**.
+* Remove unnecessary margins, frames, borders, and outer containers.
+* Do not create a gray/white frame around the chat.
+* Do not make the chat look like a card sitting inside another page.
+* Messages should use appropriate horizontal padding.
+* Composer should sit flush with the bottom safe area.
+* Prevent horizontal scrolling.
+* Prevent content clipping.
+
+### Visual Style
+
+Use:
+
+* Minimal modern UI
+* ChatGPT-inspired spacing and proportions
+* Clean typography
+* Subtle borders
+* Soft rounded corners
+* Neutral background
+* High readability
+* Smooth transitions
+* No excessive shadows
+* No giant cards
+* No decorative illustrations
+* No unnecessary gradients
+
+The chat should feel **premium, focused, academic, and distraction-free**.
+
+### Important
+
+This task is ONLY for the **Study Hub chat interface**.
+
+DO NOT:
+
+* Create a sidebar
+* Create a dashboard
+* Create hub cards
+* Create navigation
+* Create a separate landing page
+* Add unnecessary tool panels
+* Add a second header
+* Add duplicate chat titles
+* Put the chat inside a framed/boxed container
+
+The final result should look and behave like a **full-screen ChatGPT conversation interface customized for studying**, while keeping the existing Study Hub application structure intact.
+
+**Do not change the existing backend, AI API, authentication, routing, or functionality. Only build/refine the chat UI and its front-end interaction states.**
