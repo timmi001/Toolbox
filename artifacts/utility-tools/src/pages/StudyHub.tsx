@@ -109,6 +109,7 @@ function TutorXChat({
   onSubmit,
   onAttach,
   onVoice,
+  onOpenMenu,
   onClearError,
 }: {
   subject: string;
@@ -123,15 +124,24 @@ function TutorXChat({
   onSubmit: () => void;
   onAttach: () => void;
   onVoice: () => void;
+  onOpenMenu: () => void;
   onClearError: () => void;
 }) {
   const busy = status === "submitting" || status === "generating";
   const quickActions = ["Explain", "Summarize", "Quiz Me", "Study Plan"];
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-[#08090D] text-white">
+    <section className="relative flex min-h-0 flex-1 flex-col bg-[#08090D] text-white">
       <header className="flex h-16 shrink-0 items-center border-b border-[#24232D] px-4 sm:px-8">
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onOpenMenu}
+            className="md:hidden"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#2F6DF6]/40 bg-[#112C5D] text-[#A8C7FF]">
             <GraduationCap className="h-4 w-4" />
           </div>
@@ -142,7 +152,7 @@ function TutorXChat({
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-8 sm:px-8">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-8 pb-44 sm:px-8 sm:pb-44">
         <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center">
           {messages.length === 0 ? (
             <div className="text-center">
@@ -174,7 +184,7 @@ function TutorXChat({
         </div>
       </div>
 
-      <footer className="shrink-0 border-t border-[#24232D] bg-[#08090D] px-4 pb-5 pt-4 sm:px-8">
+      <footer className="absolute bottom-0 left-0 right-0 z-10 border-t border-[#24232D] bg-[#08090D] px-4 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 sm:px-8">
         <div className="mx-auto max-w-3xl">
           <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
             {quickActions.map((action, index) => (
@@ -401,6 +411,7 @@ export default function StudyHub() {
           onSubmit={() => void submitTutorPrompt()}
           onAttach={() => inputRef.current?.click()}
           onVoice={() => setError("Voice input is not available in this browser.")}
+          onOpenMenu={() => setDrawerOpen(true)}
           onClearError={() => setError("")}
         />
       );
@@ -698,7 +709,7 @@ export default function StudyHub() {
   };
 
   return (
-    <div className="bg-[#090D12] text-white">
+    <div className="h-[100dvh] min-h-screen overflow-hidden bg-[#090D12] text-white">
       <input
         ref={(element) => {
           inputRef.current = element;
@@ -711,7 +722,7 @@ export default function StudyHub() {
           event.target.value = "";
         }}
       />
-      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <div className="flex h-full min-h-0 flex-1 flex-col md:flex-row">
         <aside
           className={`fixed inset-y-0 left-0 z-50 flex w-[min(86vw,280px)] flex-col border-r border-[#1B2936] bg-[#090D12] p-3 transition-transform md:relative md:z-0 md:w-[250px] md:translate-x-0 ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
@@ -756,28 +767,6 @@ export default function StudyHub() {
           onClick={() => setDrawerOpen(false)}
         />
         <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <header className="flex h-14 shrink-0 items-center justify-between border-b border-[#1B2936] px-4">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(true)}
-                className="md:hidden"
-                aria-label="Open menu"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.2em] text-[#637387]">
-                  Study Hub
-                </div>
-                <div className="text-sm font-semibold">
-                  {section === "tutor"
-                    ? subject
-                    : section[0].toUpperCase() + section.slice(1)}
-                </div>
-              </div>
-            </div>
-          </header>
           <div className="min-h-0 flex-1 overflow-hidden">
             {renderSection()}
           </div>
