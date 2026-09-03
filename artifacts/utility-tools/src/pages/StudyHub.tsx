@@ -132,7 +132,7 @@ function TutorXChat({
     <section className="flex min-h-0 flex-1 flex-col bg-[#08090D] text-white">
       <header className="flex h-16 shrink-0 items-center border-b border-[#24232D] px-4 sm:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#7654D9]/40 bg-[#241846] text-[#B59BFF]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#2F6DF6]/40 bg-[#112C5D] text-[#A8C7FF]">
             <GraduationCap className="h-4 w-4" />
           </div>
           <div>
@@ -146,7 +146,7 @@ function TutorXChat({
         <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center">
           {messages.length === 0 ? (
             <div className="text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#7654D9]/40 bg-[#211640] text-[#B59BFF] shadow-[0_0_36px_rgba(118,84,217,0.16)]">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#2F6DF6]/40 bg-[#112C5D] text-[#A8C7FF] shadow-[0_0_36px_rgba(47,109,246,0.16)]">
                 <GraduationCap className="h-7 w-7" />
               </div>
               <h1 className="mt-7 text-3xl font-bold tracking-tight sm:text-5xl">
@@ -163,12 +163,12 @@ function TutorXChat({
             <div className="space-y-5 pb-8">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === "student" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === "student" ? "bg-[#704ED1] text-white" : "border border-[#2A2934] bg-[#12121A] text-[#D7D3E1]"}`}>
+                  <div className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7 ${message.role === "student" ? "bg-[#2F6DF6] text-white" : "border border-[#2A2934] bg-[#12121A] text-[#D7D3E1]"}`}>
                     {message.text}
                   </div>
                 </div>
               ))}
-              {busy && <div className="text-xs text-[#B59BFF]">Tutor X is thinking...</div>}
+              {busy && <div className="text-xs text-[#A8C7FF]">Tutor X is thinking...</div>}
             </div>
           )}
         </div>
@@ -185,7 +185,7 @@ function TutorXChat({
                   onModeChange(action);
                   onPromptChange(`${action}: `);
                 }}
-                className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition ${mode === action || (index === 0 && !mode) ? "border-[#704ED1] bg-[#704ED1] text-white" : "border-[#302D3A] bg-[#15141B] text-[#AAA5B7] hover:border-[#7654D9] hover:text-white"}`}
+                className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition ${mode === action || (index === 0 && !mode) ? "border-[#2F6DF6] bg-[#2F6DF6] text-white" : "border-[#302D3A] bg-[#15141B] text-[#AAA5B7] hover:border-[#2F6DF6] hover:text-white"}`}
               >
                 {action}
               </button>
@@ -197,9 +197,9 @@ function TutorXChat({
               <button type="button" onClick={onClearError} className="font-semibold text-white underline">Dismiss</button>
             </div>
           )}
-          {activeMaterial && <div className="mb-2 truncate text-xs text-[#B59BFF]">Using {activeMaterial.name}</div>}
-          <div className="flex items-center gap-2 rounded-full border border-[#35313F] bg-[#17161D] px-2 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.28)] focus-within:border-[#7654D9]">
-            <button type="button" onClick={onAttach} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#9D98AA] transition hover:bg-[#29243B] hover:text-white" aria-label="Attach study material">
+          {activeMaterial && <div className="mb-2 truncate text-xs text-[#A8C7FF]">Using {activeMaterial.name}</div>}
+          <div className="flex items-center gap-2 rounded-full border border-[#35313F] bg-[#17161D] px-2 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.28)] focus-within:border-[#2F6DF6]">
+            <button type="button" onClick={onAttach} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#9D98AA] transition hover:bg-[#172C50] hover:text-white" aria-label="Attach study material">
               <Paperclip className="h-4 w-4" />
             </button>
             <textarea
@@ -215,10 +215,10 @@ function TutorXChat({
               placeholder="Ask Tutor X"
               className="max-h-28 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-[#716D7B]"
             />
-            <button type="button" onClick={onVoice} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#9D98AA] transition hover:bg-[#29243B] hover:text-white" aria-label="Voice input">
+            <button type="button" onClick={onVoice} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#9D98AA] transition hover:bg-[#172C50] hover:text-white" aria-label="Voice input">
               <Mic className="h-4 w-4" />
             </button>
-            <button type="button" onClick={onSubmit} disabled={!prompt.trim() || busy} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#704ED1] text-white transition hover:bg-[#8465E0] disabled:cursor-not-allowed disabled:opacity-40" aria-label="Send message">
+            <button type="button" onClick={onSubmit} disabled={!prompt.trim() || busy} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2F6DF6] text-white transition hover:bg-[#5C8DFF] disabled:cursor-not-allowed disabled:opacity-40" aria-label="Send message">
               <ArrowUp className="h-4 w-4" />
             </button>
           </div>
@@ -748,7 +748,6 @@ export default function StudyHub() {
           </div>
           <div className="space-y-1 border-t border-[#1B2936] pt-3">
             {navButton("settings", "Settings", Settings2)}
-            {navButton("profile", "Profile", UserRound)}
             {navButton("upgrade", "Upgrade", Zap)}
           </div>
         </aside>
