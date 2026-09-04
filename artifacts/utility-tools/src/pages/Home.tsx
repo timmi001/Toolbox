@@ -5,6 +5,7 @@ import {
   BarChart3,
   BookOpen,
   BriefcaseBusiness,
+  Camera,
   CalendarDays,
   FileText,
   GraduationCap,
@@ -19,7 +20,7 @@ import './Home.css';
 
 const HUB_CARDS = [
   { title: 'Chat with PDF', href: '/chat-with-pdf', description: 'Upload a PDF and get clear summaries, notes, and document analysis in one focused workspace.', icon: FileText, accent: '#5BE4B6', gradient: 'from-[#123E37] via-[#102D30] to-[#101A28]', glow: 'rgba(91,228,182,0.24)' },
-  { title: 'Creator Studio', href: '/hub/creator', description: 'Turn rough ideas into polished content and creative direction.', icon: Wand2, accent: '#FF72C2', gradient: 'from-[#4C1F43] via-[#33203C] to-[#171A2B]', glow: 'rgba(255,114,194,0.24)' },
+  { title: 'Creator Studio', href: '/hub/creator', description: 'Turn rough ideas into polished content and creative direction.', icon: Camera, accent: '#FF72C2', gradient: 'from-[#4C1F43] via-[#33203C] to-[#171A2B]', glow: 'rgba(255,114,194,0.24)' },
   { title: 'Study Hub', href: '/hub/study', description: 'Learn faster, practice more and build a better study routine.', icon: GraduationCap, accent: '#6E9BFF', gradient: 'from-[#1C3569] via-[#17294E] to-[#131D31]', glow: 'rgba(110,155,255,0.24)' },
   { title: 'Career Path', href: '/hub/career', description: 'Prepare for your next opportunity with practical AI guidance.', icon: BriefcaseBusiness, accent: '#B18AFF', gradient: 'from-[#39265E] via-[#292244] to-[#171A2C]', glow: 'rgba(177,138,255,0.24)' },
   { title: 'Personal Finance', href: '/hub/business', description: 'Plan, organize and grow your business in one focused workspace.', icon: BarChart3, accent: '#F5C05A', gradient: 'from-[#55401D] via-[#3A2E20] to-[#1B1D2A]', glow: 'rgba(245,192,90,0.24)' },
@@ -120,17 +121,13 @@ export default function Home() {
           <section className="home-hubs">
             <div className="home-section-label">Start here</div>
             <div className="home-card-rail">
-              {HUB_CARDS.map(({ title, href, description }, index) => (
+              {HUB_CARDS.map(({ title, href, description, icon: Icon }, index) => (
                 <Link key={title} href={href} className="home-card-link">
                   <article className={`home-hub-card home-hub-card-${index} group`}>
                     <h3>{title}</h3>
-                    {index === 0 ? (
-                      <div className="home-object flex items-center justify-center" aria-hidden="true">
-                        <FileText className="h-16 w-16 text-[#EF4444]" strokeWidth={1.5} />
-                      </div>
-                    ) : (
-                      <HubObject variant={(['orb', 'spark', 'ribbon', 'flower', 'cluster'] as HubObjectVariant[])[index]} />
-                    )}
+                    <div className={`home-object flex items-center justify-center ${index === 1 ? 'home-object-camera' : ''} ${index === 2 ? 'home-object-study' : ''} ${index === 4 ? 'home-object-finance' : ''}`} aria-hidden="true">
+                      <Icon className="h-16 w-16" strokeWidth={1.5} />
+                    </div>
                     <p>{description}</p>
                     <span className="home-card-cta">Open Hub<ArrowRight className="transition-transform group-hover:translate-x-1" /></span>
                   </article>
