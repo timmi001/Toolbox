@@ -225,31 +225,21 @@ function ChatPdfShell({
         </aside>
 
         <main className="flex min-w-0 flex-1 flex-col">
-          <header className="flex items-center justify-between border-b border-[#1A1A1A] bg-[#000000] px-4 py-3 md:px-5">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                aria-label="Open menu"
-                onClick={() => setMenuOpen((value) => !value)}
-                aria-expanded={menuOpen}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef] md:hidden"
-              >
-                {menuOpen ? <X className="h-4 w-4" /> : (
-                  <div className="flex flex-col gap-1.5">
-                    <span className="block h-0.5 w-4 rounded-full bg-current" />
-                    <span className="block h-0.5 w-4 rounded-full bg-current" />
-                    <span className="block h-0.5 w-4 rounded-full bg-current" />
-                  </div>
-                )}
-              </button>
-              <div className="min-w-0">
-                {subtitle && <div className="text-[10px] uppercase tracking-[0.2em] text-[#6b7786]">{subtitle}</div>}
-                <div className="truncate text-sm font-semibold text-white">{title}</div>
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setMenuOpen((value) => !value)}
+            aria-expanded={menuOpen}
+            className="fixed left-3 top-3 z-40 flex h-9 w-9 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef] md:hidden"
+          >
+            {menuOpen ? <X className="h-4 w-4" /> : (
+              <div className="flex flex-col gap-1.5">
+                <span className="block h-0.5 w-4 rounded-full bg-current" />
+                <span className="block h-0.5 w-4 rounded-full bg-current" />
+                <span className="block h-0.5 w-4 rounded-full bg-current" />
               </div>
-            </div>
-
-            <PdfToolsMenu />
-          </header>
+            )}
+          </button>
 
           {menuOpen && (
             <div className="fixed inset-0 z-50 md:hidden">
