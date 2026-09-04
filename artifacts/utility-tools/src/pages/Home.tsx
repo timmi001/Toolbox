@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { generateHubResponse } from '@/lib/hub-ai';
 import { getDailyBrief, saveDailyBrief } from '@/utils/dailyBriefStorage';
+import { HubFooter } from '@/components/HubFooter';
 import './Home.css';
 
 const HUB_CARDS = [
@@ -137,6 +138,8 @@ export default function Home() {
               ))}
             </div>
           </section>
+
+          <HubFooter />
         </div>
       </div>
     </div>

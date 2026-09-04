@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Check, ChevronDown, Clock3, Code2, Copy, Download, FileText, FolderOpen, Image, Paperclip, Plus, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2, X, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, ArrowUp, ArrowRight, BarChart3, Bookmark, BookOpen, BriefcaseBusiness, Calculator, CalendarDays, Check, ChevronDown, Clock3, Code2, Copy, Download, FileText, FolderOpen, Image, Paperclip, Plus, Presentation, RotateCcw, Route, Search, Settings2, Sparkles, Target, ThumbsDown, ThumbsUp, Trash2, Trophy, TrendingUp, UserRound, Wand2, Video, Mic, AudioLines, Captions, Crop, Eraser, Film, ImagePlus, Layers3, ListChecks, MessageCircleQuestion, MoreHorizontal, Music2, PenLine, Play, Scissors, SlidersHorizontal, Upload, Volume2, X, Zap, type LucideIcon } from 'lucide-react';
 import { Link, useLocation, useRoute } from 'wouter';
 import { generateHubResponse } from '@/lib/hub-ai';
 import { openFeedbackForm } from '@/components/FeedbackButton';
@@ -17,7 +17,7 @@ type HubConfig = {
 
 const HUBS = {
   ai: { title: 'Chat with PDF', description: 'Upload PDFs and analyze them with summaries, key insights, and focused document guidance.', icon: FileText, color: '#FF66B8', actions: [] as HubAction[] },
-  creator: { title: 'Creator Studio', description: 'Turn rough ideas into polished content, campaigns, and social posts.', icon: Wand2, color: '#46E3B5', actions: [] as HubAction[] },
+  creator: { title: 'Creator Studio', description: 'Turn rough ideas into polished content, campaigns, and social posts.', icon: Wand2, color: '#D1D5DB', actions: [] as HubAction[] },
   study: { title: 'Study Hub', description: 'Learn, practice, and build a study routine with focused AI guidance.', icon: FileText, color: '#5C8DFF', actions: [] as HubAction[] },
   career: { title: 'Career Path', description: 'Prepare for your next opportunity with focused AI guidance.', icon: FileText, color: '#A779FF', actions: [] as HubAction[] },
   business: { title: 'Personal Finance', description: 'Plan, research, and develop business ideas in one focused workspace.', icon: Wand2, color: '#F7B83B', actions: [] as HubAction[] },
@@ -517,7 +517,7 @@ const UNIFIED_HUBS = {
     title: 'Creator Studio',
     subtitle: 'Create polished content, campaigns, and creative direction with AI.',
     icon: Wand2,
-    color: '#46E3B5',
+    color: '#D1D5DB',
     tools: [] as HubAction[],
     modes: [['Create', 'Turn an idea into production-ready content.'], ['Plan', 'Shape a clear creative brief and direction.'], ['Polish', 'Improve tone, structure, and clarity.'], ['Repurpose', 'Adapt one idea for multiple formats.']],
   },
@@ -646,6 +646,187 @@ function CareerDestinationPlaceholder({ item }: { item: CareerSidebarItem }) {
   );
 }
 
+const BUSINESS_SIDEBAR_GROUPS: Array<{ label?: string; items: CareerSidebarItem[] }> = [
+  { label: 'Business', items: [
+    { id: 'chat', label: 'New Chat', icon: Plus },
+    { id: 'dashboard', label: 'Business Dashboard', icon: BarChart3 },
+    { id: 'history', label: 'Chat History', icon: Clock3 },
+  ] },
+  { label: 'Business Strategy', items: [
+    { id: 'planner', label: 'Business Planner', icon: Route },
+    { id: 'ideas', label: 'Business Ideas', icon: Sparkles },
+    { id: 'model', label: 'Business Model', icon: BriefcaseBusiness },
+    { id: 'research', label: 'Market Research', icon: Search },
+    { id: 'competitors', label: 'Competitor Analysis', icon: Target },
+    { id: 'swot', label: 'SWOT Analysis', icon: BarChart3 },
+  ] },
+  { label: 'Growth', items: [
+    { id: 'marketing', label: 'Marketing', icon: Sparkles },
+    { id: 'content', label: 'Content Strategy', icon: PenLine },
+    { id: 'sales', label: 'Sales', icon: TrendingUp },
+    { id: 'customers', label: 'Customer Growth', icon: UserRound },
+    { id: 'growth-planner', label: 'Growth Planner', icon: Route },
+  ] },
+  { label: 'Finance', items: [
+    { id: 'finance', label: 'Financial Planner', icon: BarChart3 },
+    { id: 'revenue', label: 'Revenue Calculator', icon: Calculator },
+    { id: 'pricing', label: 'Pricing Strategy', icon: Target },
+    { id: 'expenses', label: 'Expense Tracker', icon: FileText },
+  ] },
+  { label: 'Business Tools', items: [
+    { id: 'business-plan', label: 'Business Plan', icon: FileText },
+    { id: 'pitch-deck', label: 'Pitch Deck', icon: Presentation },
+    { id: 'proposal', label: 'Proposal Builder', icon: PenLine },
+    { id: 'outreach', label: 'Email & Outreach', icon: MessageCircleQuestion },
+    { id: 'documents', label: 'Business Documents', icon: FolderOpen },
+  ] },
+  { label: 'Progress', items: [
+    { id: 'goals', label: 'Goals', icon: Target },
+    { id: 'tasks', label: 'Tasks', icon: ListChecks },
+    { id: 'progress', label: 'Business Progress', icon: Trophy },
+  ] },
+  { label: 'Bottom', items: [
+    { id: 'settings', label: 'Settings', icon: Settings2 },
+    { id: 'help', label: 'Help', icon: MessageCircleQuestion },
+  ] },
+];
+
+const CREATOR_SIDEBAR_GROUPS: Array<{ label?: string; items: CareerSidebarItem[] }> = [
+  { label: 'Create', items: [
+    { id: 'chat', label: 'New Chat', icon: Plus },
+    { id: 'dashboard', label: 'Creator Dashboard', icon: BarChart3 },
+    { id: 'history', label: 'Chat History', icon: Clock3 },
+  ] },
+  { label: 'Content', items: [
+    { id: 'ideas', label: 'Content Ideas', icon: Sparkles },
+    { id: 'planner', label: 'Content Planner', icon: CalendarDays },
+    { id: 'script', label: 'Script Writer', icon: FileText },
+    { id: 'captions', label: 'Caption Generator', icon: Captions },
+    { id: 'posts', label: 'Post Generator', icon: PenLine },
+    { id: 'hooks', label: 'Hook Generator', icon: Zap },
+    { id: 'stories', label: 'Story Generator', icon: BookOpen },
+  ] },
+  { label: 'Create & Edit', items: [
+    { id: 'image', label: 'Image Studio', icon: Image },
+    { id: 'video', label: 'Video Studio', icon: Video },
+    { id: 'audio', label: 'Audio Studio', icon: AudioLines },
+    { id: 'thumbnail', label: 'Thumbnail Maker', icon: ImagePlus },
+    { id: 'editor', label: 'AI Editor', icon: Wand2 },
+  ] },
+  { label: 'Social Media', items: [
+    { id: 'instagram', label: 'Instagram', icon: Image },
+    { id: 'tiktok', label: 'TikTok', icon: Video },
+    { id: 'youtube', label: 'YouTube', icon: Play },
+    { id: 'twitter', label: 'X / Twitter', icon: MessageCircleQuestion },
+    { id: 'linkedin', label: 'LinkedIn', icon: BriefcaseBusiness },
+    { id: 'facebook', label: 'Facebook', icon: UserRound },
+  ] },
+  { label: 'Publishing', items: [
+    { id: 'calendar', label: 'Content Calendar', icon: CalendarDays },
+    { id: 'scheduled', label: 'Scheduled Posts', icon: Clock3 },
+    { id: 'drafts', label: 'Drafts', icon: FileText },
+    { id: 'published', label: 'Published Content', icon: Check },
+  ] },
+  { label: 'Analytics', items: [
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'performance', label: 'Content Performance', icon: TrendingUp },
+    { id: 'audience', label: 'Audience Insights', icon: UserRound },
+    { id: 'growth', label: 'Growth Tracker', icon: Trophy },
+  ] },
+  { label: 'Brand', items: [
+    { id: 'brand-kit', label: 'Brand Kit', icon: BriefcaseBusiness },
+    { id: 'brand-voice', label: 'Brand Voice', icon: Mic },
+    { id: 'prompts', label: 'Saved Prompts', icon: Bookmark },
+    { id: 'templates', label: 'Templates', icon: Layers3 },
+  ] },
+  { label: 'Bottom', items: [
+    { id: 'settings', label: 'Settings', icon: Settings2 },
+    { id: 'help', label: 'Help', icon: MessageCircleQuestion },
+  ] },
+];
+
+function BusinessSidebar({
+  open,
+  active,
+  onClose,
+  onSelect,
+}: {
+  open: boolean;
+  active: string;
+  onClose: () => void;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <>
+      <div className={`fixed inset-0 z-30 bg-black/60 transition-opacity md:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={onClose} aria-hidden="true" />
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[min(84vw,272px)] flex-col border-r border-[#1A1A1A] bg-[#050505] px-3 py-4 transition-transform duration-200 md:relative md:z-0 md:w-[236px] md:shrink-0 md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="flex items-center justify-between border-b border-[#1A1A1A] px-2 pb-4">
+          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#5A431D] bg-[#1B1408] text-[#F5C05A] transition hover:border-[#F5C05A] hover:text-white" aria-label="Back to dashboard" title="Back to dashboard">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+          <div className="mr-auto ml-3 min-w-0 text-sm font-semibold text-white">Business</div>
+          <button type="button" onClick={onClose} className="md:hidden" aria-label="Close Business navigation">
+            <X className="h-4 w-4 text-[#9BA6B5]" />
+          </button>
+        </div>
+        <nav className="mt-4 min-h-0 flex-1 overflow-y-auto pr-1">
+          {BUSINESS_SIDEBAR_GROUPS.map((group, index) => (
+            <div key={group.label ?? `business-start-${index}`} className={index === 0 ? '' : 'mt-5'}>
+              {group.label && <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#9B7A3B]">{group.label}</div>}
+              <div className="space-y-1">
+                {group.items.map(({ id, label, icon: Icon }) => (
+                  <button key={id} type="button" title={label} onClick={() => { onSelect(id); onClose(); }} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs font-medium transition ${active === id ? 'bg-[#3A2A10] text-[#FFF3D0]' : 'text-[#A6B0BF] hover:bg-[#17130D] hover:text-white'}`}>
+                    <Icon className={`h-4 w-4 shrink-0 ${active === id ? 'text-[#F5C05A]' : 'text-[#8F8066]'}`} />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
+  );
+}
+
+function BusinessDestinationPlaceholder({ item, onBack }: { item: CareerSidebarItem; onBack: () => void }) {
+  const Icon = item.icon;
+  return (
+    <section className="flex min-h-full flex-col items-center justify-center px-6 py-16 text-center text-white">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#6A5125] bg-[#2A1E0B] text-[#F5C05A]"><Icon className="h-6 w-6" /></div>
+      <h1 className="mt-5 text-2xl font-bold">{item.label}</h1>
+      <p className="mt-2 max-w-sm text-sm leading-6 text-[#8995A5]">This Business workspace is ready for your next step.</p>
+      <button type="button" onClick={onBack} className="mt-6 rounded-lg border border-[#3A2A10] px-3 py-2 text-xs text-[#F5C05A] transition hover:bg-[#17130D]">Back to chat</button>
+    </section>
+  );
+}
+
+function CreatorSidebar({ open, active, onClose, onSelect }: { open: boolean; active: string; onClose: () => void; onSelect: (id: string) => void }) {
+  return (
+    <>
+      <div className={`fixed inset-0 z-30 bg-black/60 transition-opacity md:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={onClose} aria-hidden="true" />
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[min(84vw,272px)] flex-col border-r border-[#1A1A1A] bg-[#050505] px-3 py-4 transition-transform duration-200 md:relative md:z-0 md:w-[236px] md:shrink-0 md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="flex items-center justify-between border-b border-[#1A1A1A] px-2 pb-4">
+          <Link href="/" className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#3A3F46] bg-[#17191D] text-[#D1D5DB] transition hover:border-[#E5E7EB] hover:text-white" aria-label="Back to dashboard" title="Back to dashboard"><ArrowLeft className="h-4 w-4" /></Link>
+          <div className="mr-auto ml-3 min-w-0 text-sm font-semibold text-white">Creator Studio</div>
+          <button type="button" onClick={onClose} className="md:hidden" aria-label="Close Creator Studio navigation"><X className="h-4 w-4 text-[#9BA6B5]" /></button>
+        </div>
+        <nav className="mt-4 min-h-0 flex-1 overflow-y-auto pr-1">
+          {CREATOR_SIDEBAR_GROUPS.map((group, index) => <div key={group.label ?? `creator-start-${index}`} className={index === 0 ? '' : 'mt-5'}>
+            {group.label && <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#6FAE9A]">{group.label}</div>}
+            <div className="space-y-1">{group.items.map(({ id, label, icon: Icon }) => <button key={id} type="button" title={label} onClick={() => { onSelect(id); onClose(); }} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs font-medium transition ${active === id ? 'bg-[#2A2D32] text-white' : 'text-[#A6B0BF] hover:bg-[#1B1D21] hover:text-white'}`}><Icon className={`h-4 w-4 shrink-0 ${active === id ? 'text-[#F3F4F6]' : 'text-[#858B94]'}`} /><span>{label}</span></button>)}</div>
+          </div>)}
+        </nav>
+      </aside>
+    </>
+  );
+}
+
+function CreatorDestinationPlaceholder({ item, onBack }: { item: CareerSidebarItem; onBack: () => void }) {
+  const Icon = item.icon;
+  return <section className="flex min-h-full flex-col items-center justify-center px-6 py-16 text-center text-white"><div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#3A3F46] bg-[#17191D] text-[#D1D5DB]"><Icon className="h-6 w-6" /></div><h1 className="mt-5 text-2xl font-bold">{item.label}</h1><p className="mt-2 max-w-sm text-sm leading-6 text-[#8995A5]">This Creator Studio workspace is ready for your next idea.</p><button type="button" onClick={onBack} className="mt-6 rounded-lg border border-[#3A3F46] px-3 py-2 text-xs text-[#D1D5DB] transition hover:bg-[#1B1D21]">Back to chat</button></section>;
+}
+
 type UnifiedHubKey = keyof typeof UNIFIED_HUBS;
 
 type PdfDocument = {
@@ -697,6 +878,10 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [careerSidebarOpen, setCareerSidebarOpen] = useState(false);
   const [careerView, setCareerView] = useState('chat');
+  const [businessSidebarOpen, setBusinessSidebarOpen] = useState(false);
+  const [businessView, setBusinessView] = useState('chat');
+  const [creatorSidebarOpen, setCreatorSidebarOpen] = useState(false);
+  const [creatorView, setCreatorView] = useState('chat');
   const [attachmentName, setAttachmentName] = useState('');
   const [pdfDocument, setPdfDocument] = useState<PdfDocument | null>(null);
 
@@ -900,6 +1085,47 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
 
   const quickActions = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
   const careerSidebarItem = CAREER_SIDEBAR_GROUPS.flatMap((group) => group.items).find((item) => item.id === careerView) ?? CAREER_SIDEBAR_GROUPS[0].items[0];
+  const businessSidebarItem = BUSINESS_SIDEBAR_GROUPS.flatMap((group) => group.items).find((item) => item.id === businessView) ?? BUSINESS_SIDEBAR_GROUPS[0].items[0];
+  const creatorSidebarItem = CREATOR_SIDEBAR_GROUPS.flatMap((group) => group.items).find((item) => item.id === creatorView) ?? CREATOR_SIDEBAR_GROUPS[0].items[0];
+  const selectBusinessItem = (id: string) => {
+    if (id === 'dashboard') {
+      navigate('/hub/business?view=insights');
+      return;
+    }
+    setBusinessView(id);
+    setMessages([]);
+    setPrompt('');
+    setError('');
+  };
+
+  const selectCreatorItem = (id: string) => {
+    setCreatorView(id);
+    setMessages([]);
+    setPrompt('');
+    setError('');
+  };
+
+  if (hub === 'business' && businessView !== 'chat') {
+    return (
+      <div className="business-hub-layout flex h-[100dvh] min-h-0 w-full bg-[#000000]">
+        <BusinessSidebar open={businessSidebarOpen} active={businessView} onClose={() => setBusinessSidebarOpen(false)} onSelect={selectBusinessItem} />
+        <ChatViewport className="business-chat-viewport bg-[#000000] text-white">
+          <main className="min-w-0 flex-1 overflow-y-auto"><BusinessDestinationPlaceholder item={businessSidebarItem} onBack={() => setBusinessView('chat')} /></main>
+        </ChatViewport>
+      </div>
+    );
+  }
+
+  if (hub === 'creator' && creatorView !== 'chat') {
+    return (
+      <div className="creator-studio-layout flex h-[100dvh] min-h-0 w-full bg-[#000000]">
+        <CreatorSidebar open={creatorSidebarOpen} active={creatorView} onClose={() => setCreatorSidebarOpen(false)} onSelect={selectCreatorItem} />
+        <ChatViewport className="creator-chat-viewport bg-[#000000] text-white">
+          <main className="min-w-0 flex-1 overflow-y-auto"><CreatorDestinationPlaceholder item={creatorSidebarItem} onBack={() => setCreatorView('chat')} /></main>
+        </ChatViewport>
+      </div>
+    );
+  }
 
   if (hub === 'career' && careerView !== 'chat') {
     return (
@@ -925,14 +1151,17 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   }
 
   return (
-    <ChatViewport className="bg-[#000000] text-white">
+    <div className={hub === 'business' ? 'business-hub-layout flex h-[100dvh] min-h-0 w-full bg-[#000000]' : hub === 'creator' ? 'creator-studio-layout flex h-[100dvh] min-h-0 w-full bg-[#000000]' : ''}>
+      {hub === 'business' && <BusinessSidebar open={businessSidebarOpen} active={businessView} onClose={() => setBusinessSidebarOpen(false)} onSelect={selectBusinessItem} />}
+      {hub === 'creator' && <CreatorSidebar open={creatorSidebarOpen} active={creatorView} onClose={() => setCreatorSidebarOpen(false)} onSelect={selectCreatorItem} />}
+      <ChatViewport className={hub === 'business' ? 'business-chat-viewport bg-[#000000] text-white' : hub === 'creator' ? 'creator-chat-viewport bg-[#000000] text-white' : 'bg-[#000000] text-white'}>
       <div className="flex min-h-0 flex-1 w-full flex-col bg-[#000000]">
         <header className="relative flex items-center justify-between border-b border-[#1A1A1A] bg-[#000000] px-4 pb-2.5 pt-1 md:hidden">
           <div className="flex items-center gap-3">
             <button
               type="button"
               aria-label="Open menu"
-              onClick={() => hub === 'career' ? setCareerSidebarOpen(true) : setMenuOpen((open) => !open)}
+              onClick={() => hub === 'career' ? setCareerSidebarOpen(true) : hub === 'business' ? setBusinessSidebarOpen(true) : hub === 'creator' ? setCreatorSidebarOpen(true) : setMenuOpen((open) => !open)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef]"
             >
               <div className="flex flex-col gap-1.5">
@@ -1382,7 +1611,8 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
           }}
         />
       )}
-    </ChatViewport>
+      </ChatViewport>
+    </div>
   );
 }
 

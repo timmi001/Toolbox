@@ -180,6 +180,14 @@ body {
   }
 }
 
+.business-chat-viewport {
+  transform: translateZ(0);
+}
+
+.creator-chat-viewport {
+  transform: translateZ(0);
+}
+
 @media (min-width: 768px) and (max-width: 1023px) {
   html, body, #root {
     max-width: 100%;

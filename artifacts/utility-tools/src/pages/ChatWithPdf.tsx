@@ -203,7 +203,7 @@ function ChatPdfShell({
             type="button"
             aria-label="Back to dashboard"
             onClick={() => navigate('/')}
-            className="mb-3 flex h-9 w-full items-center justify-center rounded-xl border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#FF66B8] hover:text-[#FFE3F0]"
+            className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#FF66B8] hover:text-[#FFE3F0]"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -308,6 +308,8 @@ function ChatPdfWorkspacePage() {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingMessageText, setEditingMessageText] = useState('');
   const [messageActionFeedback, setMessageActionFeedback] = useState<{ id: string; label: string } | null>(null);
+  const [micListening, setMicListening] = useState(false);
+  const recognitionRef = useRef<{ start: () => void; stop: () => void; abort: () => void; lang: string; interimResults: boolean; maxAlternatives: number; onresult: ((event: any) => void) | null; onerror: (() => void) | null; onend: (() => void) | null } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedDocuments = documents.filter((document) => activeDocumentIds.includes(document.id) && document.status === 'ready');
@@ -603,6 +605,46 @@ function ChatPdfWorkspacePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleMic = () => {
+    if (micListening) {
+      recognitionRef.current?.stop();
+      setMicListening(false);
+      return;
+    }
+
+    const speechWindow = window as typeof window & {
+      SpeechRecognition?: new () => typeof recognitionRef.current;
+      webkitSpeechRecognition?: new () => typeof recognitionRef.current;
+    };
+    const SpeechRecognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError('Voice input is not available in this browser. Please type your question instead.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    if (!recognition) return;
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event: any) => {
+      const transcript = event.results?.[0]?.[0]?.transcript as string | undefined;
+      if (transcript) setMessage((current) => `${current}${current ? ' ' : ''}${transcript}`.trim());
+    };
+    recognition.onerror = () => {
+      setMicListening(false);
+      setError('Voice input is unavailable right now. Please type your question instead.');
+    };
+    recognition.onend = () => {
+      setMicListening(false);
+      recognitionRef.current = null;
+    };
+    recognitionRef.current = recognition;
+    setError('');
+    setMicListening(true);
+    recognition.start();
   };
 
   const saveCurrentResponse = (itemType: 'summary' | 'extract' | 'analysis' | 'result', title: string, content: string) => {
@@ -960,6 +1002,16 @@ function ChatPdfWorkspacePage() {
                 {activeDocumentIds.length > 0 && (
                   <div className="absolute bottom-14 left-14 text-[10px] text-[#FFB5D9]">Using {activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'}</div>
                 )}
+
+                <button 
+                  type="button"
+                  onClick={toggleMic}
+                  disabled={loading}
+                  aria-label={micListening ? 'Stop voice input' : 'Voice input'}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition ${micListening ? 'border-[#FF66B8] bg-[#3A172F] text-[#FFD1E5]' : 'border-[#1A1A1A] bg-[#181818] text-[#dfe7ef] hover:border-[#FF66B8] hover:text-[#FFD1E5]'}`}
+                >
+                  <Mic className="h-4 w-4" />
+                </button>
 
                 <button 
                   type="button" 
