@@ -763,8 +763,8 @@ export default function StudyHub() {
           className={`fixed inset-0 z-40 bg-black/70 md:hidden ${drawerOpen ? "block" : "hidden"}`}
           onClick={() => setDrawerOpen(false)}
         />
-        <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <div className="min-h-0 flex-1 overflow-hidden">
+        <main className="study-hub-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             {renderSection()}
           </div>
         </main>

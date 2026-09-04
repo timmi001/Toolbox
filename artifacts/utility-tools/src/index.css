@@ -136,7 +136,15 @@ body {
     padding-bottom: 0;
   }
 
+  .app-main:has(.study-hub-main) {
+    padding-bottom: 0;
+  }
+
   .chat-viewport main {
+    padding-bottom: 0;
+  }
+
+  main.study-hub-main {
     padding-bottom: 0;
   }
 
