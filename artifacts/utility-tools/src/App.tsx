@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/Layout";
+import { RouteSEO } from "@/components/RouteSEO";
 import { CurrencyPreferenceProvider } from "@/contexts/CurrencyPreferenceContext";
 import React, { Component, type ErrorInfo, type ReactNode } from "react";
 import Home from "@/pages/Home";
@@ -84,6 +85,7 @@ const queryClient = new QueryClient();
 function Router() {
   return (
     <CurrencyPreferenceProvider>
+      <RouteSEO />
       <Layout>
         <Switch>
           <Route path="/" component={Home} />

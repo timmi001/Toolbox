@@ -9,7 +9,7 @@ const POSTS = [
 ];
 
 export default function BlogIndex() {
-  useSEO('Blog | ToolKit', 'Read the latest articles about utility tools, web development, and productivity.');
+  useSEO('Blog | Toolbuxx', 'Read the latest articles about utility tools, web development, and productivity.');
 
   return (
     <div className="py-8 max-w-4xl mx-auto animate-in fade-in duration-500">

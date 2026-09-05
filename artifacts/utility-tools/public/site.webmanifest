@@ -1,11 +1,11 @@
 {
-  "name": "ToolboXX",
-  "short_name": "ToolboXX",
-  "description": "200+ free AI and utility tools for creators, students, developers and businesses. No sign-up. No tracking.",
+  "name": "Toolbuxx",
+  "short_name": "Toolbuxx",
+  "description": "Study smarter, create faster, and build better with Toolbuxx AI hubs and practical productivity tools.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4B0082",
+  "background_color": "#07090c",
+  "theme_color": "#07090c",
   "icons": [
     {
       "src": "/favicon.svg",

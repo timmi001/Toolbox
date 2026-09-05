@@ -15,7 +15,7 @@ interface ToolLayoutProps {
 }
 
 export function ToolLayout({ tool, children, instructions, faqs = [] }: ToolLayoutProps) {
-  useSEO(`${tool.name} - Free Online Tool | ToolKit`, tool.description);
+  useSEO(`${tool.name} | Toolbuxx`, tool.description);
   const { addRecentTool } = useRecentTools();
 
   useEffect(() => {

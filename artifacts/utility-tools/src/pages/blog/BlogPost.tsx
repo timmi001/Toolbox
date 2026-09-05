@@ -11,7 +11,7 @@ export default function BlogPost() {
     : '';
 
   useSEO(
-    title ? `${title} | ToolKit Blog` : 'ToolKit Blog',
+    title ? `${title} | Toolbuxx Blog` : 'Toolbuxx Blog',
     title ? `Read our article about ${title.toLowerCase()}` : ''
   );
 

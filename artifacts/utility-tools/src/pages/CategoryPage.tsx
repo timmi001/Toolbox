@@ -56,7 +56,7 @@ export default function CategoryPage() {
     'calculators';
 
   useSEO(
-    details ? `${details.title} | ToolKit` : 'ToolKit',
+    details ? `${details.title} | Toolbuxx` : 'Toolbuxx',
     details?.desc ?? ''
   );
 
