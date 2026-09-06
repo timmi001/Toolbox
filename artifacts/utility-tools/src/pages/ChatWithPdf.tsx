@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { useLocation, useRoute, Link } from 'wouter';
+import { useLocation, useRoute, Redirect } from 'wouter';
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,11 +9,15 @@ import {
   BookOpen,
   Bookmark,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Copy,
+  Download,
   FileText,
   FolderOpen,
   History,
+  Maximize2,
   MessageCircleQuestion,
   Mic,
   Plus,
@@ -25,6 +29,8 @@ import {
   Trash2,
   Upload,
   X,
+  ZoomIn,
+  ZoomOut,
   type LucideIcon,
 } from 'lucide-react';
 import { generateHubResponse } from '@/lib/hub-ai';
@@ -55,21 +61,37 @@ import {
   upsertChatPdfConversation,
 } from '@/utils/chatPdfStorage';
 import { openFeedbackForm } from '@/components/FeedbackButton';
-import { PdfToolsMenu } from '@/components/PdfToolsMenu';
 import { ChatViewport } from '@/components/ChatViewport';
 
 const MAX_CHAT_PDF_FILES = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILES ?? 12);
 const MAX_CHAT_PDF_FILE_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILE_SIZE ?? 25 * 1024 * 1024);
 const MAX_CHAT_PDF_TOTAL_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_TOTAL_SIZE ?? 100 * 1024 * 1024);
 const CHAT_PDF_QUICK_ACTIONS = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
+const CHAT_PDF_MODES = ['Chat', 'Ask Questions', 'Summarize', 'Explain', 'Find Information', 'Extract Information', 'Compare Documents', 'Generate Quiz', 'Generate Flashcards'] as const;
+type ChatPdfMode = typeof CHAT_PDF_MODES[number];
+
+function getModePrompt(mode: ChatPdfMode) {
+  return {
+    Chat: '',
+    'Ask Questions': 'Answer my question using the selected PDF context and cite the relevant source pages.',
+    Summarize: 'Summarize this PDF in plain language and include the most important findings with page references when available.',
+    Explain: 'Explain the relevant PDF content clearly and step by step for a general audience.',
+    'Find Information': 'Find the most relevant information in the PDF for my request and cite the source pages.',
+    'Extract Information': 'Extract names, dates, numbers, and key facts from the PDF in a structured format.',
+    'Compare Documents': 'Compare the selected PDFs, highlighting meaningful similarities, differences, and contradictions with source references.',
+    'Generate Quiz': 'Generate a short quiz based only on the PDF, with answers and source page references.',
+    'Generate Flashcards': 'Create study flashcards from the main concepts in the PDF, grounded in the source pages.',
+  }[mode];
+}
 
 const sideNav: Array<{ label: string; icon: LucideIcon; route: string; action?: 'history' | 'upload' | 'new-document' | 'settings' | 'feedback' }> = [
   { label: 'Chat with PDF', icon: FileText, route: '/chat-with-pdf' },
   { label: 'New Document', icon: Plus, route: '/chat-with-pdf', action: 'new-document' },
-  { label: 'History', icon: Clock3, route: '/chat-with-pdf', action: 'history' },
+  { label: 'Recent', icon: Clock3, route: '/chat-with-pdf', action: 'history' },
   { label: 'My Documents', icon: FolderOpen, route: '/chat-with-pdf/documents' },
   { label: 'Upload PDF', icon: Upload, route: '/chat-with-pdf', action: 'upload' },
-  { label: 'Tools', icon: Sparkles, route: '/chat-with-pdf/tools' },
+  { label: 'Saved', icon: Bookmark, route: '/chat-with-pdf/saved' },
+  { label: 'PDF Tools', icon: Sparkles, route: '/pdf-tools' },
   { label: 'Settings', icon: Settings2, route: '/chat-with-pdf', action: 'settings' },
 ];
 
@@ -109,6 +131,117 @@ function getConversationTitle(documentName?: string | null, fallback = 'Untitled
 
 function formatDate(date: string) {
   return new Date(date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function PdfViewerPanel({
+  activeDocument,
+  file,
+  page,
+  onPageChange,
+}: {
+  activeDocument: ChatPdfDocument;
+  file?: File;
+  page: number;
+  onPageChange: (page: number) => void;
+}) {
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [zoom, setZoom] = useState(1);
+  const [query, setQuery] = useState('');
+  const [rendering, setRendering] = useState(false);
+  const [renderError, setRenderError] = useState('');
+
+  useEffect(() => {
+    setZoom(1);
+    setRenderError('');
+  }, [activeDocument.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const renderPage = async () => {
+      if (!file || !canvasRef.current) return;
+      setRendering(true);
+      setRenderError('');
+      try {
+        const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+        GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
+        const bytes = await file.arrayBuffer();
+        const pdfDocument = await getDocument({ data: bytes }).promise;
+        const pdfPage = await pdfDocument.getPage(page);
+        const viewport = pdfPage.getViewport({ scale: zoom });
+        const canvas = canvasRef.current;
+        if (cancelled || !canvas) return;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('The PDF viewer could not create a canvas.');
+        const deviceScale = window.devicePixelRatio || 1;
+        canvas.width = viewport.width * deviceScale;
+        canvas.height = viewport.height * deviceScale;
+        canvas.style.width = `${viewport.width}px`;
+        canvas.style.height = `${viewport.height}px`;
+        context.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
+        await pdfPage.render({ canvas, canvasContext: context, viewport }).promise;
+      } catch (error) {
+        if (!cancelled) setRenderError(error instanceof Error ? error.message : 'The PDF page could not be rendered.');
+      } finally {
+        if (!cancelled) setRendering(false);
+      }
+    };
+    void renderPage();
+    return () => { cancelled = true; };
+  }, [file, page, zoom]);
+
+  const download = () => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.name;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const searchMatch = query.trim() && activeDocument.pageTexts.findIndex((text) => text.toLowerCase().includes(query.trim().toLowerCase()));
+
+  return (
+    <section ref={viewerRef} className="flex min-h-0 flex-1 flex-col overflow-hidden border border-[#1A1A1A] bg-[#0b1016]">
+      <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-[#1A1A1A] bg-[#090909] px-3 py-2">
+        <div className="flex items-center gap-1 text-xs text-[#b8c8db]">
+          <button type="button" onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page <= 1} aria-label="Previous page" className="rounded-lg p-1.5 hover:bg-white/5 disabled:opacity-35"><ChevronLeft className="h-4 w-4" /></button>
+          <span className="min-w-[56px] text-center tabular-nums">{page} / {activeDocument.pageCount}</span>
+          <button type="button" onClick={() => onPageChange(Math.min(activeDocument.pageCount, page + 1))} disabled={page >= activeDocument.pageCount} aria-label="Next page" className="rounded-lg p-1.5 hover:bg-white/5 disabled:opacity-35"><ChevronRight className="h-4 w-4" /></button>
+        </div>
+        <div className="h-4 w-px bg-[#262626]" />
+        <button type="button" onClick={() => setZoom((value) => Math.max(0.75, value - 0.1))} aria-label="Zoom out" className="rounded-lg p-1.5 text-[#a7b6c8] hover:bg-white/5"><ZoomOut className="h-4 w-4" /></button>
+        <span className="min-w-[42px] text-center text-[11px] text-[#8492a3]">{Math.round(zoom * 100)}%</span>
+        <button type="button" onClick={() => setZoom((value) => Math.min(2, value + 0.1))} aria-label="Zoom in" className="rounded-lg p-1.5 text-[#a7b6c8] hover:bg-white/5"><ZoomIn className="h-4 w-4" /></button>
+        <div className="ml-auto flex items-center gap-1">
+          <div className="relative hidden sm:block">
+            <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#718194]" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && typeof searchMatch === 'number' && searchMatch >= 0) onPageChange(searchMatch + 1); }} placeholder="Find in PDF" className="h-7 w-28 rounded-lg border border-[#1A1A1A] bg-[#111111] pl-7 pr-2 text-[11px] text-white outline-none placeholder:text-[#718194] focus:border-[#52525B]" />
+          </div>
+          <button type="button" onClick={download} disabled={!file} aria-label="Download PDF" className="rounded-lg p-1.5 text-[#a7b6c8] hover:bg-white/5 disabled:opacity-35"><Download className="h-4 w-4" /></button>
+          <button type="button" onClick={() => void viewerRef.current?.requestFullscreen?.()} aria-label="Fullscreen viewer" className="rounded-lg p-1.5 text-[#a7b6c8] hover:bg-white/5"><Maximize2 className="h-4 w-4" /></button>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1 overflow-auto bg-[#15191f] p-4">
+        <div className="flex min-h-full min-w-full items-start justify-center">
+          {file ? (
+            <div className="relative min-h-[70vh] min-w-[min(100%,680px)] rounded-sm bg-white p-2 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+              {rendering && <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 text-xs text-slate-500">Rendering page…</div>}
+              <canvas ref={canvasRef} className="mx-auto block max-w-none" />
+              {renderError && <div className="p-6 text-center text-sm text-red-700">{renderError}</div>}
+            </div>
+          ) : (
+            <div className="w-full max-w-2xl rounded-sm bg-white p-7 text-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+              <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3 text-xs text-slate-500"><span>{activeDocument.fileName}</span><span>Page {page}</span></div>
+              <p className="whitespace-pre-wrap text-sm leading-7">{activeDocument.pageTexts[page - 1] || 'No extractable text found on this page.'}</p>
+              <p className="mt-8 border-t border-slate-200 pt-3 text-[11px] text-slate-400">This saved document has no local file preview. Upload it again to render the original PDF.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function ChatPdfNavigation({
@@ -153,12 +286,23 @@ function ChatPdfNavigation({
           onClick={() => navigate(route, action)}
           title={!mobile && collapsed ? label : undefined}
           aria-label={label}
-            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${!mobile && collapsed ? 'justify-center px-0' : ''} ${label === activeLabel ? 'bg-[#3A172F] text-white' : mobile ? 'text-[#eaf2ff] hover:bg-[#171717]' : 'text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white'}`}
+            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${!mobile && collapsed ? 'justify-center px-0' : ''} ${label === activeLabel ? 'bg-[#262626] text-white' : mobile ? 'text-[#eaf2ff] hover:bg-[#171717]' : 'text-[#b4c0ce] hover:bg-[#0f0f0f] hover:text-white'}`}
         >
           <Icon className="h-4 w-4" />
           {(!collapsed || mobile) && <span>{label}</span>}
         </button>
       ))}
+      {(!collapsed || mobile) && (
+        <>
+          <div className="px-3 pb-1 pt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#647286]">PDF tools</div>
+          {['Merge', 'Split', 'Compress', 'Convert', 'Rotate', 'Extract Pages', 'Export'].map((tool) => (
+            <button key={tool} type="button" onClick={() => onNavigate('/pdf-tools')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#b4c0ce] transition hover:bg-[#0f0f0f] hover:text-white">
+              <FileText className="h-4 w-4" />
+              <span>{tool}</span>
+            </button>
+          ))}
+        </>
+      )}
     </nav>
   );
 }
@@ -178,6 +322,7 @@ function ChatPdfShell({
   navActive,
   sidebarCollapsed: controlledSidebarCollapsed,
   onSidebarCollapsedChange,
+  fixedLayout = false,
 }: {
   title: string;
   subtitle: string;
@@ -188,6 +333,7 @@ function ChatPdfShell({
   navActive?: string;
   sidebarCollapsed?: boolean;
   onSidebarCollapsedChange?: (collapsed: boolean) => void;
+  fixedLayout?: boolean;
 }) {
   const [, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -198,15 +344,19 @@ function ChatPdfShell({
   return (
     <ChatViewport className="bg-[#000000] text-white">
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <aside className={`hidden shrink-0 border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[240px]'}`}>
-          <button
-            type="button"
-            aria-label="Back to dashboard"
-            onClick={() => navigate('/')}
-            className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#FF66B8] hover:text-[#FFE3F0]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
+        <aside className={`hidden min-h-0 shrink-0 overflow-y-auto border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[240px]'}`}>
+          <div className={`mb-3 flex items-center gap-2 ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+            {!sidebarCollapsed && (
+              <button
+                type="button"
+                aria-label="Back to homepage"
+                onClick={() => navigate('/')}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[#718194] transition hover:bg-[#171717] hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            )}
+          </div>
           <ChatPdfNavigation
             collapsed={sidebarCollapsed}
             onUpload={onUpload}
@@ -221,6 +371,17 @@ function ChatPdfShell({
             onNavigate={navigate}
             activeLabel={navActive}
           />
+          {sidebarCollapsed && (
+            <button
+              type="button"
+              aria-label="Expand sidebar"
+              title="Expand sidebar"
+              onClick={() => onSidebarCollapsedChange?.(false)}
+              className="mt-3 flex h-9 w-full items-center justify-center rounded-lg text-[#718194] transition hover:bg-[#171717] hover:text-white"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          )}
 
         </aside>
 
@@ -249,13 +410,13 @@ function ChatPdfShell({
                 onClick={() => setMenuOpen(false)}
                 className="absolute inset-0 bg-black/70"
               />
-              <aside className="relative flex h-full w-[min(85vw,240px)] flex-col border-r border-[#1A1A1A] bg-[#090909] p-3 shadow-[12px_0_30px_rgba(0,0,0,0.35)]">
+              <aside className="relative flex h-full min-h-0 w-[min(85vw,240px)] flex-col overflow-y-auto border-r border-[#1A1A1A] bg-[#090909] p-3 shadow-[12px_0_30px_rgba(0,0,0,0.35)]">
                 <div className="mb-3 flex items-center justify-between">
                   <button
                     type="button"
                     aria-label="Back to dashboard"
                     onClick={() => { setMenuOpen(false); navigate('/'); }}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#FF66B8] hover:text-[#FFE3F0]"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#1A1A1A] bg-[#0A0A0A] text-[#dfe7ef] transition hover:border-[#A1A1AA] hover:text-[#F4F4F5]"
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </button>
@@ -281,7 +442,19 @@ function ChatPdfShell({
             </div>
           )}
 
-          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-[#000000] px-3 pb-32 pt-4 md:px-5" data-chat-scroll-container>{children}</div>
+          <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[#1A1A1A] bg-[#050505] px-3 md:px-5">
+            <div className="flex min-w-0 items-center gap-3">
+              <h1 className="truncate text-sm font-semibold text-white">{title}</h1>
+              <button type="button" onClick={() => { setActiveChatPdfConversationId(null); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }} className="hidden shrink-0 rounded-lg border border-[#52525B] bg-[#262626] px-2.5 py-1.5 text-[11px] font-medium text-[#F3F4F6] hover:bg-[#3F3F46] sm:block">New chat</button>
+            </div>
+            <div className="flex min-w-0 items-center gap-2">
+              {activeDocumentName && <div className="hidden min-w-0 items-center gap-2 text-xs text-[#9aa9ba] md:flex"><FileText className="h-3.5 w-3.5 shrink-0 text-[#D1D5DB]" /><span className="max-w-[min(36vw,360px)] truncate">{activeDocumentName}</span></div>}
+              <button type="button" aria-label="Open PDF tools" onClick={() => navigate('/pdf-tools')} className="rounded-lg p-2 text-[#8fa2b8] hover:bg-white/5 hover:text-white"><FileText className="h-4 w-4" /></button>
+              <button type="button" aria-label="Open settings" onClick={() => navigate('/chat-with-pdf')} className="rounded-lg p-2 text-[#8fa2b8] hover:bg-white/5 hover:text-white"><Settings2 className="h-4 w-4" /></button>
+            </div>
+          </header>
+
+          <div ref={scrollContainerRef} className={`min-h-0 flex-1 bg-[#000000] px-3 pb-32 pt-4 md:px-5 ${fixedLayout ? 'overflow-hidden' : 'overflow-y-auto'}`} data-chat-scroll-container>{children}</div>
         </main>
       </div>
     </ChatViewport>
@@ -292,10 +465,12 @@ function ChatPdfWorkspacePage() {
   const [, navigate] = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [message, setMessage] = useState('');
+  const [aiMode, setAiMode] = useState<ChatPdfMode>('Chat');
   const [messages, setMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; content: string; createdAt: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [documents, setDocuments] = useState<ChatPdfDocument[]>(() => loadChatPdfDocuments());
+  const [documentFiles, setDocumentFiles] = useState<Record<string, File>>({});
   const [activeDocumentIds, setActiveDocumentIdsState] = useState<string[]>(() => getActiveChatPdfDocumentIds());
   const [viewedDocumentId, setViewedDocumentIdState] = useState<string | null>(() => getViewedChatPdfDocumentId());
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -303,7 +478,9 @@ function ChatPdfWorkspacePage() {
   const [processingFiles, setProcessingFiles] = useState<Array<{ id: string; fileName: string; size: number }>>([]);
   const [retryFiles, setRetryFiles] = useState<File[]>([]);
   const [generatedTitle, setGeneratedTitle] = useState('');
+  const [viewerPage, setViewerPage] = useState(1);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [mobilePane, setMobilePane] = useState<'viewer' | 'chat'>('chat');
   const [history, setHistory] = useState<ChatPdfConversation[]>(() => loadChatPdfHistory());
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingMessageText, setEditingMessageText] = useState('');
@@ -330,6 +507,7 @@ function ChatPdfWorkspacePage() {
     setDocuments(storedDocuments);
     setActiveDocumentIdsState(conversation.activeDocumentIds?.filter((id) => documentIds.includes(id)) ?? documentIds);
     setViewedDocumentIdState(viewedId);
+    setViewerPage(1);
     setMessages(conversation.messages);
     setConversationId(conversation.id);
     setActiveChatPdfConversationId(conversation.id);
@@ -523,11 +701,13 @@ function ChatPdfWorkspacePage() {
       size: file.size,
     })));
     const processed: ChatPdfDocument[] = [];
+    const processedFiles: Array<{ document: ChatPdfDocument; file: File }> = [];
     const failures: Array<{ file: File; reason: string }> = [];
     for (const file of filesToProcess) {
       try {
         const document = await extractPdfText(file);
         processed.push(document);
+        processedFiles.push({ document, file });
         addChatPdfDocument(document);
       } catch (err) {
         failures.push({
@@ -541,8 +721,15 @@ function ChatPdfWorkspacePage() {
     const nextActiveIds = [...new Set([...activeDocumentIds, ...processed.map((document) => document.id)])];
     const viewedId = processed.at(-1)?.id ?? viewedDocumentId ?? nextDocuments[0]?.id ?? null;
     setDocuments(nextDocuments);
+    if (processedFiles.length) {
+      setDocumentFiles((current) => ({
+        ...current,
+        ...Object.fromEntries(processedFiles.map(({ document, file }) => [document.id, file])),
+      }));
+    }
     setActiveDocumentIdsState(nextActiveIds);
     setViewedDocumentIdState(viewedId);
+    setViewerPage(1);
     setActiveChatPdfDocumentIds(nextActiveIds);
     if (viewedId) {
       setActiveChatPdfDocumentId(viewedId);
@@ -563,7 +750,7 @@ function ChatPdfWorkspacePage() {
   };
 
   const sendPrompt = async (customPrompt?: string) => {
-    const value = (customPrompt ?? message).trim();
+    const value = (customPrompt ?? (message.trim() || getModePrompt(aiMode))).trim();
     if (!value) return;
     if (uploading) {
       setError('Processing PDF…');
@@ -585,7 +772,7 @@ function ChatPdfWorkspacePage() {
       const grounded = buildGroundedPrompt(value, selectedDocuments);
       const pdfInput = getPdfRequestContext(selectedDocuments);
       console.debug('[chat-pdf] generation request', { selectedDocuments: selectedDocuments.map(({ id, fileName, status }) => ({ id, fileName, status })), payloadKeys: ['toolId', 'inputs.prompt', 'inputs.mode', ...Object.keys(pdfInput)] });
-      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: 'Chat with PDF', ...pdfInput });
+      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: aiMode, ...pdfInput });
       const assistantMessage: { id: string; role: 'assistant'; content: string; createdAt: string } = {
         id: crypto.randomUUID(),
         role: 'assistant',
@@ -661,6 +848,12 @@ function ChatPdfWorkspacePage() {
     addChatPdfSavedItem(result);
   };
 
+  const chooseQuickAction = (action: string) => {
+    const mode: ChatPdfMode = action === 'Extract Key Points' ? 'Extract Information' : action as ChatPdfMode;
+    setAiMode(mode);
+    setMessage('');
+  };
+
   const runContextAction = async (type: 'summary' | 'extract' | 'analysis', customPrompt?: string) => {
     if (uploading) {
       setError('Processing PDF…');
@@ -710,6 +903,7 @@ function ChatPdfWorkspacePage() {
     const document = documents.find((item) => item.id === documentId);
     if (!document || document.status !== 'ready') return;
     setViewedDocumentIdState(documentId);
+    setViewerPage(1);
     setActiveDocumentIdsState([documentId]);
     setActiveChatPdfDocumentIds([documentId]);
     setViewedChatPdfDocumentId(documentId);
@@ -729,8 +923,14 @@ function ChatPdfWorkspacePage() {
     const nextActiveIds = activeDocumentIds.filter((id) => id !== documentId);
     const nextViewedId = viewedDocumentId === documentId ? nextDocuments[0]?.id ?? null : viewedDocumentId;
     setDocuments(nextDocuments);
+    setDocumentFiles((current) => {
+      const next = { ...current };
+      delete next[documentId];
+      return next;
+    });
     setActiveDocumentIdsState(nextActiveIds);
     setViewedDocumentIdState(nextViewedId);
+    setViewerPage(1);
     setActiveChatPdfDocumentIds(nextActiveIds);
     setViewedChatPdfDocumentId(nextViewedId);
     removeChatPdfDocument(documentId);
@@ -747,9 +947,10 @@ function ChatPdfWorkspacePage() {
         onHistory={() => { refreshHistory(); setHistoryOpen(true); }}
         sidebarCollapsed={sidebarCollapsed}
         onSidebarCollapsedChange={setSidebarCollapsed}
+        fixedLayout
       >
           <div
-          className="mx-auto max-w-6xl"
+          className="flex h-full min-h-0 flex-col"
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => {
             event.preventDefault();
@@ -762,27 +963,31 @@ function ChatPdfWorkspacePage() {
                 const selected = activeDocumentIds.includes(document.id);
                 const viewed = viewedDocumentId === document.id;
                 return (
-                  <div key={document.id} className={`flex shrink-0 items-center gap-1 rounded-xl border px-2 py-1.5 text-xs ${viewed ? 'border-[#FF66B8] bg-[#3A172F]' : 'border-[#1A1A1A] bg-[#101010]'}`}>
+                  <div key={document.id} className={`flex shrink-0 items-center gap-1 rounded-xl border px-2 py-1.5 text-xs ${viewed ? 'border-[#A1A1AA] bg-[#262626]' : 'border-[#1A1A1A] bg-[#101010]'}`}>
                     <button type="button" onClick={() => selectDocument(document.id)} className="flex max-w-[180px] items-center gap-1.5 truncate text-left text-[#dfeaf8]" title={`View ${document.fileName}`}>
-                      <FileText className="h-3.5 w-3.5 shrink-0 text-[#FFB5D9]" />
+                      <FileText className="h-3.5 w-3.5 shrink-0 text-[#D1D5DB]" />
                       <span className="truncate">{document.fileName}</span>
                     </button>
-                    <button type="button" onClick={() => toggleDocument(document.id)} aria-label={`${selected ? 'Deselect' : 'Select'} ${document.fileName}`} className={`text-sm ${selected ? 'text-[#FF8CC3]' : 'text-[#718194]'}`}>{selected ? '✓' : '○'}</button>
+                    <button type="button" onClick={() => toggleDocument(document.id)} aria-label={`${selected ? 'Deselect' : 'Select'} ${document.fileName}`} className={`text-sm ${selected ? 'text-[#F3F4F6]' : 'text-[#718194]'}`}>{selected ? '✓' : '○'}</button>
                     <button type="button" onClick={() => removeDocument(document.id)} aria-label={`Remove ${document.fileName}`} className="text-[#718194] hover:text-red-300">×</button>
                   </div>
                 );
               })}
               {processingFiles.map((file) => (
-                <div key={file.id} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#71345A] bg-[#3A172F] px-2.5 py-1.5 text-xs text-[#FFB5D9]">
+                <div key={file.id} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-[#52525B] bg-[#262626] px-2.5 py-1.5 text-xs text-[#D1D5DB]">
                   <Clock3 className="h-3.5 w-3.5 animate-pulse" />
                   <span>Processing {file.fileName}…</span>
                 </div>
               ))}
-              <button type="button" onClick={() => inputRef.current?.click()} className="flex shrink-0 items-center gap-1 rounded-xl border border-dashed border-[#71345A] px-2.5 py-1.5 text-xs font-medium text-[#FFB5D9] hover:bg-[#3A172F]">+ Add PDF</button>
-              <button type="button" onClick={() => { const ids = documents.map((document) => document.id); setActiveDocumentIdsState(ids); setActiveChatPdfDocumentIds(ids); }} className="ml-auto shrink-0 px-2 text-[11px] text-[#FFB5D9]">Select all</button>
-              <button type="button" onClick={() => { setActiveDocumentIdsState([]); setActiveChatPdfDocumentIds([]); }} className="shrink-0 px-2 text-[11px] text-[#FFB5D9]">Deselect all</button>
+              <button type="button" onClick={() => inputRef.current?.click()} className="flex shrink-0 items-center gap-1 rounded-xl border border-dashed border-[#52525B] px-2.5 py-1.5 text-xs font-medium text-[#D1D5DB] hover:bg-[#262626]">+ Add PDF</button>
+              <button type="button" onClick={() => { const ids = documents.map((document) => document.id); setActiveDocumentIdsState(ids); setActiveChatPdfDocumentIds(ids); }} className="ml-auto shrink-0 px-2 text-[11px] text-[#D1D5DB]">Select all</button>
+              <button type="button" onClick={() => { setActiveDocumentIdsState([]); setActiveChatPdfDocumentIds([]); }} className="shrink-0 px-2 text-[11px] text-[#D1D5DB]">Deselect all</button>
             </div>
           )}
+          <div className="mb-3 flex items-center gap-1 rounded-xl border border-[#1A1A1A] bg-[#090909] p-1 lg:hidden">
+            <button type="button" onClick={() => setMobilePane('viewer')} className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium ${mobilePane === 'viewer' ? 'bg-[#262626] text-[#F3F4F6]' : 'text-[#8f9aad]'}`}>Document</button>
+            <button type="button" onClick={() => setMobilePane('chat')} className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium ${mobilePane === 'chat' ? 'bg-[#262626] text-[#F3F4F6]' : 'text-[#8f9aad]'}`}>Chat</button>
+          </div>
           {activeDocument?.warning && (
             <div className="mb-4 rounded-2xl border border-amber-900/60 bg-amber-950/20 px-3 py-2 text-[12px] leading-5 text-amber-200">
               {activeDocument.warning}
@@ -794,8 +999,8 @@ function ChatPdfWorkspacePage() {
                 <button
                   key={action}
                   type="button"
-                  onClick={() => setMessage(`${action}: `)}
-                  className="shrink-0 rounded-full border border-[#71345A] bg-[#121212] px-3 py-1.5 text-[11px] text-[#FFB5D9] transition hover:bg-[#3A172F]"
+                  onClick={() => chooseQuickAction(action)}
+                  className="shrink-0 rounded-full border border-[#52525B] bg-[#121212] px-3 py-1.5 text-[11px] text-[#D1D5DB] transition hover:bg-[#262626]"
                 >
                   {action}
                 </button>
@@ -803,8 +1008,22 @@ function ChatPdfWorkspacePage() {
             </div>
           )}
           {activeDocument ? (
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_320px]">
-              <div className="space-y-3">
+            <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1.4fr)_minmax(360px,0.85fr)]">
+              <div className={`order-2 min-h-0 flex-col overflow-hidden rounded-[18px] border border-[#1A1A1A] bg-[#090909] lg:flex ${mobilePane === 'chat' ? 'flex' : 'hidden'}`}>
+                <div className="flex shrink-0 items-center justify-between border-b border-[#1A1A1A] px-4 py-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <MessageCircleQuestion className="h-4 w-4 shrink-0 text-[#D1D5DB]" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-white">PDF Assistant</div>
+                      <div className="truncate text-[11px] text-[#718194]">{activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'} in context</div>
+                    </div>
+                  </div>
+                  <select value={aiMode} onChange={(event) => setAiMode(event.target.value as ChatPdfMode)} disabled={loading} aria-label="AI mode" className="max-w-[132px] rounded-lg border border-[#1A1A1A] bg-[#111111] px-2 py-1.5 text-[11px] text-[#dfe7ef] outline-none focus:border-[#A1A1AA]">
+                    {CHAT_PDF_MODES.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
+                  </select>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                  <div className="space-y-3">
                 {messages.length > 0 && (
                   <div className="space-y-3">
                     {messages.map((item) => (
@@ -824,12 +1043,12 @@ function ChatPdfWorkspacePage() {
                                   if (event.key === 'Escape') cancelEditMessage();
                                 }}
                                 rows={3}
-                                className="w-full resize-y rounded-xl border border-[#71345A] bg-[#050505] px-3 py-2 text-[14px] leading-6 text-white outline-none focus:border-[#FF66B8]"
+                                className="w-full resize-y rounded-xl border border-[#52525B] bg-[#050505] px-3 py-2 text-[14px] leading-6 text-white outline-none focus:border-[#A1A1AA]"
                                 aria-label="Edit message"
                               />
                               <div className="mt-2 flex items-center justify-end gap-2 text-[11px]">
                                 <button type="button" onClick={cancelEditMessage} className="rounded-lg px-2 py-1 text-[#9aa7b7] hover:bg-white/5 hover:text-white">Cancel</button>
-                                <button type="button" onClick={() => saveEditedMessage(item.id)} className="flex items-center gap-1 rounded-lg bg-[#FF66B8]/15 px-2 py-1 font-semibold text-[#FFB5D9] hover:bg-[#FF66B8]/25">
+                                <button type="button" onClick={() => saveEditedMessage(item.id)} className="flex items-center gap-1 rounded-lg bg-white/10 px-2 py-1 font-semibold text-[#D1D5DB] hover:bg-white/20">
                                   <Check className="h-3.5 w-3.5" />
                                   Save
                                 </button>
@@ -868,11 +1087,29 @@ function ChatPdfWorkspacePage() {
                               aria-label={messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy message'}
                               title="Copy message"
                             >
-                              {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? <Check className="h-3.5 w-3.5 text-[#FFB5D9]" /> : <Copy className="h-3.5 w-3.5" />}
+                              {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? <Check className="h-3.5 w-3.5 text-[#D1D5DB]" /> : <Copy className="h-3.5 w-3.5" />}
                               {messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy'}
                             </button>
                             {item.role === 'assistant' && (
                               <>
+                                {(() => {
+                                  const sourcePages = inferRelevantPages(item.content, activeDocument?.pageTexts ?? []);
+                                  return sourcePages.length > 0 && activeDocument ? (
+                                    <div className="mt-3 border-t border-[#1A1A1A] pt-2 text-[11px] text-[#8ea1bc]">
+                                      <span className="font-medium text-[#b7c7dc]">Sources</span>
+                                      {sourcePages.map((page) => (
+                                        <button
+                                          key={page}
+                                          type="button"
+                                          onClick={() => setViewerPage(page)}
+                                          className="ml-2 underline decoration-dotted underline-offset-2 hover:text-white"
+                                        >
+                                          Page {page}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  ) : null;
+                                })()}
                                 <button
                                   type="button"
                                   onClick={() => void shareMessage(item.id, item.content)}
@@ -899,7 +1136,7 @@ function ChatPdfWorkspacePage() {
                               </>
                             )}
                             {messageActionFeedback?.id === item.id && messageActionFeedback.label !== 'Copied' && (
-                              <span className="px-1 text-[#FFB5D9]" role="status">{messageActionFeedback.label}</span>
+                              <span className="px-1 text-[#D1D5DB]" role="status">{messageActionFeedback.label}</span>
                             )}
                           </div>
                         )}
@@ -911,11 +1148,11 @@ function ChatPdfWorkspacePage() {
                         <div className="max-w-[88%] rounded-[20px] bg-[#101010] px-3.5 py-2.5">
                           <div className="flex items-center gap-2">
                             <div className="flex gap-1">
-                            <span className="inline-block h-2 w-2 rounded-full bg-[#FF66B8] animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                            <span className="inline-block h-2 w-2 rounded-full bg-[#FF66B8] animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                            <span className="inline-block h-2 w-2 rounded-full bg-[#FF66B8] animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full bg-[#D1D5DB] animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full bg-[#D1D5DB] animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                            <span className="inline-block h-2 w-2 rounded-full bg-[#D1D5DB] animate-bounce" style={{ animationDelay: '300ms' }}></span>
                             </div>
-                            <span className="text-[12px] text-[#FFB5D9]">Thinking…</span>
+                            <span className="text-[12px] text-[#D1D5DB]">Thinking…</span>
                           </div>
                         </div>
                       </div>
@@ -924,39 +1161,26 @@ function ChatPdfWorkspacePage() {
                     <div ref={messagesEndRef} />
                   </div>
                 )}
+                </div>
+              </div>
               </div>
 
-              <aside className="rounded-[24px] border border-[#1A1A1A] bg-[#090909] p-3">
-                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#6b7786]">Document info</div>
-                <div className="space-y-3 text-sm text-[#d8e3f3]">
-                  <div className="rounded-xl border border-[#1A1A1A] bg-[#0d1117] p-3">
-                    <div className="text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">Name</div>
-                    <div className="mt-1 font-medium text-white">{activeDocument.name}</div>
-                  </div>
-                  <div className="rounded-xl border border-[#1A1A1A] bg-[#0d1117] p-3">
-                    <div className="text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">AI context</div>
-                    <div className="mt-1 font-medium text-[#FFB5D9]">{activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'} selected</div>
-                  </div>
-                  <div className="rounded-xl border border-[#1A1A1A] bg-[#0d1117] p-3">
-                    <div className="text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">Pages</div>
-                    <div className="mt-1 font-medium text-white">{activeDocument.pageCount}</div>
-                  </div>
-                  <div className="rounded-xl border border-[#1A1A1A] bg-[#0d1117] p-3">
-                    <div className="text-[10px] uppercase tracking-[0.18em] text-[#6b7786]">Uploaded</div>
-                    <div className="mt-1 font-medium text-white">{formatDate(activeDocument.uploadDate)}</div>
-                  </div>
-                </div>
-              </aside>
+              <div className={`order-1 min-h-0 overflow-hidden rounded-[18px] border border-[#1A1A1A] lg:block ${mobilePane === 'viewer' ? 'block' : 'hidden'}`}>
+                <PdfViewerPanel activeDocument={activeDocument} file={documentFiles[activeDocument.id]} page={viewerPage} onPageChange={setViewerPage} />
+              </div>
             </div>
           ) : (
-            <div className="flex min-h-[calc(100dvh-10rem)] items-center justify-center p-6 text-center">
-              <div className="max-w-md">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#3A172F] text-[#FF66B8]">
-                  <Upload className="h-6 w-6" />
+            <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(360px,0.85fr)]">
+              <div className={`flex min-h-[min(62vh,620px)] items-center justify-center rounded-[18px] border border-dashed border-[#262626] bg-[#0b1016] p-6 text-center ${mobilePane === 'viewer' ? 'flex' : 'hidden lg:flex'}`}>
+                <div className="max-w-sm">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#262626] text-[#D1D5DB]"><Upload className="h-5 w-5" /></div>
+                  <h2 className="text-lg font-semibold tracking-tight text-white">Upload a PDF</h2>
+                  <p className="mt-2 text-sm leading-6 text-[#8f9aad]">Drop a PDF here or choose a file to get started.</p>
+                  <button type="button" onClick={() => inputRef.current?.click()} className="mt-4 rounded-xl border border-white/35 bg-white/10 px-4 py-2 text-[12px] font-semibold text-[#F3F4F6] transition hover:bg-white/20">Upload PDF</button>
                 </div>
-                <h2 className="text-[22px] font-semibold tracking-tight text-white">Chat with your PDFs</h2>
-                <p className="mt-3 text-sm leading-6 text-[#8f9aad]">Upload a PDF and ask questions, summarize content, extract information, or analyze the document.</p>
-                <button type="button" onClick={() => inputRef.current?.click()} className="mt-5 rounded-full border border-[#FF66B8]/60 bg-[#FF66B8]/15 px-4 py-2 text-[12px] font-semibold text-[#FFB5D9] transition hover:bg-[#FF66B8]/25">+ Upload PDF</button>
+              </div>
+              <div className={`flex min-h-[min(62vh,620px)] items-center justify-center rounded-[18px] border border-[#1A1A1A] bg-[#090909] p-6 text-center ${mobilePane === 'chat' ? 'flex' : 'hidden lg:flex'}`}>
+                <div className="max-w-sm"><MessageCircleQuestion className="mx-auto mb-3 h-7 w-7 text-[#D1D5DB]" /><h2 className="text-base font-semibold text-white">PDF Assistant</h2><p className="mt-2 text-sm leading-6 text-[#8f9aad]">Upload a PDF and I’ll help you summarize, explain, search, compare, and study it.</p></div>
               </div>
             </div>
           )}
@@ -980,9 +1204,19 @@ function ChatPdfWorkspacePage() {
           <div className={`pointer-events-none fixed bottom-0 right-0 z-40 bg-gradient-to-t from-[#000000] via-[#000000] to-transparent px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-6 ${sidebarCollapsed ? 'left-0 md:left-[76px]' : 'left-0 md:left-[240px]'}`}>
             <div className="pointer-events-auto relative mx-auto max-w-5xl rounded-[26px] border border-[#1a1a1a] bg-[#0b0f12] p-2 shadow-[0_-10px_24px_rgba(0,0,0,0.25)]">
               <div className="flex items-end gap-2">
-                <button type="button" onClick={() => inputRef.current?.click()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#71345A] bg-[#3A172F] text-[#FFD1E5] transition hover:border-[#FF66B8] hover:bg-[#592343]" aria-label="Upload PDF">
+                <button type="button" onClick={() => inputRef.current?.click()} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#52525B] bg-[#262626] text-[#F3F4F6] transition hover:border-[#A1A1AA] hover:bg-[#3F3F46]" aria-label="Upload PDF">
                   <Upload className="h-4 w-4" />
                 </button>
+
+                <select
+                  value={aiMode}
+                  onChange={(event) => setAiMode(event.target.value as ChatPdfMode)}
+                  disabled={loading}
+                  aria-label="AI mode"
+                  className="h-9 max-w-[128px] shrink-0 rounded-xl border border-[#1A1A1A] bg-[#181818] px-2 text-[11px] text-[#dfe7ef] outline-none focus:border-[#A1A1AA]"
+                >
+                  {CHAT_PDF_MODES.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
+                </select>
 
                 <textarea
                   value={message}
@@ -1000,7 +1234,7 @@ function ChatPdfWorkspacePage() {
                 />
 
                 {activeDocumentIds.length > 0 && (
-                  <div className="absolute bottom-14 left-14 text-[10px] text-[#FFB5D9]">Using {activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'}</div>
+                  <div className="absolute bottom-14 left-14 text-[10px] text-[#D1D5DB]">Using {activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'}</div>
                 )}
 
                 <button 
@@ -1008,17 +1242,17 @@ function ChatPdfWorkspacePage() {
                   onClick={toggleMic}
                   disabled={loading}
                   aria-label={micListening ? 'Stop voice input' : 'Voice input'}
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition ${micListening ? 'border-[#FF66B8] bg-[#3A172F] text-[#FFD1E5]' : 'border-[#1A1A1A] bg-[#181818] text-[#dfe7ef] hover:border-[#FF66B8] hover:text-[#FFD1E5]'}`}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition ${micListening ? 'border-[#A1A1AA] bg-[#262626] text-[#F3F4F6]' : 'border-[#1A1A1A] bg-[#181818] text-[#dfe7ef] hover:border-[#A1A1AA] hover:text-[#F3F4F6]'}`}
                 >
                   <Mic className="h-4 w-4" />
                 </button>
 
                 <button 
                   type="button" 
-                  onClick={() => { if (!loading) { const next = message.trim(); if (next) void sendPrompt(next); } }} 
-                  disabled={loading || !activeDocument || !message.trim()}
+                  onClick={() => { if (!loading) void sendPrompt(); }}
+                  disabled={loading || !activeDocument || (aiMode === 'Chat' && !message.trim())}
                   aria-label={loading ? 'Generating response' : 'Send message'} 
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FF66B8] text-[#1B0712] shadow-[0_8px_18px_rgba(255,102,184,0.35)] transition hover:bg-[#FF8CC3] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F4F4F5] text-[#18181B] shadow-[0_8px_18px_rgba(255,255,255,0.18)] transition hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <div className="flex gap-0.5">
@@ -1047,19 +1281,19 @@ function ChatPdfWorkspacePage() {
               </div>
               <button type="button" aria-label="Close history" onClick={() => setHistoryOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-lg text-[#718194] hover:bg-[#171717] hover:text-white"><X className="h-4 w-4" /></button>
             </div>
-            <button type="button" onClick={createNewChat} className="mt-4 flex items-center gap-2 rounded-xl border border-[#71345A] bg-[#3A172F] px-3 py-2.5 text-left text-sm font-medium text-[#FFD1E5] hover:bg-[#592343]"><Plus className="h-4 w-4" /> New chat</button>
+            <button type="button" onClick={createNewChat} className="mt-4 flex items-center gap-2 rounded-xl border border-[#52525B] bg-[#262626] px-3 py-2.5 text-left text-sm font-medium text-[#F3F4F6] hover:bg-[#3F3F46]"><Plus className="h-4 w-4" /> New chat</button>
             <div className="mt-4 flex-1 space-y-2 overflow-y-auto">
               {history.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-[#242424] p-4 text-center text-xs text-[#718194]">No saved PDF conversations yet.</div>
               ) : history.map((conversation) => (
-                <div key={conversation.id} className="group rounded-xl border border-[#1A1A1A] bg-[#101010] p-3 hover:border-[#71345A]">
+                <div key={conversation.id} className="group rounded-xl border border-[#1A1A1A] bg-[#101010] p-3 hover:border-[#52525B]">
                   <button type="button" onClick={() => openConversation(conversation)} className="w-full min-w-0 text-left">
                     <div className="truncate text-sm font-medium text-white">{conversation.title}</div>
                     <div className="mt-1 truncate text-xs text-[#9aa9ba]">{conversation.documentName ?? 'Untitled PDF'}</div>
                     <div className="mt-1 text-[11px] text-[#718194]">{formatDate(conversation.updatedAt)}</div>
                   </button>
                   <div className="mt-2 flex gap-3 text-[11px]">
-                    <button type="button" onClick={() => { const title = window.prompt('Rename conversation', conversation.title)?.trim(); if (!title) return; upsertChatPdfConversation({ ...conversation, title, updatedAt: new Date().toISOString() }); refreshHistory(); }} className="text-[#FFB5D9] hover:text-white">Rename</button>
+                    <button type="button" onClick={() => { const title = window.prompt('Rename conversation', conversation.title)?.trim(); if (!title) return; upsertChatPdfConversation({ ...conversation, title, updatedAt: new Date().toISOString() }); refreshHistory(); }} className="text-[#D1D5DB] hover:text-white">Rename</button>
                     <button type="button" onClick={() => { deleteChatPdfConversation(conversation.id); refreshHistory(); }} className="text-red-300 hover:text-red-200">Delete</button>
                   </div>
                 </div>
@@ -1270,7 +1504,7 @@ function ChatPdfToolsPage() {
 
 function ChatPdfSavedPage() {
   const [, navigate] = useLocation();
-  const items = useMemo(() => loadChatPdfSavedItems(), []);
+  const [items, setItems] = useState<ChatPdfSavedItem[]>(() => loadChatPdfSavedItems());
 
   return (
     <ChatPdfShell title="Saved" subtitle="Saved summaries, notes, and extracted insights" navActive="Saved" activeDocumentName={getActiveChatPdfDocument()?.name ?? null} onUpload={() => navigate('/chat-with-pdf')}>
@@ -1289,7 +1523,7 @@ function ChatPdfSavedPage() {
 
                 <div className="flex flex-wrap gap-2">
                   <button type="button" onClick={() => navigate('/chat-with-pdf')} className="rounded-xl border border-[#1A1A1A] bg-[#111111] px-3 py-2 text-xs font-medium text-[#dfeaff]">Open</button>
-                  <button type="button" onClick={() => removeChatPdfSavedItem(item.id)} className="rounded-xl border border-red-900/80 bg-red-950/30 px-3 py-2 text-xs font-medium text-red-200">Remove</button>
+                  <button type="button" onClick={() => setItems(removeChatPdfSavedItem(item.id))} className="rounded-xl border border-red-900/80 bg-red-950/30 px-3 py-2 text-xs font-medium text-red-200">Remove</button>
                 </div>
               </div>
             </div>
@@ -1307,7 +1541,7 @@ export default function ChatWithPdfRoutes() {
   const [savedMatch] = useRoute('/chat-with-pdf/saved');
 
   if (documentsMatch) return <ChatPdfDocumentsPage />;
-  if (toolsMatch) return <ChatPdfToolsPage />;
+  if (toolsMatch) return <Redirect to="/chat-with-pdf" />;
   if (savedMatch) return <ChatPdfSavedPage />;
   if (workspaceMatch) return <ChatPdfWorkspacePage />;
 
