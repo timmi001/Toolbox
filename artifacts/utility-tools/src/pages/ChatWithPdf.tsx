@@ -19,7 +19,6 @@ import {
   History,
   Maximize2,
   MessageCircleQuestion,
-  Mic,
   Plus,
   Pencil,
   Search,
@@ -485,8 +484,6 @@ function ChatPdfWorkspacePage() {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingMessageText, setEditingMessageText] = useState('');
   const [messageActionFeedback, setMessageActionFeedback] = useState<{ id: string; label: string } | null>(null);
-  const [micListening, setMicListening] = useState(false);
-  const recognitionRef = useRef<{ start: () => void; stop: () => void; abort: () => void; lang: string; interimResults: boolean; maxAlternatives: number; onresult: ((event: any) => void) | null; onerror: (() => void) | null; onend: (() => void) | null } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedDocuments = documents.filter((document) => activeDocumentIds.includes(document.id) && document.status === 'ready');
@@ -792,46 +789,6 @@ function ChatPdfWorkspacePage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const toggleMic = () => {
-    if (micListening) {
-      recognitionRef.current?.stop();
-      setMicListening(false);
-      return;
-    }
-
-    const speechWindow = window as typeof window & {
-      SpeechRecognition?: new () => typeof recognitionRef.current;
-      webkitSpeechRecognition?: new () => typeof recognitionRef.current;
-    };
-    const SpeechRecognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setError('Voice input is not available in this browser. Please type your question instead.');
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    if (!recognition) return;
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    recognition.onresult = (event: any) => {
-      const transcript = event.results?.[0]?.[0]?.transcript as string | undefined;
-      if (transcript) setMessage((current) => `${current}${current ? ' ' : ''}${transcript}`.trim());
-    };
-    recognition.onerror = () => {
-      setMicListening(false);
-      setError('Voice input is unavailable right now. Please type your question instead.');
-    };
-    recognition.onend = () => {
-      setMicListening(false);
-      recognitionRef.current = null;
-    };
-    recognitionRef.current = recognition;
-    setError('');
-    setMicListening(true);
-    recognition.start();
   };
 
   const saveCurrentResponse = (itemType: 'summary' | 'extract' | 'analysis' | 'result', title: string, content: string) => {
@@ -1208,16 +1165,6 @@ function ChatPdfWorkspacePage() {
                   <Upload className="h-4 w-4" />
                 </button>
 
-                <select
-                  value={aiMode}
-                  onChange={(event) => setAiMode(event.target.value as ChatPdfMode)}
-                  disabled={loading}
-                  aria-label="AI mode"
-                  className="h-9 max-w-[128px] shrink-0 rounded-xl border border-[#1A1A1A] bg-[#181818] px-2 text-[11px] text-[#dfe7ef] outline-none focus:border-[#A1A1AA]"
-                >
-                  {CHAT_PDF_MODES.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
-                </select>
-
                 <textarea
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
@@ -1237,15 +1184,15 @@ function ChatPdfWorkspacePage() {
                   <div className="absolute bottom-14 left-14 text-[10px] text-[#D1D5DB]">Using {activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'}</div>
                 )}
 
-                <button 
-                  type="button"
-                  onClick={toggleMic}
+                <select
+                  value={aiMode}
+                  onChange={(event) => setAiMode(event.target.value as ChatPdfMode)}
                   disabled={loading}
-                  aria-label={micListening ? 'Stop voice input' : 'Voice input'}
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition ${micListening ? 'border-[#A1A1AA] bg-[#262626] text-[#F3F4F6]' : 'border-[#1A1A1A] bg-[#181818] text-[#dfe7ef] hover:border-[#A1A1AA] hover:text-[#F3F4F6]'}`}
+                  aria-label="AI mode"
+                  className="h-9 max-w-[128px] shrink-0 rounded-xl border border-[#1A1A1A] bg-[#181818] px-2 text-[11px] text-[#dfe7ef] outline-none focus:border-[#A1A1AA]"
                 >
-                  <Mic className="h-4 w-4" />
-                </button>
+                  {CHAT_PDF_MODES.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
+                </select>
 
                 <button 
                   type="button" 

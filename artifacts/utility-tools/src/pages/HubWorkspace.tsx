@@ -692,52 +692,29 @@ const BUSINESS_SIDEBAR_GROUPS: Array<{ label?: string; items: CareerSidebarItem[
 ];
 
 const CREATOR_SIDEBAR_GROUPS: Array<{ label?: string; items: CareerSidebarItem[] }> = [
-  { label: 'Create', items: [
-    { id: 'chat', label: 'New Chat', icon: Plus },
-    { id: 'dashboard', label: 'Creator Dashboard', icon: BarChart3 },
-    { id: 'history', label: 'Chat History', icon: Clock3 },
+  { label: 'Project', items: [
+    { id: 'chat', label: 'New Project', icon: Plus },
+    { id: 'scenes', label: 'Scenes', icon: Film },
+    { id: 'storyboard', label: 'Storyboard', icon: Layers3 },
   ] },
-  { label: 'Content', items: [
-    { id: 'ideas', label: 'Content Ideas', icon: Sparkles },
-    { id: 'planner', label: 'Content Planner', icon: CalendarDays },
-    { id: 'script', label: 'Script Writer', icon: FileText },
-    { id: 'captions', label: 'Caption Generator', icon: Captions },
-    { id: 'posts', label: 'Post Generator', icon: PenLine },
-    { id: 'hooks', label: 'Hook Generator', icon: Zap },
-    { id: 'stories', label: 'Story Generator', icon: BookOpen },
+  { label: 'Assets', items: [
+    { id: 'characters', label: 'Characters', icon: UserRound },
+    { id: 'locations', label: 'Locations', icon: Route },
+    { id: 'objects', label: 'Objects', icon: FolderOpen },
+    { id: 'styles', label: 'Styles', icon: Wand2 },
+    { id: 'references', label: 'References', icon: Paperclip },
   ] },
-  { label: 'Create & Edit', items: [
-    { id: 'image', label: 'Image Studio', icon: Image },
-    { id: 'video', label: 'Video Studio', icon: Video },
-    { id: 'audio', label: 'Audio Studio', icon: AudioLines },
-    { id: 'thumbnail', label: 'Thumbnail Maker', icon: ImagePlus },
-    { id: 'editor', label: 'AI Editor', icon: Wand2 },
+  { label: 'Audio', items: [
+    { id: 'voices', label: 'Voices', icon: Mic },
+    { id: 'dialogue', label: 'Dialogue', icon: MessageCircleQuestion },
+    { id: 'music', label: 'Music', icon: Music2 },
+    { id: 'sfx', label: 'Sound FX', icon: Volume2 },
   ] },
-  { label: 'Social Media', items: [
-    { id: 'instagram', label: 'Instagram', icon: Image },
-    { id: 'tiktok', label: 'TikTok', icon: Video },
-    { id: 'youtube', label: 'YouTube', icon: Play },
-    { id: 'twitter', label: 'X / Twitter', icon: MessageCircleQuestion },
-    { id: 'linkedin', label: 'LinkedIn', icon: BriefcaseBusiness },
-    { id: 'facebook', label: 'Facebook', icon: UserRound },
-  ] },
-  { label: 'Publishing', items: [
-    { id: 'calendar', label: 'Content Calendar', icon: CalendarDays },
-    { id: 'scheduled', label: 'Scheduled Posts', icon: Clock3 },
-    { id: 'drafts', label: 'Drafts', icon: FileText },
-    { id: 'published', label: 'Published Content', icon: Check },
-  ] },
-  { label: 'Analytics', items: [
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'performance', label: 'Content Performance', icon: TrendingUp },
-    { id: 'audience', label: 'Audience Insights', icon: UserRound },
-    { id: 'growth', label: 'Growth Tracker', icon: Trophy },
-  ] },
-  { label: 'Brand', items: [
-    { id: 'brand-kit', label: 'Brand Kit', icon: BriefcaseBusiness },
-    { id: 'brand-voice', label: 'Brand Voice', icon: Mic },
-    { id: 'prompts', label: 'Saved Prompts', icon: Bookmark },
-    { id: 'templates', label: 'Templates', icon: Layers3 },
+  { label: 'Tools', items: [
+    { id: 'image', label: 'Image', icon: ImagePlus },
+    { id: 'video', label: 'Video', icon: Film },
+    { id: 'edit', label: 'Edit', icon: Scissors },
+    { id: 'audio', label: 'Audio', icon: AudioLines },
   ] },
   { label: 'Bottom', items: [
     { id: 'settings', label: 'Settings', icon: Settings2 },
@@ -825,6 +802,160 @@ function CreatorSidebar({ open, active, onClose, onSelect }: { open: boolean; ac
 function CreatorDestinationPlaceholder({ item, onBack }: { item: CareerSidebarItem; onBack: () => void }) {
   const Icon = item.icon;
   return <section className="flex min-h-full flex-col items-center justify-center px-6 py-16 text-center text-white"><div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#3A3F46] bg-[#17191D] text-[#D1D5DB]"><Icon className="h-6 w-6" /></div><h1 className="mt-5 text-2xl font-bold">{item.label}</h1><p className="mt-2 max-w-sm text-sm leading-6 text-[#8995A5]">This Creator Studio workspace is ready for your next idea.</p><button type="button" onClick={onBack} className="mt-6 rounded-lg border border-[#3A3F46] px-3 py-2 text-xs text-[#D1D5DB] transition hover:bg-[#1B1D21]">Back to chat</button></section>;
+}
+
+type CreatorScene = { id: string; title: string; description: string; duration: number; color: string };
+type CreatorAsset = { id: string; name: string; kind: 'image' | 'video' | 'audio' | 'character' | 'reference'; sceneId?: string; content?: string; createdAt: string };
+type CreatorClip = { id: string; label: string; track: 'VIDEO' | 'DIALOGUE' | 'VOICEOVER' | 'SFX' | 'MUSIC' | 'AMBIENT'; start: number; duration: number; color: string };
+type CreatorProject = { id: string; name: string; updatedAt: string; scenes: CreatorScene[]; assets: CreatorAsset[]; clips: CreatorClip[]; activeSceneId: string };
+
+const CREATOR_PROJECT_KEY = 'toolbuxx-creator-studio-project';
+const CREATOR_DB_NAME = 'toolbuxx-creator-studio';
+
+const defaultCreatorProject = (): CreatorProject => ({
+  id: `project-${Date.now()}`,
+  name: 'Untitled Film',
+  updatedAt: new Date().toISOString(),
+  scenes: [{ id: 'scene-1', title: 'Scene 01', description: 'Describe the opening shot and action.', duration: 8, color: '#334155' }],
+  assets: [],
+  clips: [
+    { id: 'clip-video', label: 'Opening visual', track: 'VIDEO', start: 0, duration: 8, color: '#475569' },
+    { id: 'clip-ambient', label: 'Ambient bed', track: 'AMBIENT', start: 0, duration: 8, color: '#36534A' },
+  ],
+  activeSceneId: 'scene-1',
+});
+
+function loadCreatorProject() {
+  if (typeof window === 'undefined') return defaultCreatorProject();
+  try {
+    const saved = window.localStorage.getItem(CREATOR_PROJECT_KEY);
+    return saved ? JSON.parse(saved) as CreatorProject : defaultCreatorProject();
+  } catch {
+    return defaultCreatorProject();
+  }
+}
+
+function persistCreatorProject(project: CreatorProject) {
+  if (typeof window === 'undefined') return;
+  const serialized = JSON.stringify(project);
+  window.localStorage.setItem(CREATOR_PROJECT_KEY, serialized);
+  if (!('indexedDB' in window)) return;
+  try {
+    const request = window.indexedDB.open(CREATOR_DB_NAME, 1);
+    request.onupgradeneeded = () => request.result.createObjectStore('projects', { keyPath: 'id' });
+    request.onsuccess = () => {
+      const transaction = request.result.transaction('projects', 'readwrite');
+      transaction.objectStore('projects').put(project);
+    };
+  } catch {
+    // localStorage remains the metadata fallback when IndexedDB is unavailable.
+  }
+}
+
+function CreatorProductionWorkspace({ activeView, onMenuOpen }: { activeView: string; onMenuOpen: () => void }) {
+  const [project, setProject] = useState<CreatorProject>(() => loadCreatorProject());
+  const [mode, setMode] = useState('Image');
+  const [prompt, setPrompt] = useState('');
+  const [generatedText, setGeneratedText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [savedState, setSavedState] = useState('Saved locally');
+  const importRef = useRef<HTMLInputElement>(null);
+  const activeScene = project.scenes.find((scene) => scene.id === project.activeSceneId) ?? project.scenes[0];
+  const sceneAssets = project.assets.filter((asset) => !asset.sceneId || asset.sceneId === activeScene?.id);
+  const panel = activeView === 'chat' ? 'canvas' : activeView;
+
+  useEffect(() => {
+    setSavedState('Saving…');
+    const timer = window.setTimeout(() => {
+      persistCreatorProject({ ...project, updatedAt: new Date().toISOString() });
+      setSavedState('Saved locally');
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [project]);
+
+  const updateProject = (update: (current: CreatorProject) => CreatorProject) => setProject((current) => update(current));
+
+  const addScene = () => updateProject((current) => {
+    const id = `scene-${Date.now()}`;
+    return { ...current, activeSceneId: id, scenes: [...current.scenes, { id, title: `Scene ${String(current.scenes.length + 1).padStart(2, '0')}`, description: 'New scene direction.', duration: 8, color: '#3F3F46' }] };
+  });
+
+  const addAsset = (kind: CreatorAsset['kind'], content: string) => updateProject((current) => ({
+    ...current,
+    assets: [{ id: `asset-${Date.now()}`, name: `${mode} direction ${current.assets.length + 1}`, kind, sceneId: activeScene?.id, content, createdAt: new Date().toISOString() }, ...current.assets],
+  }));
+
+  const generate = async () => {
+    const value = prompt.trim();
+    if (!value || loading) return;
+    setLoading(true);
+    setError('');
+    try {
+      const answer = await generateHubResponse('creator', { prompt: `${value}\nProject: ${project.name}\nScene: ${activeScene?.title ?? 'New scene'}`, mode, context: `Creator Studio production workflow. Active scene description: ${activeScene?.description ?? ''}` });
+      setGeneratedText(answer);
+      const kind: CreatorAsset['kind'] = mode === 'Voice' || mode === 'Audio' || mode === 'Music' || mode === 'Sound FX' ? 'audio' : mode === 'Video' ? 'video' : mode === 'Script' || mode === 'Dialogue' ? 'reference' : 'image';
+      addAsset(kind, answer);
+      setPrompt('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to generate this creative direction.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportProject = () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' }));
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${project.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'creator-project'}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importProject = (file: File | undefined) => {
+    if (!file) return;
+    void file.text().then((text) => {
+      try { setProject(JSON.parse(text) as CreatorProject); setError(''); } catch { setError('That project backup is not valid JSON.'); }
+    });
+  };
+
+  const tracks: CreatorClip['track'][] = ['VIDEO', 'DIALOGUE', 'VOICEOVER', 'SFX', 'MUSIC', 'AMBIENT'];
+
+  return (
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#090A0C] text-white">
+      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-[#1D2025] px-3 sm:px-5">
+        <button type="button" onClick={onMenuOpen} className="rounded-lg p-2 text-[#A1A1AA] hover:bg-white/5 md:hidden" aria-label="Open Creator Studio navigation"><MoreHorizontal className="h-4 w-4" /></button>
+        <div className="min-w-0 flex-1"><div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#737982]">Creator Studio</div><input value={project.name} onChange={(event) => updateProject((current) => ({ ...current, name: event.target.value }))} className="w-full max-w-xs truncate bg-transparent text-sm font-semibold text-white outline-none" aria-label="Project name" /></div>
+        <span className="hidden items-center gap-2 text-[11px] text-[#8B929C] sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-[#D1D5DB]" />{savedState}</span>
+        <input ref={importRef} type="file" accept="application/json" className="hidden" onChange={(event) => importProject(event.target.files?.[0])} />
+        <button type="button" onClick={() => importRef.current?.click()} className="hidden rounded-lg border border-[#2C3036] px-2.5 py-1.5 text-[11px] text-[#C5CAD1] hover:bg-white/5 sm:block">Import</button>
+        <button type="button" onClick={exportProject} className="rounded-lg bg-[#F4F4F5] px-3 py-1.5 text-[11px] font-semibold text-[#18181B] hover:bg-white">Export</button>
+      </header>
+
+      {error && <div className="mx-3 mt-3 flex shrink-0 items-center justify-between rounded-lg border border-red-900/60 bg-red-950/30 px-3 py-2 text-xs text-red-200 sm:mx-5"><span>{error}</span><button type="button" onClick={() => setError('')} aria-label="Dismiss error"><X className="h-3.5 w-3.5" /></button></div>}
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-5">
+        <div className="mx-auto grid max-w-[1600px] gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <section className={`${panel === 'timeline' ? 'xl:col-span-2' : ''} space-y-4`}>
+            <div className="flex items-center justify-between"><div><div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#737982]">{panel === 'canvas' ? 'Creative canvas' : panel === 'storyboard' ? 'Storyboard' : panel === 'scenes' ? 'Scene direction' : 'Production workspace'}</div><h1 className="mt-1 text-xl font-semibold tracking-tight">{activeScene?.title ?? 'New production'}</h1></div><div className="flex items-center gap-2 text-xs text-[#8B929C]"><span>{project.scenes.length} scenes</span><span>·</span><span>{project.assets.length} assets</span></div></div>
+            {panel === 'scenes' && <section className="space-y-2">{project.scenes.map((scene, index) => <div key={scene.id} className={`flex items-center gap-3 rounded-xl border p-3 ${scene.id === activeScene?.id ? 'border-[#71717A] bg-[#18181B]' : 'border-[#24272C] bg-[#0E1013]'}`}><div className="h-10 w-14 rounded-lg" style={{ background: scene.color }} /><button type="button" onClick={() => updateProject((current) => ({ ...current, activeSceneId: scene.id }))} className="min-w-0 flex-1 text-left"><div className="text-sm font-medium">{scene.title}</div><div className="mt-1 truncate text-xs text-[#858B94]">{scene.description}</div></button><span className="text-[11px] text-[#858B94]">{scene.duration}s</span><button type="button" onClick={() => updateProject((current) => ({ ...current, scenes: current.scenes.filter((item) => item.id !== scene.id), activeSceneId: current.scenes[Math.max(0, index - 1)]?.id ?? '' }))} aria-label={`Delete ${scene.title}`} className="rounded-lg p-1.5 text-[#858B94] hover:bg-red-950/30 hover:text-red-200"><Trash2 className="h-3.5 w-3.5" /></button></div>)}<button type="button" onClick={addScene} className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#3A3F46] px-3 py-3 text-xs text-[#C5CAD1] hover:bg-white/5"><Plus className="h-3.5 w-3.5" /> Add scene</button></section>}
+            {panel === 'storyboard' && <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{project.scenes.map((scene) => <button key={scene.id} type="button" onClick={() => updateProject((current) => ({ ...current, activeSceneId: scene.id }))} className="overflow-hidden rounded-xl border border-[#24272C] bg-[#0E1013] text-left hover:border-[#71717A]"><div className="flex aspect-video items-end bg-gradient-to-br from-[#1F2937] to-[#3F3F46] p-3"><span className="text-xs font-semibold">{scene.title}</span></div><div className="p-3"><div className="text-xs text-[#C5CAD1]">{scene.description}</div><div className="mt-2 text-[10px] text-[#858B94]">Generate · Edit · Duplicate</div></div></button>)}<button type="button" onClick={addScene} className="flex aspect-video items-center justify-center rounded-xl border border-dashed border-[#3A3F46] text-xs text-[#A1A1AA] hover:bg-white/5"><Plus className="mr-2 h-4 w-4" /> New scene</button></div>}
+            {panel !== 'scenes' && panel !== 'storyboard' && <>
+              <div className="relative flex min-h-[320px] items-center justify-center overflow-hidden rounded-2xl border border-[#24272C] bg-[#111318] p-6"><div className="absolute inset-0 opacity-25" style={{ backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.08) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.08) 75%, transparent 75%)', backgroundSize: '32px 32px' }} />{generatedText ? <div className="relative max-w-xl whitespace-pre-wrap text-center text-sm leading-7 text-[#E5E7EB]">{generatedText}</div> : <div className="relative text-center text-[#737982]"><ImagePlus className="mx-auto h-8 w-8" /><p className="mt-3 text-sm">Your generated image, video, script, or audio direction will appear here.</p><p className="mt-1 text-xs">Select a scene and describe the next shot.</p></div>}</div>
+              <div className="rounded-2xl border border-[#24272C] bg-[#0E1013] p-3"><div className="mb-2 flex gap-2 overflow-x-auto [scrollbar-width:none]">{['Image', 'Video', 'Script', 'Voice', 'Dialogue', 'Music', 'Sound FX'].map((item) => <button key={item} type="button" onClick={() => setMode(item)} className={`shrink-0 rounded-lg border px-3 py-1.5 text-xs ${mode === item ? 'border-[#71717A] bg-[#27272A] text-white' : 'border-transparent text-[#858B94] hover:bg-white/5 hover:text-white'}`}>{item}</button>)}</div><textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); void generate(); } }} rows={3} placeholder="Describe what you want to create..." className="w-full resize-none bg-transparent px-1 py-2 text-sm leading-6 text-white outline-none placeholder:text-[#737982]" /><div className="flex items-center justify-between border-t border-[#24272C] pt-2"><span className="text-[11px] text-[#737982]">@character · @location · @style</span><button type="button" onClick={() => void generate()} disabled={loading || !prompt.trim()} className="rounded-lg bg-[#F4F4F5] px-3 py-2 text-xs font-semibold text-[#18181B] disabled:opacity-40">{loading ? 'Generating…' : 'Generate'}</button></div></div>
+            </>}
+          </section>
+
+          <aside className="space-y-4">
+            <section className="rounded-2xl border border-[#24272C] bg-[#0E1013] p-3"><div className="mb-3 flex items-center justify-between"><div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#737982]">Current scene</div><button type="button" onClick={addScene} className="rounded-lg p-1.5 text-[#A1A1AA] hover:bg-white/5" aria-label="Add scene"><Plus className="h-3.5 w-3.5" /></button></div><input value={activeScene?.title ?? ''} onChange={(event) => updateProject((current) => ({ ...current, scenes: current.scenes.map((scene) => scene.id === current.activeSceneId ? { ...scene, title: event.target.value } : scene) }))} className="w-full bg-transparent text-sm font-semibold text-white outline-none" /><textarea value={activeScene?.description ?? ''} onChange={(event) => updateProject((current) => ({ ...current, scenes: current.scenes.map((scene) => scene.id === current.activeSceneId ? { ...scene, description: event.target.value } : scene) }))} rows={3} className="mt-2 w-full resize-none bg-transparent text-xs leading-5 text-[#A1A1AA] outline-none" /></section>
+            <section className="rounded-2xl border border-[#24272C] bg-[#0E1013] p-3"><div className="mb-3 flex items-center justify-between"><div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#737982]">Assets</div><span className="text-[11px] text-[#858B94]">{sceneAssets.length}</span></div><div className="grid grid-cols-2 gap-2">{['Images', 'Videos', 'Audio', 'Characters', 'References'].map((kind) => <button key={kind} type="button" onClick={() => setMode(kind === 'Images' ? 'Image' : kind === 'Videos' ? 'Video' : kind === 'Audio' ? 'Audio' : 'Script')} className="rounded-lg border border-[#24272C] bg-[#111318] p-2 text-left text-xs text-[#C5CAD1] hover:border-[#71717A]"><div className="mb-2 h-12 rounded bg-[#1F2329]" /><span>{kind}</span></button>)}</div></section>
+            <section className="rounded-2xl border border-[#24272C] bg-[#0E1013] p-3"><div className="mb-3 flex items-center justify-between"><div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#737982]">Timeline</div><span className="text-[11px] text-[#858B94]">{project.clips.length} clips</span></div><div className="space-y-2">{tracks.map((track) => <div key={track} className="flex items-center gap-2"><span className="w-16 text-[9px] font-semibold text-[#737982]">{track}</span><div className="relative h-5 flex-1 rounded bg-[#17191D]"><div className="absolute inset-y-1 left-1 w-2/3 rounded bg-[#3F4A56]" /></div></div>)}</div></section>
+          </aside>
+        </div>
+      </div>
+    </main>
+  );
 }
 
 type UnifiedHubKey = keyof typeof UNIFIED_HUBS;
@@ -1116,12 +1247,12 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
     );
   }
 
-  if (hub === 'creator' && creatorView !== 'chat') {
+  if (hub === 'creator') {
     return (
       <div className="creator-studio-layout flex h-[100dvh] min-h-0 w-full bg-[#000000]">
         <CreatorSidebar open={creatorSidebarOpen} active={creatorView} onClose={() => setCreatorSidebarOpen(false)} onSelect={selectCreatorItem} />
         <ChatViewport className="creator-chat-viewport bg-[#000000] text-white">
-          <main className="min-w-0 flex-1 overflow-y-auto"><CreatorDestinationPlaceholder item={creatorSidebarItem} onBack={() => setCreatorView('chat')} /></main>
+          <CreatorProductionWorkspace activeView={creatorView} onMenuOpen={() => setCreatorSidebarOpen(true)} />
         </ChatViewport>
       </div>
     );
