@@ -911,10 +911,6 @@ function ChatPdfWorkspacePage() {
               <button type="button" onClick={() => { setActiveDocumentIdsState([]); setActiveChatPdfDocumentIds([]); }} className="shrink-0 px-2 text-[11px] text-[#D1D5DB]">Deselect all</button>
             </div>
           )}
-          <div className="mb-3 flex items-center gap-1 rounded-xl border border-[#1A1A1A] bg-[#090909] p-1 lg:hidden">
-            <button type="button" onClick={() => setMobilePane('viewer')} className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium ${mobilePane === 'viewer' ? 'bg-[#262626] text-[#F3F4F6]' : 'text-[#8f9aad]'}`}>Document</button>
-            <button type="button" onClick={() => setMobilePane('chat')} className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium ${mobilePane === 'chat' ? 'bg-[#262626] text-[#F3F4F6]' : 'text-[#8f9aad]'}`}>Chat</button>
-          </div>
           {activeDocument?.warning && (
             <div className="mb-4 rounded-2xl border border-amber-900/60 bg-amber-950/20 px-3 py-2 text-[12px] leading-5 text-amber-200">
               {activeDocument.warning}
