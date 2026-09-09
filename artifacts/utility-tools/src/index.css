@@ -180,10 +180,6 @@ body {
   }
 }
 
-.business-chat-viewport {
-  transform: translateZ(0);
-}
-
 .creator-chat-viewport {
   transform: translateZ(0);
 }

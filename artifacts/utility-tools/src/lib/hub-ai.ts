@@ -2,7 +2,7 @@ import { ai } from './api';
 import { saveHistoryEntry } from '@/utils/historyStorage';
 import { markActivity } from '@/utils/activityStorage';
 
-export type HubId = 'ai-assistant' | 'creator' | 'study' | 'career' | 'business';
+export type HubId = 'ai-assistant' | 'creator' | 'study';
 
 export interface HubGenerationInput {
   prompt: string;
@@ -13,7 +13,6 @@ export interface HubGenerationInput {
   role?: string;
   industry?: string;
   experience?: string;
-  businessType?: string;
   pdfDocumentId?: string;
   pdfDocumentName?: string;
   pdfDocumentStatus?: string;

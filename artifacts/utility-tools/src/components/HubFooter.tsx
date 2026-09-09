@@ -7,8 +7,6 @@ const LINK_GROUPS = [
     links: [
       ['All Hubs', '/'],
       ['Study Hub', '/hub/study'],
-      ['Career Path', '/hub/career'],
-      ['Business Hub', '/hub/business'],
       ['Creator Studio', '/hub/creator'],
     ],
   },

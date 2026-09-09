@@ -217,7 +217,7 @@ const configs: Record<string, AiToolConfig> = {
     toolId: "ai-chapter-generator",
     buttonLabel: "Draft Chapter",
     fields: [
-      { key: "topic", label: "Book Topic", type: "text", placeholder: "e.g. Personal finance basics", required: true },
+      { key: "topic", label: "Book Topic", type: "text", placeholder: "e.g. investing basics", required: true },
       { key: "chapter", label: "Chapter Title", type: "text", placeholder: "e.g. Building good habits" },
     ],
   },

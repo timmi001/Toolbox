@@ -5,7 +5,6 @@ const cards = [
   ['Creator Hub', 'Turn rough ideas into polished content and creative direction.'],
   ['Study Hub', 'Learn faster, practice more and build a better study routine.'],
   ['Career Hub', 'Prepare for your next opportunity with practical AI guidance.'],
-  ['Business Hub', 'Plan, organize and grow your business in one focused workspace.'],
 ];
 
 export function Redesign() {

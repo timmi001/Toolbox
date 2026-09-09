@@ -92,6 +92,7 @@ function Router() {
           <Route path="/ai-tools" component={AiTools} />
           <Route path="/hub/ai" component={() => <Redirect to="/chat-with-pdf" />} />
           <Route path="/hub/study" component={StudyHub} />
+          <Route path="/hub/business" component={NotFound} />
           <Route path="/hub/:hub" component={HubWorkspace} />
           <Route path="/chat-with-pdf" component={ChatWithPdfRoutes} />
           <Route path="/chat-with-pdf/documents" component={ChatWithPdfRoutes} />

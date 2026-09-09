@@ -30,8 +30,6 @@ const TOOL_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "hub-ai-assistant": 1200,
   "hub-creator": 1200,
   "hub-study": 1200,
-  "hub-career": 1200,
-  "hub-business": 1200,
   "ai-grammar-checker": 300,
   "ai-email-writer": 700,
   "ai-resume-builder": 1200,
@@ -124,8 +122,6 @@ const COMPLEX_TOOL_IDS = new Set([
   "hub-ai-assistant",
   "hub-creator",
   "hub-study",
-  "hub-career",
-  "hub-business",
   "ai-resume-builder",
   "ai-cover-letter",
   "ai-essay-generator",
@@ -167,8 +163,6 @@ const TOOL_SCHEMAS: Record<string, { required: string[]; maxLengths: Record<stri
   "hub-ai-assistant": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, context: 1000, pdfDocumentId: 1000, pdfDocumentName: 2000, pdfDocumentStatus: 500, pdfContext: 500 } },
   "hub-creator": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, context: 1000 } },
   "hub-study": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, subject: 100, level: 100 } },
-  "hub-career": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, role: 150, industry: 150, experience: 100 } },
-  "hub-business": { required: ["prompt"], maxLengths: { prompt: 12000, mode: 50, businessType: 150, industry: 150 } },
   "ai-writer":             { required: ["topic"],      maxLengths: { topic: 300 } },
   "ai-summarizer":         { required: ["text"],       maxLengths: { text: 20000 } },
   "ai-paraphraser":        { required: ["text"],       maxLengths: { text: 10000 } },
@@ -281,12 +275,6 @@ function buildPrompt(toolId: string, inputs: Record<string, string>): string | n
 
     case "hub-study":
       return `You are a patient personal tutor in Toolbuxx Study Hub. Study mode: ${i.mode || "Explain"}. Subject: ${i.subject || "General"}. Learner level: ${i.level || "Not specified"}.\n\nStudent request:\n${i.prompt}\n\nTeach step by step, include an example, check understanding with one follow-up question, and avoid inventing facts.`;
-
-    case "hub-career":
-      return `You are an expert AI career coach. Career mode: ${i.mode || "Career Advice"}. Target role: ${i.role || "Not specified"}. Industry: ${i.industry || "Not specified"}. Experience level: ${i.experience || "Not specified"}.\n\nUser request:\n${i.prompt}\n\nGive concrete, professional advice. When relevant, provide an improved example, identify gaps, and end with actionable next steps.`;
-
-    case "hub-business":
-      return `You are an AI business consultant for entrepreneurs and small businesses. Mode: ${i.mode || "Strategy"}. Business type: ${i.businessType || "Not specified"}. Industry: ${i.industry || "Not specified"}.\n\nBusiness request:\n${i.prompt}\n\nGive practical, measurable advice. Structure the response so it can move from idea to research, strategy, content, marketing, and execution.`;
 
     case "ai-writer":
       return `Write a high-quality, engaging ${i.length || "medium-length"} article about "${i.topic}" in a ${i.tone || "professional"} tone. Include a compelling introduction, well-structured body sections with clear headings, and a strong conclusion. Make it informative and valuable to the reader.`;

@@ -652,31 +652,6 @@
   background: linear-gradient(150deg, #f6f5f3 0%, #d9d9d7 100%);
 }
 
-.home-hub-card-3 .home-object {
-  color: #7a4b2a;
-}
-
-.home-hub-card-4 {
-  color: #72a897;
-  background: linear-gradient(150deg, #eef7f0 0%, #cddfd5 100%);
-}
-
-.home-object-finance {
-  color: #c99a2e;
-}
-
-.home-object-finance svg path:first-child {
-  stroke: #111318;
-}
-
-.home-object-finance svg path:not(:first-child) {
-  stroke: #dc4f5c;
-}
-
-.home-object-finance svg path:nth-child(3) {
-  stroke: #39a96b;
-}
-
 .home-object {
   position: relative;
   z-index: 1;
