@@ -312,23 +312,17 @@ async function extractPdfText(file: File): Promise<ChatPdfDocument> {
 }
 
 function ChatPdfShell({
-  title,
-  subtitle,
   children,
   onUpload,
   onHistory,
-  activeDocumentName,
   navActive,
   sidebarCollapsed: controlledSidebarCollapsed,
   onSidebarCollapsedChange,
   fixedLayout = false,
 }: {
-  title: string;
-  subtitle: string;
   children: React.ReactNode;
   onUpload: () => void;
   onHistory?: () => void;
-  activeDocumentName?: string | null;
   navActive?: string;
   sidebarCollapsed?: boolean;
   onSidebarCollapsedChange?: (collapsed: boolean) => void;
@@ -440,18 +434,6 @@ function ChatPdfShell({
               </aside>
             </div>
           )}
-
-          <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[#1A1A1A] bg-[#050505] px-3 md:px-5">
-            <div className="flex min-w-0 items-center gap-3">
-              <h1 className="truncate text-sm font-semibold text-white">{title}</h1>
-              <button type="button" onClick={() => { setActiveChatPdfConversationId(null); window.dispatchEvent(new CustomEvent('chat-pdf-reset')); }} className="hidden shrink-0 rounded-lg border border-[#52525B] bg-[#262626] px-2.5 py-1.5 text-[11px] font-medium text-[#F3F4F6] hover:bg-[#3F3F46] sm:block">New chat</button>
-            </div>
-            <div className="flex min-w-0 items-center gap-2">
-              {activeDocumentName && <div className="hidden min-w-0 items-center gap-2 text-xs text-[#9aa9ba] md:flex"><FileText className="h-3.5 w-3.5 shrink-0 text-[#D1D5DB]" /><span className="max-w-[min(36vw,360px)] truncate">{activeDocumentName}</span></div>}
-              <button type="button" aria-label="Open PDF tools" onClick={() => navigate('/pdf-tools')} className="rounded-lg p-2 text-[#8fa2b8] hover:bg-white/5 hover:text-white"><FileText className="h-4 w-4" /></button>
-              <button type="button" aria-label="Open settings" onClick={() => navigate('/chat-with-pdf')} className="rounded-lg p-2 text-[#8fa2b8] hover:bg-white/5 hover:text-white"><Settings2 className="h-4 w-4" /></button>
-            </div>
-          </header>
 
           <div ref={scrollContainerRef} className={`min-h-0 flex-1 bg-[#000000] px-3 pb-32 pt-4 md:px-5 ${fixedLayout ? 'overflow-hidden' : 'overflow-y-auto'}`} data-chat-scroll-container>{children}</div>
         </main>
@@ -896,10 +878,7 @@ function ChatPdfWorkspacePage() {
   return (
     <>
       <ChatPdfShell
-        title="Chat with PDF"
-        subtitle=""
         navActive="Chat with PDF"
-        activeDocumentName={activeDocument?.name ?? null}
         onUpload={() => inputRef.current?.click()}
         onHistory={() => { refreshHistory(); setHistoryOpen(true); }}
         sidebarCollapsed={sidebarCollapsed}
@@ -1297,7 +1276,7 @@ function ChatPdfDocumentsPage() {
   };
 
   return (
-    <ChatPdfShell title="My Documents" subtitle="Uploaded PDFs and their status" navActive="My Documents" activeDocumentName={getActiveChatPdfDocument()?.name ?? null} onUpload={() => navigate('/chat-with-pdf')}>
+    <ChatPdfShell navActive="My Documents" onUpload={() => navigate('/chat-with-pdf')}>
       <div className="mx-auto max-w-6xl space-y-4">
         <div className="rounded-[22px] border border-[#1A1A1A] bg-[#0d1117] p-3">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -1414,7 +1393,7 @@ function ChatPdfToolsPage() {
   };
 
   return (
-    <ChatPdfShell title="Tools" subtitle="Advanced PDF analysis actions" navActive="Tools" activeDocumentName={activeDocument?.name ?? null} onUpload={() => navigate('/chat-with-pdf')}>
+    <ChatPdfShell navActive="Tools" onUpload={() => navigate('/chat-with-pdf')}>
       <div className="mx-auto max-w-6xl">
         {!activeDocument ? (
           <div className="rounded-[26px] border border-dashed border-[#1A1A1A] bg-[#090909] p-8 text-center text-[#8fa2b8]">
@@ -1454,7 +1433,7 @@ function ChatPdfSavedPage() {
   const [items, setItems] = useState<ChatPdfSavedItem[]>(() => loadChatPdfSavedItems());
 
   return (
-    <ChatPdfShell title="Saved" subtitle="Saved summaries, notes, and extracted insights" navActive="Saved" activeDocumentName={getActiveChatPdfDocument()?.name ?? null} onUpload={() => navigate('/chat-with-pdf')}>
+    <ChatPdfShell navActive="Saved" onUpload={() => navigate('/chat-with-pdf')}>
       <div className="mx-auto max-w-6xl space-y-4">
         {items.length === 0 ? (
           <div className="rounded-[26px] border border-dashed border-[#1A1A1A] bg-[#090909] p-8 text-center text-[#8fa2b8]">No saved PDF insights yet.</div>

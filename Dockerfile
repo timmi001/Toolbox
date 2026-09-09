@@ -69,6 +69,11 @@ COPY artifacts/api-server/ ./artifacts/api-server/
 # Result: dist/ is self-contained; no runtime node_modules needed.
 RUN pnpm --filter @workspace/api-server run build
 
+# The bundle externalizes native OCR rendering dependencies such as
+# @napi-rs/canvas. Deploy the API package's production dependency tree so
+# Node can resolve those native modules at runtime.
+RUN pnpm deploy --filter @workspace/api-server --prod --legacy /workspace/deployed-api
+
 # ── Stage 3: runner ───────────────────────────────────────────────────────────
 # The dist/ bundle is completely self-contained — all JS deps are inlined by
 # esbuild. No node_modules are needed at runtime. FFmpeg remains installed for
@@ -85,6 +90,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy the compiled bundle from the builder stage.
 # This is the ONLY thing needed at runtime — dist/ contains everything.
 COPY --from=builder /workspace/artifacts/api-server/dist ./dist
+COPY --from=builder /workspace/deployed-api/node_modules ./node_modules
 
 ENV NODE_ENV=production
 ENV PORT=8080
