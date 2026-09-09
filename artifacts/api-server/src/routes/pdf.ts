@@ -1,8 +1,8 @@
 import { Router, type NextFunction, type Request, type Response } from "express";
 import multer from "multer";
 import { randomUUID } from "node:crypto";
+import { createCanvas } from "@napi-rs/canvas";
 import { logger } from "../lib/logger";
-import type { PDFParse as PdfParser } from "pdf-parse";
 
 const router = Router();
 const MAX_PDF_SIZE = 25 * 1024 * 1024;
@@ -13,7 +13,9 @@ type PdfErrorCode =
   | "PDF_TOO_LARGE"
   | "PDF_INVALID_TYPE"
   | "PDF_PARSE_FAILED"
-  | "PDF_EXTRACTION_FAILED";
+  | "PDF_EXTRACTION_FAILED"
+  | "PDF_PASSWORD_PROTECTED"
+  | "PDF_OCR_FAILED";
 
 function sendPdfError(
   res: Response,
@@ -34,6 +36,33 @@ function sendPdfError(
 
 function getRequestId(req: Request) {
   return (req as Request & { id?: string }).id;
+}
+
+function isPasswordError(error: unknown) {
+  return /password|encrypted|encryption|incorrect password/i.test(error instanceof Error ? error.message : String(error));
+}
+
+async function ocrPages(data: Buffer, pageNumbers: number[]) {
+  const [{ getDocument }, { createWorker }] = await Promise.all([
+    import("pdfjs-dist/legacy/build/pdf.mjs"),
+    import("tesseract.js"),
+  ]);
+  const pdfDocument = await getDocument({ data: new Uint8Array(data), verbosity: 0, disableWorker: true } as never).promise;
+  const worker = await createWorker("eng");
+  const results = new Map<number, string>();
+  try {
+    for (const pageNumber of pageNumbers.slice(0, 20)) {
+      const page = await pdfDocument.getPage(pageNumber);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
+      await page.render({ canvas: null, canvasContext: canvas.getContext("2d") as never, viewport }).promise;
+      const text = await worker.recognize(canvas.toBuffer("image/png"));
+      results.set(pageNumber, text.data.text.replace(/\s+/g, " ").trim());
+    }
+    return results;
+  } finally {
+    await worker.terminate();
+  }
 }
 
 function logPdfFailure(req: Request, file: Express.Multer.File | undefined, error: unknown, message: string) {
@@ -171,41 +200,58 @@ router.post("/pdf/extract", uploadPdfFile, async (req, res) => {
     return;
   }
 
-  const startedAt = process.hrtime.bigint();
-  let parser: PdfParser | undefined;
-
   try {
-    // pdf-parse pulls in PDF.js rendering support. Load it only for an
-    // extraction request so an optional canvas/DOMMatrix shim cannot prevent
-    // the API server from starting.
-    const { PDFParse } = await import("pdf-parse");
-    PDFParse.setWorker(
-      new URL(
-        "../node_modules/pdf-parse/dist/pdf-parse/web/pdf.worker.mjs",
-        import.meta.url,
-      ).href,
-    );
-    parser = new PDFParse({ data: file.buffer });
-    const result = await parser.getText({
-      itemJoiner: " ",
-      pageJoiner: "",
-    });
-    const pageTexts = result.pages.map((page) => page.text.replace(/\s+/g, " ").trim());
+    let pageTexts: string[];
+    try {
+      const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+      const pdfDocument = await getDocument({ data: new Uint8Array(file.buffer), verbosity: 0, disableWorker: true } as never).promise;
+      pageTexts = [];
+      for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber += 1) {
+        const page = await pdfDocument.getPage(pageNumber);
+        const content = await page.getTextContent();
+        pageTexts.push(content.items.map((item) => ("str" in item ? item.str : "")).join(" ").replace(/\s+/g, " ").trim());
+      }
+    } catch (pdfJsError) {
+      logger.warn({ error: pdfJsError instanceof Error ? pdfJsError.message : String(pdfJsError) }, "PDF.js extraction failed; trying pdf-parse fallback");
+      const { PDFParse } = await import("pdf-parse");
+      const parser = new PDFParse({ data: file.buffer });
+      pageTexts = (await parser.getText({ itemJoiner: " ", pageJoiner: "\n\n" })).pages.map((page: { text: string }) => page.text.replace(/\s+/g, " ").trim());
+      await parser.destroy();
+    }
+
+    if (!pageTexts.length || pageTexts.every((page) => !page)) {
+      const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+      const pdfDocument = await getDocument({ data: new Uint8Array(file.buffer), verbosity: 0, disableWorker: true } as never).promise;
+      pageTexts = [];
+      for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber += 1) {
+        const page = await pdfDocument.getPage(pageNumber);
+        const content = await page.getTextContent();
+        pageTexts.push(content.items.map((item) => ("str" in item ? item.str : "")).join(" ").replace(/\s+/g, " ").trim());
+      }
+    }
+
+    const sparsePages = pageTexts.map((page, index) => page.length < 20 ? index + 1 : 0).filter(Boolean);
+    if (sparsePages.length) {
+      try {
+        const ocr = await ocrPages(file.buffer, sparsePages);
+        for (const [pageNumber, text] of ocr) if (text.length > pageTexts[pageNumber - 1].length) pageTexts[pageNumber - 1] = text;
+      } catch (error) {
+        if (pageTexts.every((page) => !page)) throw Object.assign(new Error("OCR could not read the scanned PDF pages."), { code: "PDF_OCR_FAILED" });
+        logger.warn({ error: error instanceof Error ? error.message : String(error) }, "PDF OCR fallback failed; retaining extracted text");
+      }
+    }
+
     const textCharacterCount = pageTexts.reduce((total, pageText) => total + pageText.length, 0);
     const textAvailable = textCharacterCount > 0;
-    const warning = textAvailable
-      ? undefined
-      : "This PDF has no selectable text. It may be scanned or image-based, so OCR is needed to read its contents.";
-    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    const warning = textAvailable ? undefined : "No readable text was found in this PDF.";
 
     logger.info(
       {
         requestId: getRequestId(req),
         fileName: file.originalname,
         fileSize: file.size,
-        pageCount: result.total,
+        pageCount: pageTexts.length,
         textCharacterCount,
-        durationMs,
       },
       "PDF extracted successfully",
     );
@@ -216,7 +262,7 @@ router.post("/pdf/extract", uploadPdfFile, async (req, res) => {
         id: randomUUID(),
         name: file.originalname.replace(/\.pdf$/i, ""),
         fileName: file.originalname,
-        pageCount: result.total,
+        pageCount: pageTexts.length,
         pageTexts,
         uploadDate: new Date().toISOString(),
         status: "ready" as const,
@@ -227,21 +273,10 @@ router.post("/pdf/extract", uploadPdfFile, async (req, res) => {
     });
   } catch (error) {
     logPdfFailure(req, file, error, "PDF text extraction failed");
-    sendPdfError(
-      res,
-      422,
-      "PDF_PARSE_FAILED",
-      "This PDF could not be read. It may be corrupted, password-protected, or using an unsupported format.",
-      true,
-    );
-  } finally {
-    if (parser) {
-      try {
-        await parser.destroy();
-      } catch (error) {
-        logPdfFailure(req, file, error, "PDF parser cleanup failed");
-      }
-    }
+    const code = (error as { code?: string }).code;
+    if (code === "PDF_OCR_FAILED") sendPdfError(res, 422, "PDF_OCR_FAILED", "The PDF was uploaded, but OCR could not read its scanned pages.", true);
+    else if (isPasswordError(error)) sendPdfError(res, 422, "PDF_PASSWORD_PROTECTED", "This PDF is password-protected or encrypted. Remove the password and try again.", false);
+    else sendPdfError(res, 422, "PDF_EXTRACTION_FAILED", "The PDF was uploaded successfully but its text could not be extracted.", true);
   }
 });
 

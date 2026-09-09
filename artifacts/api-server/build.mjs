@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { copyFile, rm } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -33,6 +33,7 @@ async function buildAll() {
       "better-sqlite3",
       "sqlite3",
       "canvas",
+      "@napi-rs/canvas",
       "bcrypt",
       "argon2",
       "fsevents",
@@ -122,6 +123,11 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+
+  await copyFile(
+    path.resolve(artifactDir, "../../node_modules/.pnpm/pdfjs-dist@6.1.200/node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"),
+    path.resolve(distDir, "pdf.worker.mjs"),
+  );
 }
 
 buildAll().catch((err) => {
