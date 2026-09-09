@@ -13,7 +13,6 @@ const CATEGORY_DETAILS: Record<string, { title: string, desc: string }> = {
   'image-tools': { title: 'Image Tools', desc: 'Compress, crop, resize, and convert images entirely in your browser.' },
   'file-conversion-tools': { title: 'File Conversion Tools', desc: 'Convert documents, archives, spreadsheets, and media formats in a few clicks.' },
   'business-tools': { title: 'Business Tools', desc: 'Create invoices, receipts, labels, business names, and simple financial insights.' },
-  'pdf-tools': { title: 'PDF Tools', desc: 'Merge, split, and manipulate PDF documents securely.' },
   'calculators': { title: 'Calculators & Converters', desc: 'Solve math problems, convert units, and calculate dates.' },
   'ai-marketing-advertising': { title: 'AI Marketing & Advertising', desc: 'Create ad copy, sales messaging, landing page content, and conversion-focused CTAs with AI-powered marketing tools.' },
   'audio-tools': { title: 'Audio Tools', desc: 'Record, trim, merge, convert, and enhance audio files entirely in your browser — no installs needed.' },
@@ -41,7 +40,6 @@ export default function CategoryPage() {
     categoryPath === 'image-tools' ? 'image' :
     categoryPath === 'file-conversion-tools' ? 'file-conversion' :
     categoryPath === 'business-tools' ? 'business' :
-    categoryPath === 'pdf-tools' ? 'pdf' :
     categoryPath === 'ai-marketing-advertising' ? 'marketing' :
     categoryPath === 'audio-tools' ? 'audio' :
     categoryPath === 'video-tools' ? 'video' :

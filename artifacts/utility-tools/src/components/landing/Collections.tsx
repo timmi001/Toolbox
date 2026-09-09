@@ -5,14 +5,6 @@ import { toolsData } from '@/lib/tools-data';
 
 const UTILITY_COLLECTIONS = [
   {
-    emoji: '📄',
-    name: 'PDF Tools',
-    href: '/pdf-tools',
-    categories: ['pdf'],
-    gradient: 'linear-gradient(135deg, rgba(127, 29, 29, 0.72) 0%, rgba(69, 10, 10, 0.92) 100%)',
-    accent: '#EF4444',
-  },
-  {
     emoji: '🖼',
     name: 'Image Tools',
     href: '/image-tools',

@@ -7,7 +7,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 const NAV_LINKS = [
   { name: 'Audio Tools', href: '/audio-tools' },
   { name: 'Video Tools', href: '/video-tools' },
-  { name: 'PDF Tools', href: '/pdf-tools' },
   { name: 'Image Tools', href: '/image-tools' },
   { name: 'Calculators', href: '/calculators' },
   { name: 'Developer Tools', href: '/developer-tools' },

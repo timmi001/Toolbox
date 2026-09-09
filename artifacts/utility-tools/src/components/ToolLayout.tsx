@@ -31,13 +31,6 @@ export function ToolLayout({ tool, children, instructions, faqs = [] }: ToolLayo
     <div className="max-w-4xl mx-auto py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <BreadcrumbNav category={tool.category} toolName={tool.name} />
 
-      {tool.category === 'pdf' && (
-        <div className="mb-5 flex flex-wrap gap-2 text-sm">
-          <Link href="/chat-with-pdf" className="rounded-lg border border-border px-3 py-2 hover:bg-muted">Back to Chat with PDF</Link>
-          <Link href="/pdf-tools" className="rounded-lg border border-border px-3 py-2 hover:bg-muted">PDF Tools</Link>
-        </div>
-      )}
-
       {/* Social bar removed */}
 
       <header className="mb-8 text-center md:text-left">

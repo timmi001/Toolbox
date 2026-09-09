@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { Type, Code, Image as ImageIcon, FileText, Calculator, Search, FileStack, Briefcase, Sparkles, Music, Video, Megaphone, FileBadge, Share2, Newspaper, SpellCheck2, Mail, GraduationCap, PenLine } from 'lucide-react';
+import { Type, Code, Image as ImageIcon, Calculator, Search, FileStack, Briefcase, Sparkles, Music, Video, Megaphone, FileBadge, Share2, Newspaper, SpellCheck2, Mail, GraduationCap, PenLine } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { getToolsByCategory } from '@/lib/tools-data';
 
@@ -18,7 +18,6 @@ const CATEGORIES = [
   { id: 'video', name: 'Video Tools', icon: Video, path: '/video-tools', desc: 'Trim, compress, rotate, subtitle, and convert videos.' },
   { id: 'file-conversion', name: 'File Conversion', icon: FileStack, path: '/file-conversion-tools', desc: 'Convert media, documents, archives, and spreadsheets.' },
   { id: 'business', name: 'AI Business Tools', icon: Briefcase, path: '/business-tools', desc: 'Create invoices, receipts, stickers, and business-ready assets.' },
-  { id: 'pdf', name: 'PDF Tools', icon: FileText, path: '/pdf-tools', desc: 'Merge, split, and manipulate PDF documents.' },
   { id: 'calculators', name: 'Calculators & Converters', icon: Calculator, path: '/calculators', desc: 'Math, dates, and unit conversions.' },
 ];
 

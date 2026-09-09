@@ -24,7 +24,6 @@ import {
   Search,
   Share2,
   Settings2,
-  Sparkles,
   Trash2,
   Upload,
   X,
@@ -90,7 +89,6 @@ const sideNav: Array<{ label: string; icon: LucideIcon; route: string; action?: 
   { label: 'My Documents', icon: FolderOpen, route: '/chat-with-pdf/documents' },
   { label: 'Upload PDF', icon: Upload, route: '/chat-with-pdf', action: 'upload' },
   { label: 'Saved', icon: Bookmark, route: '/chat-with-pdf/saved' },
-  { label: 'PDF Tools', icon: Sparkles, route: '/pdf-tools' },
   { label: 'Settings', icon: Settings2, route: '/chat-with-pdf', action: 'settings' },
 ];
 
@@ -293,13 +291,6 @@ function ChatPdfNavigation({
       ))}
       {(!collapsed || mobile) && (
         <>
-          <div className="px-3 pb-1 pt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#647286]">PDF tools</div>
-          {['Merge', 'Split', 'Compress', 'Convert', 'Rotate', 'Extract Pages', 'Export'].map((tool) => (
-            <button key={tool} type="button" onClick={() => onNavigate('/pdf-tools')} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-[#b4c0ce] transition hover:bg-[#0f0f0f] hover:text-white">
-              <FileText className="h-4 w-4" />
-              <span>{tool}</span>
-            </button>
-          ))}
         </>
       )}
     </nav>

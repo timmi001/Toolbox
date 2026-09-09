@@ -1,4 +1,4 @@
-export type ToolCategory = 'text' | 'developer' | 'image' | 'pdf' | 'calculators' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar' | 'ai-ghostwriting' | 'ai-events' | 'ai-study';
+export type ToolCategory = 'text' | 'developer' | 'image' | 'calculators' | 'file-conversion' | 'business' | 'ai' | 'marketing' | 'audio' | 'video' | 'ai-resume' | 'ai-social' | 'ai-blogging-seo' | 'ai-email' | 'ai-grammar' | 'ai-ghostwriting' | 'ai-events' | 'ai-study';
 
 export type Tool = {
   slug: string;
@@ -121,27 +121,6 @@ export const toolsData: Tool[] = [
   { slug: 'ai-product-description', name: 'AI Product Description Generator', description: 'Write compelling product descriptions that convert for e-commerce and listings.', category: 'business', keywords: ['ai', 'product description', 'ecommerce', 'marketing'], new: true, icon: 'ShoppingBag' },
   { slug: 'ai-brand-story', name: 'AI Brand Story Generator', description: 'Craft an authentic, engaging brand story that resonates with your audience.', category: 'business', keywords: ['ai', 'brand story', 'storytelling', 'branding'], new: true, icon: 'PenSquare' },
 
-  // PDF Tools
-  { slug: 'merge-pdf', name: 'Merge PDF', description: 'Merge multiple PDF files into one.', category: 'pdf', keywords: ['pdf', 'merge', 'combine'], popular: true, icon: 'Files' },
-  { slug: 'split-pdf', name: 'Split PDF', description: 'Split PDF into separate files by page range.', category: 'pdf', keywords: ['pdf', 'split', 'divide'], icon: 'SplitSquareHorizontal' },
-  { slug: 'compress-pdf', name: 'Compress PDF', description: 'Reduce PDF file size without losing quality.', category: 'pdf', keywords: ['pdf', 'compress', 'reduce'], popular: true, icon: 'FileArchive' },
-  { slug: 'rotate-pdf', name: 'Rotate PDF Pages', description: 'Rotate PDF pages by 90°, 180°, or 270°.', category: 'pdf', keywords: ['pdf', 'rotate', 'turn'], icon: 'RotateCw' },
-  { slug: 'delete-pdf-pages', name: 'Delete PDF Pages', description: 'Remove specific pages from a PDF file.', category: 'pdf', keywords: ['pdf', 'delete', 'remove'], icon: 'FileX' },
-  { slug: 'rearrange-pdf-pages', name: 'Rearrange PDF Pages', description: 'Change the order of pages in a PDF.', category: 'pdf', keywords: ['pdf', 'rearrange', 'order'], icon: 'ArrowUpDown' },
-  { slug: 'pdf-to-jpg', name: 'PDF to JPG', description: 'Convert PDF pages to JPG images.', category: 'pdf', keywords: ['pdf', 'jpg', 'convert'], trending: true, icon: 'Image' },
-  { slug: 'jpg-to-pdf', name: 'JPG to PDF', description: 'Convert JPG images into a single PDF.', category: 'pdf', keywords: ['jpg', 'pdf', 'convert'], icon: 'FileText' },
-  { slug: 'png-to-pdf', name: 'PNG to PDF', description: 'Convert PNG images into a single PDF.', category: 'pdf', keywords: ['png', 'pdf', 'convert'], icon: 'FileText' },
-  { slug: 'pdf-page-extractor', name: 'PDF Page Extractor', description: 'Extract specific pages from a PDF to a new file.', category: 'pdf', keywords: ['pdf', 'extract', 'pages'], icon: 'FilePlus' },
-  { slug: 'watermark-pdf', name: 'Watermark PDF', description: 'Add text watermark to PDF pages.', category: 'pdf', keywords: ['pdf', 'watermark', 'stamp'], icon: 'Droplets' },
-  { slug: 'unlock-pdf', name: 'Unlock PDF', description: 'Remove password protection from PDF files.', category: 'pdf', keywords: ['pdf', 'unlock', 'password'], icon: 'Unlock' },
-  { slug: 'protect-pdf', name: 'Protect PDF', description: 'Add password protection to PDF files.', category: 'pdf', keywords: ['pdf', 'protect', 'encrypt'], icon: 'Lock' },
-  { slug: 'add-page-numbers', name: 'Add Page Numbers', description: 'Add page numbers to PDF footer.', category: 'pdf', keywords: ['pdf', 'page numbers', 'footer'], icon: 'ListOrdered' },
-  { slug: 'pdf-metadata', name: 'PDF Metadata Viewer', description: 'View PDF document metadata (title, author, etc).', category: 'pdf', keywords: ['pdf', 'metadata', 'properties'], icon: 'Info' },
-  { slug: 'pdf-size-checker', name: 'PDF Size Checker', description: 'Check detailed PDF file size information.', category: 'pdf', keywords: ['pdf', 'size', 'info'], icon: 'HardDrive' },
-  { slug: 'pdf-page-counter', name: 'PDF Page Counter', description: 'Count total pages in a PDF file.', category: 'pdf', keywords: ['pdf', 'pages', 'count'], icon: 'Hash' },
-  { slug: 'pdf-preview', name: 'PDF Preview', description: 'Preview PDF pages directly in the browser.', category: 'pdf', keywords: ['pdf', 'preview', 'view'], icon: 'Eye' },
-  { slug: 'pdf-orientation', name: 'PDF Orientation Fixer', description: 'Detect and fix incorrect PDF page orientation.', category: 'pdf', keywords: ['pdf', 'orientation', 'rotate'], icon: 'LayoutTemplate' },
-  { slug: 'pdf-thumbnail', name: 'PDF Thumbnail Generator', description: 'Generate image thumbnails from PDF files.', category: 'pdf', keywords: ['pdf', 'thumbnail', 'image'], new: true, icon: 'Image' },
 
   // AI Tools
   { slug: 'ai-writer', name: 'AI Article Writer', description: 'Generate high-quality articles, blog posts, and content on any topic using AI.', category: 'ai-blogging-seo', keywords: ['ai', 'writer', 'content', 'article', 'generator'], new: true, icon: 'PenSquare' },

@@ -11,7 +11,6 @@ const categoryColors: Record<ToolCategory, { bubble: string; hover: string; titl
   text:              { bubble: 'bg-blue-400/15 text-blue-300',      hover: 'group-hover:bg-blue-400 group-hover:text-white',      title: 'group-hover:text-blue-300' },
   developer:         { bubble: 'bg-violet-400/15 text-violet-300',  hover: 'group-hover:bg-violet-400 group-hover:text-white',    title: 'group-hover:text-violet-300' },
   image:             { bubble: 'bg-pink-400/15 text-pink-300',      hover: 'group-hover:bg-pink-400 group-hover:text-white',      title: 'group-hover:text-pink-300' },
-  pdf:               { bubble: 'bg-red-400/15 text-red-300',        hover: 'group-hover:bg-red-400 group-hover:text-white',       title: 'group-hover:text-red-300' },
   calculators:       { bubble: 'bg-amber-400/15 text-amber-300',    hover: 'group-hover:bg-amber-400 group-hover:text-white',     title: 'group-hover:text-amber-300' },
   'file-conversion': { bubble: 'bg-indigo-400/15 text-indigo-300',  hover: 'group-hover:bg-indigo-400 group-hover:text-white',    title: 'group-hover:text-indigo-300' },
   business:          { bubble: 'bg-emerald-400/15 text-emerald-300',hover: 'group-hover:bg-emerald-400 group-hover:text-white',   title: 'group-hover:text-emerald-300' },
