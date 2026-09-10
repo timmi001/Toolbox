@@ -65,6 +65,11 @@ const MAX_CHAT_PDF_FILES = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILES ?? 12)
 const MAX_CHAT_PDF_FILE_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILE_SIZE ?? 25 * 1024 * 1024);
 const MAX_CHAT_PDF_TOTAL_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_TOTAL_SIZE ?? 100 * 1024 * 1024);
 const CHAT_PDF_QUICK_ACTIONS = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
+const CHAT_PDF_SUGGESTIONS = [
+  'Summarize the key functions in this PDF.',
+  'How does this assist in decision-making?',
+  'What are the most important takeaways?',
+];
 const CHAT_PDF_MODES = ['Chat', 'Ask Questions', 'Summarize', 'Explain', 'Find Information', 'Extract Information', 'Compare Documents', 'Generate Quiz', 'Generate Flashcards'] as const;
 type ChatPdfMode = typeof CHAT_PDF_MODES[number];
 
@@ -451,13 +456,15 @@ function ChatPdfWorkspacePage() {
   const [retryFiles, setRetryFiles] = useState<File[]>([]);
   const [generatedTitle, setGeneratedTitle] = useState('');
   const [viewerPage, setViewerPage] = useState(1);
+  const [displayView, setDisplayView] = useState<'chat' | 'document'>('chat');
+  const [modelMode, setModelMode] = useState<'fast' | 'quality'>('fast');
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [mobilePane, setMobilePane] = useState<'viewer' | 'chat'>('chat');
   const [history, setHistory] = useState<ChatPdfConversation[]>(() => loadChatPdfHistory());
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingMessageText, setEditingMessageText] = useState('');
   const [messageActionFeedback, setMessageActionFeedback] = useState<{ id: string; label: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedDocuments = documents.filter((document) => activeDocumentIds.includes(document.id) && document.status === 'ready');
   const activeDocument = selectedDocuments.find((document) => document.id === viewedDocumentId) ?? selectedDocuments[0] ?? null;
@@ -700,6 +707,19 @@ function ChatPdfWorkspacePage() {
     setActiveDocumentIdsState(nextActiveIds);
     setViewedDocumentIdState(viewedId);
     setViewerPage(1);
+    setDisplayView('chat');
+    if (processed.length) {
+      const greetedDocument = processed.at(-1);
+      if (greetedDocument) {
+        const greeting = {
+          id: crypto.randomUUID(),
+          role: 'assistant' as const,
+          content: `I went through all ${greetedDocument.pageCount} pages of ${greetedDocument.fileName} and can help you unpack the concepts!`,
+          createdAt: new Date().toISOString(),
+        };
+        setMessages((current) => current.length ? [...current, greeting] : [greeting]);
+      }
+    }
     setActiveChatPdfDocumentIds(nextActiveIds);
     if (viewedId) {
       setActiveChatPdfDocumentId(viewedId);
@@ -742,7 +762,7 @@ function ChatPdfWorkspacePage() {
       const grounded = buildGroundedPrompt(value, selectedDocuments);
       const pdfInput = getPdfRequestContext(selectedDocuments);
       console.debug('[chat-pdf] generation request', { selectedDocuments: selectedDocuments.map(({ id, fileName, status }) => ({ id, fileName, status })), payloadKeys: ['toolId', 'inputs.prompt', 'inputs.mode', ...Object.keys(pdfInput)] });
-      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: aiMode, ...pdfInput });
+      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: aiMode, context: `Response mode: ${modelMode}`, ...pdfInput });
       const assistantMessage: { id: string; role: 'assistant'; content: string; createdAt: string } = {
         id: crypto.randomUUID(),
         role: 'assistant',
@@ -784,6 +804,22 @@ function ChatPdfWorkspacePage() {
     setMessage('');
   };
 
+  const chooseSuggestedPrompt = (suggestion: string) => {
+    setAiMode('Chat');
+    setMessage(suggestion);
+    window.requestAnimationFrame(() => messageInputRef.current?.focus());
+  };
+
+  const chooseCreationAction = (action: 'flashcards' | 'slides') => {
+    setAiMode(action === 'flashcards' ? 'Generate Flashcards' : 'Chat');
+    setMessage(
+      action === 'flashcards'
+        ? 'Create study flashcards from the main concepts in this PDF.'
+        : 'Create a concise slide outline from this PDF with a title, key points, and speaker notes.',
+    );
+    window.requestAnimationFrame(() => messageInputRef.current?.focus());
+  };
+
   const runContextAction = async (type: 'summary' | 'extract' | 'analysis', customPrompt?: string) => {
     if (uploading) {
       setError('Processing PDF…');
@@ -805,7 +841,7 @@ function ChatPdfWorkspacePage() {
       const grounded = buildGroundedPrompt(promptText, selectedDocuments);
       const pdfInput = getPdfRequestContext(selectedDocuments);
       console.debug('[chat-pdf] context action request', { selectedDocuments: selectedDocuments.map(({ id, fileName, status }) => ({ id, fileName, status })), payloadKeys: ['toolId', 'inputs.prompt', 'inputs.mode', ...Object.keys(pdfInput)] });
-      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: type === 'summary' ? 'Summarize' : type === 'extract' ? 'Extract Information' : 'Analyze', ...pdfInput });
+      const reply = await generateHubResponse('ai-assistant', { prompt: grounded, mode: type === 'summary' ? 'Summarize' : type === 'extract' ? 'Extract Information' : 'Analyze', context: `Response mode: ${modelMode}`, ...pdfInput });
       const userActionMessage: { id: string; role: 'user'; content: string; createdAt: string } = {
         id: crypto.randomUUID(),
         role: 'user',
@@ -884,6 +920,31 @@ function ChatPdfWorkspacePage() {
             void handleUpload(Array.from(event.dataTransfer.files));
           }}
         >
+          {activeDocument && (
+            <header className="mb-4 flex shrink-0 items-center justify-between gap-4 rounded-[20px] border border-[#1A1A1A] bg-[#0b1016] px-4 py-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#26384a] bg-[#101c28] text-[#9bd6ff]">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="truncate text-sm font-semibold text-white sm:text-base">{activeDocument.fileName}</h1>
+                  <p className="mt-0.5 text-[11px] text-[#718194]">
+                    {activeDocument.pageCount} {activeDocument.pageCount === 1 ? 'page' : 'pages'} · Processed
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDisplayView((current) => current === 'chat' ? 'document' : 'chat')}
+                aria-label={displayView === 'chat' ? 'View full PDF' : 'Return to PDF chat'}
+                title={displayView === 'chat' ? 'View full PDF' : 'Return to PDF chat'}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition ${displayView === 'document' ? 'border-[#9bd6ff] bg-[#9bd6ff] text-[#07111d]' : 'border-[#3a4b5d] bg-[#101c28] text-[#cfe8ff] hover:border-[#9bd6ff] hover:text-white'}`}
+              >
+                {displayView === 'chat' ? <MessageCircleQuestion className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
+              </button>
+            </header>
+          )}
+
           {(documents.length > 0 || processingFiles.length > 0) && (
             <div className="mb-4 flex items-center gap-2 overflow-x-auto rounded-[22px] border border-[#1A1A1A] bg-[#0b1016] p-3 [scrollbar-width:none]">
               {documents.map((document) => {
@@ -932,7 +993,7 @@ function ChatPdfWorkspacePage() {
           )}
           {activeDocument ? (
             <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[minmax(0,1.4fr)_minmax(360px,0.85fr)]">
-              <div className={`order-2 min-h-0 flex-col overflow-hidden rounded-[18px] border border-[#1A1A1A] bg-[#090909] lg:flex ${mobilePane === 'chat' ? 'flex' : 'hidden'}`}>
+              <div className={`min-h-0 flex-col overflow-hidden rounded-[18px] border border-[#1A1A1A] bg-[#090909] ${displayView === 'chat' ? 'flex xl:col-span-2' : 'hidden'}`}>
                 <div className="flex shrink-0 items-center justify-between border-b border-[#1A1A1A] px-4 py-3">
                   <div className="flex min-w-0 items-center gap-2">
                     <MessageCircleQuestion className="h-4 w-4 shrink-0 text-[#D1D5DB]" />
@@ -1084,17 +1145,53 @@ function ChatPdfWorkspacePage() {
                     <div ref={messagesEndRef} />
                   </div>
                 )}
+
+                    <div className="border-t border-[#1A1A1A] pt-4">
+                      <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#6b7786]">Suggested prompts</div>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        {CHAT_PDF_SUGGESTIONS.map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => chooseSuggestedPrompt(suggestion)}
+                            className="rounded-xl border border-[#26384a] bg-[#101820] px-3 py-2.5 text-left text-xs leading-5 text-[#cfe1f3] transition hover:border-[#7fc7ff]/70 hover:bg-[#142231]"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <span className="mr-1 text-[11px] font-semibold text-[#8492a3]">Create</span>
+                        <button
+                          type="button"
+                          onClick={() => chooseCreationAction('flashcards')}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-[#3b4551] bg-[#111a23] px-3 py-2 text-xs font-semibold text-[#dfeaf8] transition hover:border-[#9bd6ff] hover:text-white"
+                        >
+                          <BookOpen className="h-3.5 w-3.5 text-[#9bd6ff]" />
+                          Flashcards
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => chooseCreationAction('slides')}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-[#3b4551] bg-[#111a23] px-3 py-2 text-xs font-semibold text-[#dfeaf8] transition hover:border-[#9bd6ff] hover:text-white"
+                        >
+                          <BarChart3 className="h-3.5 w-3.5 text-[#9bd6ff]" />
+                          Slides
+                        </button>
+                      </div>
+                    </div>
                 </div>
               </div>
               </div>
 
-              <div className={`order-1 min-h-0 overflow-hidden rounded-[18px] border border-[#1A1A1A] lg:block ${mobilePane === 'viewer' ? 'block' : 'hidden'}`}>
+              <div className={`min-h-0 overflow-hidden rounded-[18px] border border-[#1A1A1A] ${displayView === 'document' ? 'block xl:col-span-2' : 'hidden'}`}>
                 <PdfViewerPanel activeDocument={activeDocument} file={documentFiles[activeDocument.id]} page={viewerPage} onPageChange={setViewerPage} />
               </div>
             </div>
           ) : (
             <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(360px,0.85fr)]">
-              <div className={`flex min-h-[min(62vh,620px)] items-center justify-center rounded-[18px] border border-dashed border-[#262626] bg-[#0b1016] p-6 text-center ${mobilePane === 'viewer' ? 'flex' : 'hidden lg:flex'}`}>
+              <div className="flex min-h-[min(62vh,620px)] items-center justify-center rounded-[18px] border border-dashed border-[#262626] bg-[#0b1016] p-6 text-center">
                 <div className="max-w-sm">
                   <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#262626] text-[#D1D5DB]"><Upload className="h-5 w-5" /></div>
                   <h2 className="text-lg font-semibold tracking-tight text-white">Upload a PDF</h2>
@@ -1102,7 +1199,7 @@ function ChatPdfWorkspacePage() {
                   <button type="button" onClick={() => inputRef.current?.click()} className="mt-4 rounded-xl border border-white/35 bg-white/10 px-4 py-2 text-[12px] font-semibold text-[#F3F4F6] transition hover:bg-white/20">Upload PDF</button>
                 </div>
               </div>
-              <div className={`flex min-h-[min(62vh,620px)] items-center justify-center rounded-[18px] border border-[#1A1A1A] bg-[#090909] p-6 text-center ${mobilePane === 'chat' ? 'flex' : 'hidden lg:flex'}`}>
+              <div className="hidden min-h-[min(62vh,620px)] items-center justify-center rounded-[18px] border border-[#1A1A1A] bg-[#090909] p-6 text-center lg:flex">
                 <div className="max-w-sm"><MessageCircleQuestion className="mx-auto mb-3 h-7 w-7 text-[#D1D5DB]" /><h2 className="text-base font-semibold text-white">PDF Assistant</h2><p className="mt-2 text-sm leading-6 text-[#8f9aad]">Upload a PDF and I’ll help you summarize, explain, search, compare, and study it.</p></div>
               </div>
             </div>
@@ -1132,6 +1229,7 @@ function ChatPdfWorkspacePage() {
                 </button>
 
                 <textarea
+                  ref={messageInputRef}
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   onKeyDown={(event) => {
@@ -1149,6 +1247,27 @@ function ChatPdfWorkspacePage() {
                 {activeDocumentIds.length > 0 && (
                   <div className="absolute bottom-14 left-14 text-[10px] text-[#D1D5DB]">Using {activeDocumentIds.length} document{activeDocumentIds.length === 1 ? '' : 's'}</div>
                 )}
+
+                <div className="flex shrink-0 items-center rounded-xl border border-[#1A1A1A] bg-[#181818] p-0.5" aria-label="Response speed">
+                  <button
+                    type="button"
+                    aria-pressed={modelMode === 'fast'}
+                    onClick={() => setModelMode('fast')}
+                    disabled={loading}
+                    className={`rounded-lg px-2 py-1.5 text-[10px] font-semibold transition ${modelMode === 'fast' ? 'bg-[#26384a] text-[#dff2ff]' : 'text-[#718194] hover:text-white'}`}
+                  >
+                    Fast
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={modelMode === 'quality'}
+                    onClick={() => setModelMode('quality')}
+                    disabled={loading}
+                    className={`rounded-lg px-2 py-1.5 text-[10px] font-semibold transition ${modelMode === 'quality' ? 'bg-[#26384a] text-[#dff2ff]' : 'text-[#718194] hover:text-white'}`}
+                  >
+                    Quality
+                  </button>
+                </div>
 
                 <select
                   value={aiMode}
