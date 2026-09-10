@@ -646,6 +646,9 @@ function ChatPdfWorkspacePage() {
     const selectedFiles = files
       ? Array.isArray(files) ? files : [files]
       : Array.from(inputRef.current?.files ?? []);
+    if (!files && inputRef.current) {
+      inputRef.current.value = '';
+    }
     if (!selectedFiles.length) return;
 
     const invalidFile = selectedFiles.find((file) => file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf'));
@@ -1099,8 +1102,7 @@ function ChatPdfWorkspacePage() {
                 </div>
               </div>
 
-              {activeDocument && (
-                <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 px-3 pb-[max(env(safe-area-inset-bottom),0.65rem)] pt-10 sm:px-5">
+              <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 px-3 pb-[max(env(safe-area-inset-bottom),0.65rem)] pt-10 sm:px-5">
                   <div className="pointer-events-auto relative mx-auto w-full max-w-3xl">
                     {openMenu && (
                       <div className="absolute bottom-[4.3rem] left-0 z-30 w-[min(92vw,300px)] overflow-hidden rounded-2xl border border-[#2a3d48] bg-[#0c151b] p-1.5 shadow-[0_18px_45px_rgba(0,0,0,0.38)]">
@@ -1121,13 +1123,12 @@ function ChatPdfWorkspacePage() {
                     )}
                     <div className="flex min-w-0 items-center gap-2 rounded-2xl border border-[#2a3d48] bg-[#0c151b]/95 p-2 shadow-[0_-8px_26px_rgba(0,0,0,0.22)] backdrop-blur-xl">
                       <button type="button" data-testid="button-open-pdf-add-menu" aria-label="Add PDF or attachment" onClick={() => setOpenMenu((current) => current === 'add' ? null : 'add')} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#304954] text-[#b9dce9] transition hover:bg-white/[0.07]"><Plus className="h-4 w-4" /></button>
-                      <textarea ref={messageInputRef} value={message} onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !loading) { event.preventDefault(); void sendPrompt(); } }} rows={1} disabled={loading} placeholder="Ask anything about this PDF" data-testid="input-pdf-message" className="min-h-[38px] min-w-0 flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-5 text-[#e8f3f6] outline-none placeholder:text-[#718692] disabled:opacity-60" />
-                      <button type="button" data-testid="button-open-pdf-tools" aria-label="Open PDF tools" onClick={() => setOpenMenu((current) => current === 'tools' ? null : 'tools')} className="flex h-9 shrink-0 items-center gap-1 rounded-xl border border-[#304954] px-2.5 text-[11px] font-medium text-[#9fc8d6] transition hover:bg-white/[0.07]"><MoreHorizontal className="h-4 w-4" />Tools</button>
-                      <button type="button" data-testid="button-send-pdf-message" onClick={() => { if (!loading) void sendPrompt(); }} disabled={loading || !message.trim()} aria-label={loading ? 'Generating response' : 'Send message'} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#d8edf4] text-[#10202a] transition hover:bg-[#eef9fc] disabled:cursor-not-allowed disabled:opacity-40"><ArrowUp className="h-4 w-4" /></button>
+                      <textarea ref={messageInputRef} value={message} onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !loading) { event.preventDefault(); void sendPrompt(); } }} rows={1} disabled={!activeDocument || loading} placeholder={activeDocument ? 'Ask anything about this PDF' : 'Upload a PDF to begin'} data-testid="input-pdf-message" className="min-h-[38px] min-w-0 flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-5 text-[#e8f3f6] outline-none placeholder:text-[#718692] disabled:cursor-not-allowed disabled:opacity-60" />
+                      <button type="button" data-testid="button-open-pdf-tools" aria-label="Open PDF tools" onClick={() => setOpenMenu((current) => current === 'tools' ? null : 'tools')} disabled={!activeDocument} className="flex h-9 shrink-0 items-center gap-1 rounded-xl border border-[#304954] px-2.5 text-[11px] font-medium text-[#9fc8d6] transition hover:bg-white/[0.07] disabled:cursor-not-allowed disabled:opacity-40"><MoreHorizontal className="h-4 w-4" />Tools</button>
+                      <button type="button" data-testid="button-send-pdf-message" onClick={() => { if (!loading) void sendPrompt(); }} disabled={loading || !activeDocument || !message.trim()} aria-label={loading ? 'Generating response' : 'Send message'} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#d8edf4] text-[#10202a] transition hover:bg-[#eef9fc] disabled:cursor-not-allowed disabled:opacity-40"><ArrowUp className="h-4 w-4" /></button>
                     </div>
                   </div>
                 </div>
-              )}
             </>
           )}
 
@@ -1141,6 +1142,14 @@ function ChatPdfWorkspacePage() {
             </div>
           )}
           {uploading && <div className="absolute bottom-20 left-3 right-3 z-40 mx-auto max-w-3xl rounded-xl border border-[#294351] bg-[#10202a] px-3 py-2 text-xs text-[#c9e3ec] shadow-lg">Processing PDF…</div>}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="application/pdf,.pdf"
+            multiple
+            className="hidden"
+            onChange={(event) => { void handleUpload(); }}
+          />
         </div>
       </ChatPdfShell>
 
