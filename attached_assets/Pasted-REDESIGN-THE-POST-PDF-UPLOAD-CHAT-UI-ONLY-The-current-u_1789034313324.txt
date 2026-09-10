@@ -1,0 +1,110 @@
+REDESIGN THE POST-PDF-UPLOAD CHAT UI ONLY.
+
+The current uploaded-PDF interface is too cluttered and feels like a dashboard instead of a modern ChatGPT-style chat application.
+
+After a user successfully uploads/selects a PDF, transform the screen into a CLEAN, MINIMAL PDF CHAT MODE.
+
+DO NOT keep stacking UI components after upload. The uploaded-PDF state must replace the previous upload/setup interface with the chat interface.
+
+Requirements:
+
+1. REMOVE the large PDF information card/header after upload.
+2. REMOVE the separate PDF management bar containing the filename, Add PDF, Select all, Delete, etc. Do not show all of these controls simultaneously.
+3. REMOVE the large horizontal row of Summarize, Extract Key Points, Explain, Find Information buttons.
+4. REMOVE the large "PDF Assistant" card/container.
+5. REMOVE the permanent Suggested Prompts section once the user starts chatting.
+6. REMOVE the permanent Flashcards and Slides buttons from the main chat screen.
+7. REMOVE unnecessary "1 document in context" UI from the conversation area.
+8. REMOVE the Fast/Quality controls from permanently occupying the composer.
+9. FIX all horizontal overflow. Nothing should extend outside the mobile viewport.
+10. The page must feel like ChatGPT: conversation is the primary content.
+
+NEW LAYOUT:
+
+TOP BAR:
+- Left: menu/back button.
+- Center: small PDF icon + filename + small page count.
+- Right: a single PDF/chat toggle icon.
+- Tapping the PDF icon switches to the PDF document viewer.
+- Tapping the chat icon switches back to the PDF chat.
+- Keep the top bar compact and fixed.
+
+CHAT AREA:
+- Full-screen conversation area.
+- No giant assistant card.
+- No unnecessary borders around the entire conversation.
+- User messages and AI responses should look like a normal modern chat interface.
+- Use generous spacing and readable typography.
+- AI responses should appear directly in the conversation.
+- Sources should be compact and expandable, e.g. "Sources · Pages 1–3", rather than taking a large permanent section.
+- Copy/share/save actions should be subtle and appear with the response, not as large dashboard controls.
+
+PDF TOOLS:
+Create ONE compact "Tools" button/menu.
+Move these tools into that menu:
+- Summarize
+- Ask Questions
+- Explain
+- Find Information
+- Compare Documents
+- Extract Information
+- Generate Quiz
+- Generate Flashcards
+- Create Notes
+
+Do not display all PDF tools as horizontal pills on the main screen.
+
+EMPTY CHAT STATE:
+Immediately after upload, before the user sends a message, show a minimal welcome state such as:
+
+"Ask anything about this PDF"
+
+Then show only 3–4 small suggested prompt buttons:
+- Summarize this PDF
+- Explain the main ideas
+- Find information
+- Turn this into notes
+
+These suggestions must disappear after the first user message.
+
+COMPOSER:
+Create a clean ChatGPT-style bottom composer:
+- Plus button on the left
+- Placeholder: "Ask anything about this PDF"
+- Send button on the right
+- Sticky to the bottom
+- Respect iOS safe-area/inset
+- Keyboard must not cover the composer
+- Do not put multiple large dropdowns inside the composer.
+
+The Plus button can open:
+- Add PDF
+- PDF Tools
+- Attach another document
+
+PDF VIEWER:
+When the user taps the PDF/document toggle, switch to a clean full-screen PDF viewer:
+- Compact top bar
+- Back/chat toggle
+- Actual PDF page rendering
+- Page navigation
+- No chat composer while in viewer mode
+
+IMPORTANT DESIGN PRINCIPLE:
+The uploaded PDF should trigger a MODE CHANGE, not add more cards to the existing page.
+
+The final mobile UI should feel:
+- clean
+- spacious
+- premium
+- minimal
+- ChatGPT-like
+- focused on conversation
+- easy to understand immediately
+
+Do not redesign unrelated parts of Toolbuxx.
+Do not change backend/API/PDF processing logic.
+Do not remove any existing functionality.
+Only reorganize the frontend UI and interaction hierarchy to eliminate clutter and create the clean post-upload PDF chat experience.
+
+Before finishing, test the UI at 320px, 375px, 390px, 414px and desktop widths. There must be no horizontal scrolling or clipped controls.

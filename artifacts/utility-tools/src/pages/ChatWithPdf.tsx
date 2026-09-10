@@ -16,15 +16,17 @@ import {
   Download,
   FileText,
   FolderOpen,
-  History,
   Maximize2,
+  Menu,
   MessageCircleQuestion,
+  MoreHorizontal,
   Plus,
   Pencil,
+  FilePlus2,
   Search,
   Share2,
+  SlidersHorizontal,
   Settings2,
-  Trash2,
   Upload,
   X,
   ZoomIn,
@@ -64,11 +66,11 @@ import { ChatViewport } from '@/components/ChatViewport';
 const MAX_CHAT_PDF_FILES = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILES ?? 12);
 const MAX_CHAT_PDF_FILE_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_FILE_SIZE ?? 25 * 1024 * 1024);
 const MAX_CHAT_PDF_TOTAL_SIZE = Number(import.meta.env.VITE_CHAT_PDF_MAX_TOTAL_SIZE ?? 100 * 1024 * 1024);
-const CHAT_PDF_QUICK_ACTIONS = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
 const CHAT_PDF_SUGGESTIONS = [
-  'Summarize the key functions in this PDF.',
-  'How does this assist in decision-making?',
-  'What are the most important takeaways?',
+  'Summarize this PDF',
+  'Explain the main ideas',
+  'Find information',
+  'Turn this into notes',
 ];
 const CHAT_PDF_MODES = ['Chat', 'Ask Questions', 'Summarize', 'Explain', 'Find Information', 'Extract Information', 'Compare Documents', 'Generate Quiz', 'Generate Flashcards'] as const;
 type ChatPdfMode = typeof CHAT_PDF_MODES[number];
@@ -315,6 +317,7 @@ function ChatPdfShell({
   sidebarCollapsed: controlledSidebarCollapsed,
   onSidebarCollapsedChange,
   fixedLayout = false,
+  hideNavigation = false,
 }: {
   children: React.ReactNode;
   onUpload: () => void;
@@ -323,6 +326,7 @@ function ChatPdfShell({
   sidebarCollapsed?: boolean;
   onSidebarCollapsedChange?: (collapsed: boolean) => void;
   fixedLayout?: boolean;
+  hideNavigation?: boolean;
 }) {
   const [, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -333,7 +337,7 @@ function ChatPdfShell({
   return (
     <ChatViewport className="bg-[#000000] text-white">
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <aside className={`hidden min-h-0 shrink-0 overflow-y-auto border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[240px]'}`}>
+        {!hideNavigation && <aside className={`hidden min-h-0 shrink-0 overflow-y-auto border-r border-[#1A1A1A] bg-[#090909] p-3 transition-[width] duration-200 md:flex md:flex-col ${sidebarCollapsed ? 'w-[76px]' : 'w-[240px]'}`}>
           <div className={`mb-3 flex items-center gap-2 ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
             {!sidebarCollapsed && (
               <button
@@ -372,10 +376,10 @@ function ChatPdfShell({
             </button>
           )}
 
-        </aside>
+        </aside>}
 
         <main className="flex min-w-0 flex-1 flex-col">
-          <button
+          {!hideNavigation && <button
             type="button"
             aria-label="Open menu"
             onClick={() => setMenuOpen((value) => !value)}
@@ -389,9 +393,9 @@ function ChatPdfShell({
                 <span className="block h-0.5 w-4 rounded-full bg-current" />
               </div>
             )}
-          </button>
+          </button>}
 
-          {menuOpen && (
+          {!hideNavigation && menuOpen && (
             <div className="fixed inset-0 z-50 md:hidden">
               <button
                 type="button"
@@ -463,6 +467,8 @@ function ChatPdfWorkspacePage() {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingMessageText, setEditingMessageText] = useState('');
   const [messageActionFeedback, setMessageActionFeedback] = useState<{ id: string; label: string } | null>(null);
+  const [openMenu, setOpenMenu] = useState<'tools' | 'add' | null>(null);
+  const [documentMenuOpen, setDocumentMenuOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -902,6 +908,270 @@ function ChatPdfWorkspacePage() {
     removeChatPdfDocument(documentId);
   };
 
+  const chooseTool = (tool: ChatPdfMode | 'Create Notes' | 'Create Slides') => {
+    setOpenMenu(null);
+    if (tool === 'Summarize') {
+      void runContextAction('summary');
+      return;
+    }
+    if (tool === 'Extract Information') {
+      void runContextAction('extract');
+      return;
+    }
+    if (tool === 'Create Notes') {
+      setAiMode('Chat');
+      setMessage('Create concise notes from this PDF with headings, key points, and page references.');
+    } else if (tool === 'Create Slides') {
+      setAiMode('Chat');
+      setMessage('Create a concise slide outline from this PDF with a title, key points, and speaker notes.');
+    } else {
+      setAiMode(tool);
+      setMessage(getModePrompt(tool));
+    }
+    window.requestAnimationFrame(() => messageInputRef.current?.focus());
+  };
+
+  const hasUserMessage = messages.some((item) => item.role === 'user');
+  const toolItems: Array<{ label: ChatPdfMode | 'Create Notes' | 'Create Slides'; icon: LucideIcon }> = [
+    { label: 'Summarize', icon: FileText },
+    { label: 'Ask Questions', icon: MessageCircleQuestion },
+    { label: 'Explain', icon: BookOpen },
+    { label: 'Find Information', icon: Search },
+    { label: 'Compare Documents', icon: FolderOpen },
+    { label: 'Extract Information', icon: Download },
+    { label: 'Generate Quiz', icon: Check },
+    { label: 'Generate Flashcards', icon: BookOpen },
+    { label: 'Create Notes', icon: Pencil },
+    { label: 'Create Slides', icon: BarChart3 },
+  ];
+
+  return (
+    <>
+      <ChatPdfShell
+        onUpload={() => inputRef.current?.click()}
+        onHistory={() => { refreshHistory(); setHistoryOpen(true); }}
+        sidebarCollapsed={sidebarCollapsed}
+        onSidebarCollapsedChange={setSidebarCollapsed}
+        fixedLayout
+        hideNavigation
+      >
+        <div
+          className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            void handleUpload(Array.from(event.dataTransfer.files));
+          }}
+        >
+          <header className="relative z-30 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-[#202a33] bg-[#0a0f14]/95 px-3 backdrop-blur-xl sm:px-5">
+            <div className="flex min-w-0 items-center gap-1">
+              <button type="button" data-testid="button-back-pdf-chat" aria-label="Back to home" onClick={() => navigate('/')} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#8f9eac] transition hover:bg-white/[0.06] hover:text-white">
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <button type="button" data-testid="button-open-pdf-history" aria-label="Open chat history" onClick={() => { refreshHistory(); setHistoryOpen(true); }} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#8f9eac] transition hover:bg-white/[0.06] hover:text-white">
+                <Menu className="h-4 w-4" />
+              </button>
+            </div>
+
+              <button type="button" data-testid="button-select-active-pdf" onClick={() => setDocumentMenuOpen((value) => !value)} className="flex min-w-0 flex-1 items-center justify-center gap-2 px-1 text-center hover:opacity-90">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#172d3c] text-[#9fd8f1]">
+                  <FileText className="h-3.5 w-3.5" />
+                </span>
+                <span className="min-w-0 max-w-[min(58vw,360px)]">
+                  <span data-testid="text-active-pdf-name" className="block truncate text-xs font-medium text-[#e5edf4]">{activeDocument?.fileName ?? 'Chat with PDF'}</span>
+                  {activeDocument && <span data-testid="text-active-pdf-pages" className="block text-[10px] text-[#718194]">{activeDocument.pageCount} {activeDocument.pageCount === 1 ? 'page' : 'pages'}</span>}
+                </span>
+              </button>
+
+            <button
+              type="button"
+              data-testid="button-toggle-pdf-view"
+              onClick={() => activeDocument && setDisplayView((current) => current === 'chat' ? 'document' : 'chat')}
+              disabled={!activeDocument}
+              aria-label={displayView === 'chat' ? 'View PDF' : 'Return to chat'}
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition ${displayView === 'document' ? 'border-[#8fc6df] bg-[#8fc6df] text-[#08131b]' : 'border-[#304554] bg-[#111c25] text-[#b9dff0] hover:border-[#8fc6df]'} disabled:cursor-not-allowed disabled:opacity-40`}
+            >
+              {displayView === 'chat' ? <FileText className="h-4 w-4" /> : <MessageCircleQuestion className="h-4 w-4" />}
+            </button>
+            {documentMenuOpen && documents.length > 0 && (
+              <div className="absolute left-1/2 top-14 z-40 w-[min(92vw,320px)] -translate-x-1/2 overflow-hidden rounded-2xl border border-[#2a3d48] bg-[#0c151b] p-1.5 shadow-[0_18px_45px_rgba(0,0,0,0.38)]">
+                {documents.map((document) => (
+                  <div key={document.id} className="flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 hover:bg-white/[0.05]">
+                    <button type="button" data-testid={`button-select-document-${document.id}`} onClick={() => { selectDocument(document.id); setDocumentMenuOpen(false); }} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                      <FileText className="h-4 w-4 shrink-0 text-[#8fbfd0]" />
+                      <span className="min-w-0 truncate text-xs text-[#d4e4e9]">{document.fileName}</span>
+                    </button>
+                    <button type="button" data-testid={`button-toggle-context-document-${document.id}`} onClick={() => toggleDocument(document.id)} aria-label={`Toggle ${document.fileName} in chat context`} className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[10px] ${activeDocumentIds.includes(document.id) ? 'border-[#8fc6df] bg-[#8fc6df] text-[#08131b]' : 'border-[#405560] text-[#78919c]'}`}><Check className="h-3.5 w-3.5" /></button>
+                    <button type="button" data-testid={`button-remove-document-${document.id}`} onClick={() => removeDocument(document.id)} aria-label={`Remove ${document.fileName}`} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#778894] hover:bg-red-950/50 hover:text-red-200"><X className="h-3.5 w-3.5" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </header>
+
+          {displayView === 'document' && activeDocument ? (
+            <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
+              <PdfViewerPanel activeDocument={activeDocument} file={documentFiles[activeDocument.id]} page={viewerPage} onPageChange={setViewerPage} />
+            </div>
+          ) : (
+            <>
+              <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain" data-chat-scroll-container>
+                <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 pb-8 pt-10 sm:px-6 sm:pt-14">
+                  {!activeDocument ? (
+                    <div className="flex flex-1 items-center justify-center py-16 text-center">
+                      <div className="w-full max-w-sm">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-[#2a4656] bg-[#12202a] text-[#9fd8f1]"><FilePlus2 className="h-5 w-5" /></div>
+                        <h1 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-[#eef5f8]">Start with a PDF</h1>
+                        <p className="mt-2 text-sm leading-6 text-[#80909d]">Upload a document and ask questions in a focused, private workspace.</p>
+                        <button type="button" data-testid="button-upload-first-pdf" onClick={() => inputRef.current?.click()} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#d8edf4] px-4 py-2.5 text-sm font-semibold text-[#10202a] transition hover:bg-[#eef9fc]"><Upload className="h-4 w-4" /> Upload PDF</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {!hasUserMessage && (
+                        <div className="flex flex-1 flex-col items-center justify-center py-10 text-center sm:py-16">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#2a4656] bg-[#12202a] text-[#9fd8f1]"><MessageCircleQuestion className="h-5 w-5" /></div>
+                          <h1 className="mt-5 text-[clamp(1.55rem,4vw,2.15rem)] font-semibold tracking-[-0.035em] text-[#eef5f8]">Ask anything about this PDF</h1>
+                          <p className="mt-2 max-w-md text-sm leading-6 text-[#80909d]">Ask about the document, pull out key details, or turn it into notes.</p>
+                        </div>
+                      )}
+
+                      {messages.length > 0 && (
+                        <div className="space-y-6">
+                          {messages.map((item) => (
+                            <div key={item.id} className={`flex min-w-0 flex-col gap-1 ${item.role === 'user' ? 'items-end' : 'items-start'}`}>
+                              <div className={`min-w-0 max-w-[92%] overflow-hidden rounded-2xl px-3.5 py-2.5 text-sm leading-6 sm:max-w-[84%] ${item.role === 'user' ? 'bg-[#163044] text-[#ebf7fb]' : 'bg-[#111a20] text-[#dce8ee]'}`}>
+                                {editingMessageId === item.id ? (
+                                  <div className="min-w-0">
+                                    <textarea autoFocus value={editingMessageText} onChange={(event) => setEditingMessageText(event.target.value)} onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); saveEditedMessage(item.id); } if (event.key === 'Escape') cancelEditMessage(); }} rows={3} className="w-full min-w-0 resize-y rounded-xl border border-[#486172] bg-[#0a1014] px-3 py-2 text-sm leading-6 text-white outline-none" aria-label="Edit message" />
+                                    <div className="mt-2 flex justify-end gap-2 text-[11px]">
+                                      <button type="button" data-testid={`button-cancel-edit-${item.id}`} onClick={cancelEditMessage} className="rounded-lg px-2 py-1 text-[#8f9eac] hover:bg-white/5 hover:text-white">Cancel</button>
+                                      <button type="button" data-testid={`button-save-edit-${item.id}`} onClick={() => saveEditedMessage(item.id)} className="rounded-lg bg-white/10 px-2 py-1 font-semibold text-white hover:bg-white/15"><Check className="mr-1 inline h-3.5 w-3.5" />Save</button>
+                                    </div>
+                                  </div>
+                                ) : item.role === 'assistant' ? (
+                                  <div className="prose prose-invert max-w-full break-words prose-p:my-2 prose-pre:max-w-full prose-pre:overflow-x-auto prose-pre:rounded-xl prose-pre:border prose-pre:border-[#263843] prose-pre:bg-[#091015] prose-pre:p-3"><ReactMarkdown>{item.content}</ReactMarkdown></div>
+                                ) : <div className="whitespace-pre-wrap break-words">{item.content}</div>}
+                              </div>
+                              {editingMessageId !== item.id && (
+                                <div className={`flex w-full max-w-[92%] flex-wrap items-center gap-1 text-[11px] sm:max-w-[84%] ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                  {item.role === 'user' && <button type="button" data-testid={`button-edit-message-${item.id}`} onClick={() => beginEditMessage(item.id, item.content)} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#778894] hover:bg-white/5 hover:text-white"><Pencil className="h-3.5 w-3.5" />Edit</button>}
+                                  <button type="button" data-testid={`button-copy-message-${item.id}`} onClick={() => void copyMessage(item.id, item.content)} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#778894] hover:bg-white/5 hover:text-white">{messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{messageActionFeedback?.id === item.id && messageActionFeedback.label === 'Copied' ? 'Copied' : 'Copy'}</button>
+                                  {item.role === 'assistant' && (
+                                    <>
+                                      {activeDocument && (
+                                        <details className="mt-2 w-full border-t border-[#202d35] pt-2 text-[11px] text-[#829dab]">
+                                          <summary className="cursor-pointer list-none select-none font-medium text-[#b5cbd5] marker:hidden">
+                                            Sources · Pages {inferRelevantPages(item.content, activeDocument.pageTexts).join('–')}
+                                          </summary>
+                                          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                                            {inferRelevantPages(item.content, activeDocument.pageTexts).map((page) => (
+                                              <button key={page} type="button" data-testid={`button-source-page-${item.id}-${page}`} onClick={() => { setViewerPage(page); setDisplayView('document'); }} className="underline decoration-dotted underline-offset-2 hover:text-white">Page {page}</button>
+                                            ))}
+                                          </div>
+                                        </details>
+                                      )}
+                                      <button type="button" data-testid={`button-share-message-${item.id}`} onClick={() => void shareMessage(item.id, item.content)} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#778894] hover:bg-white/5 hover:text-white"><Share2 className="h-3.5 w-3.5" />Share</button>
+                                      <button type="button" data-testid={`button-save-message-${item.id}`} onClick={() => { saveCurrentResponse('result', `Response: ${activeDocument?.name ?? 'PDF chat'}`, item.content); setMessageActionFeedback({ id: item.id, label: 'Saved' }); }} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[#778894] hover:bg-white/5 hover:text-white"><Bookmark className="h-3.5 w-3.5" />Save</button>
+                                    </>
+                                  )}
+                                  {messageActionFeedback?.id === item.id && messageActionFeedback.label !== 'Copied' && <span className="px-1 text-[#b5cbd5]" role="status">{messageActionFeedback.label}</span>}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          {loading && <div className="flex justify-start"><div className="rounded-2xl bg-[#111a20] px-4 py-3 text-xs text-[#9fb0b9]"><span className="mr-2 inline-flex gap-1"><i className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#b9dce9]" /><i className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#b9dce9]" /><i className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#b9dce9]" /></span>Thinking</div></div>}
+                          <div ref={messagesEndRef} />
+                        </div>
+                      )}
+
+                      {!hasUserMessage && (
+                        <div className={`${messages.length > 0 ? 'mt-auto pt-8' : 'mt-4'} w-full`}>
+                          <div className="grid w-full gap-2 sm:grid-cols-2">
+                            {CHAT_PDF_SUGGESTIONS.map((suggestion) => (
+                              <button key={suggestion} type="button" data-testid={`button-suggestion-${suggestion.slice(0, 12).replace(/\s+/g, '-').toLowerCase()}`} onClick={() => chooseSuggestedPrompt(suggestion)} className="min-w-0 rounded-xl border border-[#263843] bg-[#0d171d] px-3 py-2.5 text-left text-xs leading-5 text-[#b9d2dc] transition hover:border-[#6c9bad] hover:bg-[#12232c]">{suggestion}</button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {activeDocument && (
+                <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 px-3 pb-[max(env(safe-area-inset-bottom),0.65rem)] pt-10 sm:px-5">
+                  <div className="pointer-events-auto relative mx-auto w-full max-w-3xl">
+                    {openMenu && (
+                      <div className="absolute bottom-[4.3rem] left-0 z-30 w-[min(92vw,300px)] overflow-hidden rounded-2xl border border-[#2a3d48] bg-[#0c151b] p-1.5 shadow-[0_18px_45px_rgba(0,0,0,0.38)]">
+                        {(openMenu === 'tools' ? toolItems : [
+                          { label: 'Add PDF', icon: Upload },
+                          { label: 'PDF Tools', icon: SlidersHorizontal },
+                          { label: 'Attach another document', icon: FilePlus2 },
+                        ]).map(({ label, icon: Icon }) => (
+                          <button key={label} type="button" data-testid={`button-menu-${label.toLowerCase().replace(/\s+/g, '-')}`} onClick={() => {
+                            if (label === 'Add PDF' || label === 'Attach another document') { setOpenMenu(null); inputRef.current?.click(); return; }
+                            if (label === 'PDF Tools') { setOpenMenu('tools'); return; }
+                            chooseTool(label as ChatPdfMode | 'Create Notes' | 'Create Slides');
+                          }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs text-[#c9dbe3] transition hover:bg-white/[0.07] hover:text-white">
+                            <Icon className="h-4 w-4 shrink-0 text-[#9fc8d6]" />{label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex min-w-0 items-center gap-2 rounded-2xl border border-[#2a3d48] bg-[#0c151b]/95 p-2 shadow-[0_-8px_26px_rgba(0,0,0,0.22)] backdrop-blur-xl">
+                      <button type="button" data-testid="button-open-pdf-add-menu" aria-label="Add PDF or attachment" onClick={() => setOpenMenu((current) => current === 'add' ? null : 'add')} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#304954] text-[#b9dce9] transition hover:bg-white/[0.07]"><Plus className="h-4 w-4" /></button>
+                      <textarea ref={messageInputRef} value={message} onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !loading) { event.preventDefault(); void sendPrompt(); } }} rows={1} disabled={loading} placeholder="Ask anything about this PDF" data-testid="input-pdf-message" className="min-h-[38px] min-w-0 flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-5 text-[#e8f3f6] outline-none placeholder:text-[#718692] disabled:opacity-60" />
+                      <button type="button" data-testid="button-open-pdf-tools" aria-label="Open PDF tools" onClick={() => setOpenMenu((current) => current === 'tools' ? null : 'tools')} className="flex h-9 shrink-0 items-center gap-1 rounded-xl border border-[#304954] px-2.5 text-[11px] font-medium text-[#9fc8d6] transition hover:bg-white/[0.07]"><MoreHorizontal className="h-4 w-4" />Tools</button>
+                      <button type="button" data-testid="button-send-pdf-message" onClick={() => { if (!loading) void sendPrompt(); }} disabled={loading || !message.trim()} aria-label={loading ? 'Generating response' : 'Send message'} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#d8edf4] text-[#10202a] transition hover:bg-[#eef9fc] disabled:cursor-not-allowed disabled:opacity-40"><ArrowUp className="h-4 w-4" /></button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {error && (
+            <div className="absolute bottom-20 left-3 right-3 z-40 mx-auto flex max-w-3xl items-center justify-between gap-3 rounded-xl border border-red-900/60 bg-[#2a1215] px-3 py-2 text-xs text-red-200 shadow-lg">
+              <span className="min-w-0 break-words">{error}</span>
+              <div className="flex shrink-0 items-center gap-3">
+                {retryFiles.length > 0 && !uploading && <button type="button" data-testid="button-retry-pdf-upload" onClick={() => void handleUpload(retryFiles)} className="font-semibold text-white underline">Retry</button>}
+                <button type="button" data-testid="button-dismiss-pdf-error" onClick={() => setError('')} className="font-semibold text-white underline">Dismiss</button>
+              </div>
+            </div>
+          )}
+          {uploading && <div className="absolute bottom-20 left-3 right-3 z-40 mx-auto max-w-3xl rounded-xl border border-[#294351] bg-[#10202a] px-3 py-2 text-xs text-[#c9e3ec] shadow-lg">Processing PDF…</div>}
+        </div>
+      </ChatPdfShell>
+
+      {historyOpen && (
+        <div className="fixed inset-0 z-[60]">
+          <button type="button" aria-label="Close history" onClick={() => setHistoryOpen(false)} className="absolute inset-0 bg-black/70" />
+          <aside className="relative flex h-full w-[min(88vw,360px)] flex-col border-r border-[#242424] bg-[#090909] p-4 shadow-[12px_0_30px_rgba(0,0,0,0.45)]">
+            <div className="flex items-center justify-between gap-3 border-b border-[#1A1A1A] pb-4">
+              <div><div className="text-sm font-semibold text-white">Chat history</div><div className="mt-1 text-xs text-[#718194]">Your PDF conversations</div></div>
+              <button type="button" aria-label="Close history" onClick={() => setHistoryOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-lg text-[#718194] hover:bg-[#171717] hover:text-white"><X className="h-4 w-4" /></button>
+            </div>
+            <button type="button" data-testid="button-new-pdf-chat" onClick={createNewChat} className="mt-4 flex items-center gap-2 rounded-xl border border-[#385161] bg-[#172c38] px-3 py-2.5 text-left text-sm font-medium text-[#e1f2f6] hover:bg-[#1d3a48]"><Plus className="h-4 w-4" /> New chat</button>
+            <div className="mt-4 flex-1 space-y-2 overflow-y-auto">
+              {history.length === 0 ? <div className="rounded-xl border border-dashed border-[#242424] p-4 text-center text-xs text-[#718194]">No saved PDF conversations yet.</div> : history.map((conversation) => (
+                <div key={conversation.id} className="group rounded-xl border border-[#1A1A1A] bg-[#101010] p-3 hover:border-[#52525B]">
+                  <button type="button" onClick={() => openConversation(conversation)} className="w-full min-w-0 text-left"><div className="truncate text-sm font-medium text-white">{conversation.title}</div><div className="mt-1 truncate text-xs text-[#9aa9ba]">{conversation.documentName ?? 'Untitled PDF'}</div><div className="mt-1 text-[11px] text-[#718194]">{formatDate(conversation.updatedAt)}</div></button>
+                  <div className="mt-2 flex gap-3 text-[11px]"><button type="button" onClick={() => { const title = window.prompt('Rename conversation', conversation.title)?.trim(); if (!title) return; upsertChatPdfConversation({ ...conversation, title, updatedAt: new Date().toISOString() }); refreshHistory(); }} className="text-[#D1D5DB] hover:text-white">Rename</button><button type="button" onClick={() => { deleteChatPdfConversation(conversation.id); refreshHistory(); }} className="text-red-300 hover:text-red-200">Delete</button></div>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
+  );
+
+  /*
+   * Legacy uploaded-PDF layout retained below for reference during the
+   * redesign transition. The compact workspace above is the only rendered
+   * branch.
+   *
   return (
     <>
       <ChatPdfShell
@@ -1345,6 +1615,7 @@ function ChatPdfWorkspacePage() {
       />
     </>
   );
+  */
 }
 
 function ChatPdfDocumentsPage() {
