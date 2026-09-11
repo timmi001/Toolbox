@@ -613,6 +613,8 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [creatorSidebarOpen, setCreatorSidebarOpen] = useState(false);
+  const [creatorSidebarActive, setCreatorSidebarActive] = useState('chat');
   const [attachmentName, setAttachmentName] = useState('');
   const [pdfDocument, setPdfDocument] = useState<PdfDocument | null>(null);
 
@@ -820,7 +822,13 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
             <button
               type="button"
               aria-label="Open menu"
-              onClick={() => setMenuOpen((open) => !open)}
+              onClick={() => {
+                if (hub === 'creator') {
+                  setCreatorSidebarOpen(true);
+                } else {
+                  setMenuOpen((open) => !open);
+                }
+              }}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-[#232323] bg-[#050505] text-[#dfe7ef]"
             >
               <div className="flex flex-col gap-1.5">
@@ -832,7 +840,7 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
             <div className="text-[15px] font-medium text-[#f5f7fa]">{config.title.replace(' Hub', '')}</div>
           </div>
 
-          {menuOpen && (
+          {menuOpen && hub !== 'creator' && (
             <div data-menu-panel="true" className="absolute left-4 top-[calc(100%+0.4rem)] z-20 w-[220px] rounded-2xl border border-[#1A1A1A] bg-[#050505] p-2 shadow-none">
               <button type="button" onClick={() => { setMenuOpen(false); navigate('/'); }} className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-[#ebf4ff] hover:bg-[#171717]">
                 <span>Home</span>
@@ -892,6 +900,17 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
         </header>
 
         <div className="flex min-h-0 flex-1 overflow-hidden">
+          {hub === 'creator' && (
+            <CreatorSidebar
+              open={creatorSidebarOpen}
+              active={creatorSidebarActive}
+              onClose={() => setCreatorSidebarOpen(false)}
+              onSelect={(id) => {
+                setCreatorSidebarActive(id);
+                setCreatorSidebarOpen(false);
+              }}
+            />
+          )}
           {isAiHub && (
             <aside className="hidden w-[240px] shrink-0 border-r border-[#1A1A1A] bg-[#090909] px-3 py-4 md:flex md:flex-col">
               <div className="mb-3 flex items-center gap-3 rounded-2xl border border-[#1A1A1A] bg-[#101010] px-3 py-2.5">
