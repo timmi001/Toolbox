@@ -17,7 +17,6 @@ import {
   FileText,
   FolderOpen,
   Maximize2,
-  Menu,
   MessageCircleQuestion,
   MoreHorizontal,
   Plus,
@@ -967,16 +966,7 @@ function ChatPdfWorkspacePage() {
           }}
         >
           <header className="relative z-30 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-[#202a33] bg-[#0a0f14]/95 px-3 backdrop-blur-xl sm:px-5">
-            <div className="flex min-w-0 items-center gap-1">
-              <button type="button" data-testid="button-back-pdf-chat" aria-label="Back to home" onClick={() => navigate('/')} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#8f9eac] transition hover:bg-white/[0.06] hover:text-white">
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-              <button type="button" data-testid="button-open-pdf-history" aria-label="Open chat history" onClick={() => { refreshHistory(); setHistoryOpen(true); }} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#8f9eac] transition hover:bg-white/[0.06] hover:text-white">
-                <Menu className="h-4 w-4" />
-              </button>
-            </div>
-
-              <button type="button" data-testid="button-select-active-pdf" onClick={() => setDocumentMenuOpen((value) => !value)} className="flex min-w-0 flex-1 items-center justify-center gap-2 px-1 text-center hover:opacity-90">
+            <button type="button" data-testid="button-select-active-pdf" onClick={() => setDocumentMenuOpen((value) => !value)} className="flex min-w-0 flex-1 items-center justify-center gap-2 px-1 text-center hover:opacity-90">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#172d3c] text-[#9fd8f1]">
                   <FileText className="h-3.5 w-3.5" />
                 </span>
@@ -984,7 +974,7 @@ function ChatPdfWorkspacePage() {
                   <span data-testid="text-active-pdf-name" className="block truncate text-xs font-medium text-[#e5edf4]">{activeDocument?.fileName ?? 'Chat with PDF'}</span>
                   {activeDocument && <span data-testid="text-active-pdf-pages" className="block text-[10px] text-[#718194]">{activeDocument.pageCount} {activeDocument.pageCount === 1 ? 'page' : 'pages'}</span>}
                 </span>
-              </button>
+            </button>
 
             <button
               type="button"
