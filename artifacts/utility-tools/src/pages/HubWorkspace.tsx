@@ -613,8 +613,6 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [creatorSidebarOpen, setCreatorSidebarOpen] = useState(false);
-  const [creatorView, setCreatorView] = useState('chat');
   const [attachmentName, setAttachmentName] = useState('');
   const [pdfDocument, setPdfDocument] = useState<PdfDocument | null>(null);
 
@@ -813,26 +811,6 @@ function UnifiedHubWorkspace({ hub }: { hub: UnifiedHubKey }) {
       ];
 
   const quickActions = ['Summarize', 'Extract Key Points', 'Explain', 'Find Information'];
-  const creatorSidebarItem = CREATOR_SIDEBAR_GROUPS.flatMap((group) => group.items).find((item) => item.id === creatorView) ?? CREATOR_SIDEBAR_GROUPS[0].items[0];
-
-  const selectCreatorItem = (id: string) => {
-    setCreatorView(id);
-    setMessages([]);
-    setPrompt('');
-    setError('');
-  };
-
-  if (hub === 'creator') {
-    return (
-      <div className="creator-studio-layout flex h-[100dvh] min-h-0 w-full bg-[#000000]">
-        <CreatorSidebar open={creatorSidebarOpen} active={creatorView} onClose={() => setCreatorSidebarOpen(false)} onSelect={selectCreatorItem} />
-        <ChatViewport className="creator-chat-viewport bg-[#000000] text-white">
-          <CreatorProductionWorkspace activeView={creatorView} onMenuOpen={() => setCreatorSidebarOpen(true)} />
-        </ChatViewport>
-      </div>
-    );
-  }
-
   return (
     <div>
       <ChatViewport className="bg-[#000000] text-white">
