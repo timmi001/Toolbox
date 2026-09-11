@@ -951,12 +951,12 @@ function ChatPdfWorkspacePage() {
   return (
     <>
       <ChatPdfShell
+        navActive="Chat with PDF"
         onUpload={() => inputRef.current?.click()}
         onHistory={() => { refreshHistory(); setHistoryOpen(true); }}
         sidebarCollapsed={sidebarCollapsed}
         onSidebarCollapsedChange={setSidebarCollapsed}
         fixedLayout
-        hideNavigation
       >
         <div
           className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden"
