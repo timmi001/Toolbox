@@ -30,6 +30,7 @@ import {
   X,
   ZoomIn,
   ZoomOut,
+  Loader2,
   type LucideIcon,
 } from 'lucide-react';
 import { generateHubResponse } from '@/lib/hub-ai';
@@ -148,21 +149,22 @@ function PdfViewerPanel({
   onPageChange: (page: number) => void;
 }) {
   const viewerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [zoom, setZoom] = useState(1);
   const [query, setQuery] = useState('');
   const [rendering, setRendering] = useState(false);
   const [renderError, setRenderError] = useState('');
+  const [pageImages, setPageImages] = useState<Array<{ page: number; dataUrl: string }>>([]);
 
   useEffect(() => {
     setZoom(1);
     setRenderError('');
+    setPageImages([]);
   }, [activeDocument.id]);
 
   useEffect(() => {
     let cancelled = false;
-    const renderPage = async () => {
-      if (!file || !canvasRef.current) return;
+    const renderPages = async () => {
+      if (!file) return;
       setRendering(true);
       setRenderError('');
       try {
@@ -170,28 +172,33 @@ function PdfViewerPanel({
         GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.mjs', import.meta.url).href;
         const bytes = await file.arrayBuffer();
         const pdfDocument = await getDocument({ data: bytes }).promise;
-        const pdfPage = await pdfDocument.getPage(page);
-        const viewport = pdfPage.getViewport({ scale: zoom });
-        const canvas = canvasRef.current;
-        if (cancelled || !canvas) return;
-        const context = canvas.getContext('2d');
-        if (!context) throw new Error('The PDF viewer could not create a canvas.');
-        const deviceScale = window.devicePixelRatio || 1;
-        canvas.width = viewport.width * deviceScale;
-        canvas.height = viewport.height * deviceScale;
-        canvas.style.width = `${viewport.width}px`;
-        canvas.style.height = `${viewport.height}px`;
-        context.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
-        await pdfPage.render({ canvas, canvasContext: context, viewport }).promise;
+        const renderedImages: Array<{ page: number; dataUrl: string }> = [];
+        const totalPages = Math.max(activeDocument.pageCount, pdfDocument.numPages ?? activeDocument.pageCount);
+        for (let pageNo = 1; pageNo <= totalPages; pageNo += 1) {
+          const pdfPage = await pdfDocument.getPage(pageNo);
+          const viewport = pdfPage.getViewport({ scale: zoom });
+          const canvas = document.createElement('canvas');
+          const deviceScale = window.devicePixelRatio || 1;
+          canvas.width = Math.round(viewport.width * deviceScale);
+          canvas.height = Math.round(viewport.height * deviceScale);
+          canvas.style.width = `${viewport.width}px`;
+          canvas.style.height = `${viewport.height}px`;
+          const context = canvas.getContext('2d');
+          if (!context) throw new Error('The PDF viewer could not create a canvas.');
+          context.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
+          await pdfPage.render({ canvas, canvasContext: context, viewport }).promise;
+          renderedImages.push({ page: pageNo, dataUrl: canvas.toDataURL('image/png') });
+        }
+        if (!cancelled) setPageImages(renderedImages);
       } catch (error) {
         if (!cancelled) setRenderError(error instanceof Error ? error.message : 'The PDF page could not be rendered.');
       } finally {
         if (!cancelled) setRendering(false);
       }
     };
-    void renderPage();
+    void renderPages();
     return () => { cancelled = true; };
-  }, [file, page, zoom]);
+  }, [activeDocument.id, file, zoom]);
 
   const download = () => {
     if (!file) return;
@@ -209,9 +216,7 @@ function PdfViewerPanel({
     <section ref={viewerRef} className="flex min-h-0 flex-1 flex-col overflow-hidden border border-[#1A1A1A] bg-[#0b1016]">
       <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-[#1A1A1A] bg-[#090909] px-3 py-2">
         <div className="flex items-center gap-1 text-xs text-[#b8c8db]">
-          <button type="button" onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page <= 1} aria-label="Previous page" className="rounded-lg p-1.5 hover:bg-white/5 disabled:opacity-35"><ChevronLeft className="h-4 w-4" /></button>
-          <span className="min-w-[56px] text-center tabular-nums">{page} / {activeDocument.pageCount}</span>
-          <button type="button" onClick={() => onPageChange(Math.min(activeDocument.pageCount, page + 1))} disabled={page >= activeDocument.pageCount} aria-label="Next page" className="rounded-lg p-1.5 hover:bg-white/5 disabled:opacity-35"><ChevronRight className="h-4 w-4" /></button>
+          <span className="min-w-[56px] text-center tabular-nums">{activeDocument.pageCount} pages</span>
         </div>
         <div className="h-4 w-px bg-[#262626]" />
         <button type="button" onClick={() => setZoom((value) => Math.max(0.75, value - 0.1))} aria-label="Zoom out" className="rounded-lg p-1.5 text-[#a7b6c8] hover:bg-white/5"><ZoomOut className="h-4 w-4" /></button>
@@ -226,14 +231,19 @@ function PdfViewerPanel({
           <button type="button" onClick={() => void viewerRef.current?.requestFullscreen?.()} aria-label="Fullscreen viewer" className="rounded-lg p-1.5 text-[#a7b6c8] hover:bg-white/5"><Maximize2 className="h-4 w-4" /></button>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-auto bg-[#15191f] p-4">
-        <div className="flex min-h-full min-w-full items-start justify-center">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#15191f] p-4">
+        <div className="flex min-h-full min-w-full flex-col items-center gap-4">
           {file ? (
-            <div className="relative min-h-[70vh] min-w-[min(100%,680px)] rounded-sm bg-white p-2 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-              {rendering && <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 text-xs text-slate-500">Rendering page…</div>}
-              <canvas ref={canvasRef} className="mx-auto block max-w-none" />
+            <>
+              {rendering && <div className="flex items-center justify-center gap-2 text-xs text-slate-500"><Loader2 className="h-4 w-4 animate-spin" />Rendering PDF…</div>}
               {renderError && <div className="p-6 text-center text-sm text-red-700">{renderError}</div>}
-            </div>
+              {pageImages.map((pageImage) => (
+                <div key={pageImage.page} className="w-full max-w-[min(100%,680px)] rounded-sm bg-white p-2 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+                  <img src={pageImage.dataUrl} alt={`PDF page ${pageImage.page}`} className="mx-auto block max-w-full" />
+                </div>
+              ))}
+              {!rendering && !renderError && pageImages.length === 0 && <div className="text-center text-xs text-slate-500">Preparing PDF pages…</div>}
+            </>
           ) : (
             <div className="w-full max-w-2xl rounded-sm bg-white p-7 text-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
               <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3 text-xs text-slate-500"><span>{activeDocument.fileName}</span><span>Page {page}</span></div>
@@ -1073,6 +1083,16 @@ function ChatPdfWorkspacePage() {
                               )}
                             </div>
                           ))}
+                          {activeDocument && messages.length > 0 && (
+                            <div className="-mt-2 flex gap-2 overflow-x-auto pb-1">
+                              <button type="button" onClick={() => chooseCreationAction('slides')} className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#1A1A1A] bg-[#fcf9ef] px-4 py-2 text-xs font-semibold text-[#30415b] shadow-sm transition hover:bg-[#fffaf1]">
+                                <FileText className="h-4 w-4" />Slides
+                              </button>
+                              <button type="button" onClick={() => chooseCreationAction('flashcards')} className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#1A1A1A] bg-[#fcf9ef] px-4 py-2 text-xs font-semibold text-[#30415b] shadow-sm transition hover:bg-[#fffaf1]">
+                                <BookOpen className="h-4 w-4" />Flashcards
+                              </button>
+                            </div>
+                          )}
                           {loading && <div className="flex justify-start"><div className="rounded-2xl bg-[#111a20] px-4 py-3 text-xs text-[#9fb0b9]"><span className="mr-2 inline-flex gap-1"><i className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#b9dce9]" /><i className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#b9dce9]" /><i className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#b9dce9]" /></span>Thinking</div></div>}
                           <div ref={messagesEndRef} />
                         </div>
@@ -1131,7 +1151,12 @@ function ChatPdfWorkspacePage() {
               </div>
             </div>
           )}
-          {uploading && <div className="absolute bottom-20 left-3 right-3 z-40 mx-auto max-w-3xl rounded-xl border border-[#294351] bg-[#10202a] px-3 py-2 text-xs text-[#c9e3ec] shadow-lg">Processing PDF…</div>}
+          {uploading && (
+            <div className="absolute bottom-20 left-3 right-3 z-40 mx-auto flex max-w-3xl items-center justify-center gap-3 rounded-xl border border-[#294351] bg-[#10202a] px-3 py-2 text-xs text-[#c9e3ec] shadow-lg">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Processing PDF</span>
+            </div>
+          )}
           <input
             ref={inputRef}
             type="file"

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script type="module">
+import { createHotContext } from "/@vite/client";
+const hot = createHotContext("/__dummy__runtime-error-plugin");
+
+function sendError(error) {
+  if (!(error instanceof Error)) {
+    error = new Error("(unknown runtime error)");
+  }
+  const serialized = {
+    message: error.message,
+    stack: error.stack,
+  };
+  hot.send("runtime-error-plugin:error", serialized);
+}
+
+// Only notify the parent frame after the server confirms the error passed
+// the filter and the overlay will be shown.
+hot.on("runtime-error-plugin:notify-parent", () => {
+  try {
+    window.parent.postMessage({ type: "runtime-error", id: null }, "*");
+  } catch (_) {}
+});
+
+window.addEventListener("error", (evt) => {
+  sendError(evt.error);
+});
+
+window.addEventListener("unhandledrejection", (evt) => {
+  sendError(evt.reason);
+});
+</script>
+
+    <script type="module">import { injectIntoGlobalHook } from "/@react-refresh";
+injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;</script>
+
+    <script type="module" src="/@vite/client"></script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JYJMQSD4XY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);} 
+      gtag('js', new Date());
+
+      gtag('config', 'G-JYJMQSD4XY');
+    </script>
+    <!-- AdSense: site-wide script requested by owner -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6795886224017024"
+      crossorigin="anonymous"></script>
+    <!-- End AdSense -->
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+    <!-- Primary Meta ─────────────────────────────────────────────────── -->
+    <title>Toolbuxx | Your AI Workspace</title>
+    <meta name="description" content="Study smarter, create faster, and build better with Toolbuxx AI hubs and practical productivity tools." />
+    <meta name="robots" content="index, follow" />
+    <meta name="impact-site-verification" value="5c7817dc-d1f2-47d0-bcfc-7cc91c37c09f" />
+
+    <!-- Open Graph ───────────────────────────────────────────────────── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://toolbuxx.site/" />
+    <meta property="og:title" content="Toolbuxx | Your AI Workspace" />
+    <meta property="og:description" content="Study smarter, create faster, and build better with Toolbuxx AI hubs and practical productivity tools." />
+    <meta property="og:image" content="https://toolbuxx.site/opengraph.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Toolbuxx" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card ─────────────────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Toolbuxx | Your AI Workspace" />
+    <meta name="twitter:description" content="Study smarter, create faster, and build better with Toolbuxx AI hubs and practical productivity tools." />
+    <meta name="twitter:image" content="https://toolbuxx.site/opengraph.jpg" />
+
+    <!-- Favicon &amp; Icons ──────────────────────────────────────────── -->
+    <!-- SVG favicon (modern browsers — sharp at any size) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- JPEG fallback for browsers that don't support SVG favicons -->
+    <link rel="icon" type="image/jpeg" href="/logo.jpg" sizes="any" />
+    <!-- iOS home-screen icon -->
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/site.webmanifest" />
+    <!-- Mobile browser chrome: match the app's dark background -->
+    <meta name="theme-color" content="#07090c" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Fonts ────────────────────────────────────────────────────────── -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Structured Data — Organization + WebSite ─────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "Toolbuxx",
+          "url": "https://toolbuxx.site",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://toolbuxx.site/logo.jpg",
+            "width": 180,
+            "height": 180
+          },
+          "description": "200+ free AI and utility tools for creators, students, developers and businesses. No sign-up. No tracking.",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "hello@toolbuxx.app",
+            "contactType": "customer support"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "name": "Toolbuxx",
+          "url": "https://toolbuxx.site",
+          "description": "200+ free AI and utility tools for creators, students, developers and businesses. No sign-up. No tracking."
+        }
+      ]
+    }
+    </script>
+
+    <!-- 3rd-party ad script removed -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
